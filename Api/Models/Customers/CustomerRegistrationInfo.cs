@@ -7,14 +7,13 @@ namespace HappyTravel.Edo.Api.Models.Customers
     {
         [JsonConstructor]
         public CustomerRegistrationInfo(string title, string firstName, string lastName,
-            string position, string email, string userToken)
+            string position, string email)
         {
             Title = title;
             FirstName = firstName;
             LastName = lastName;
             Position = position;
             Email = email;
-            UserToken = userToken;
         }
 
         /// <summary>
@@ -45,11 +44,5 @@ namespace HappyTravel.Edo.Api.Models.Customers
         /// </summary>
         [Required]
         public string Email { get; }
-
-        /// <summary>
-        ///     Unique user token, given by external Identity service.
-        /// </summary>
-        [Required]
-        public string UserToken { get; }
     }
 }

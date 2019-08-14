@@ -17,13 +17,15 @@ namespace HappyTravel.Edo.Api.Services.Customers
             _customerService = customerService;
         }
 
-        public async ValueTask<Result> RegisterMasterCustomer(CompanyRegistrationInfo company, CustomerRegistrationInfo masterCustomer)
+        public async ValueTask<Result> RegisterMasterCustomer(CompanyRegistrationInfo company, 
+            CustomerRegistrationInfo masterCustomer,
+            string externalIdentity)
         {
             var companyRegisterResult = await _companyService.Create(company);
             if (companyRegisterResult.IsFailure)
                 return companyRegisterResult;
             
-            var customerRegisterResult = await _customerService.Create(masterCustomer);
+            var customerRegisterResult = await _customerService.Create(masterCustomer, externalIdentity);
             if (customerRegisterResult.IsFailure)
                 return customerRegisterResult;
             

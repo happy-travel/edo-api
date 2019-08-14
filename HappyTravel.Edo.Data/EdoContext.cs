@@ -1873,7 +1873,7 @@ namespace HappyTravel.Edo.Data
                 customer.Property(c => c.LastName).IsRequired();
                 customer.Property(c => c.FirstName).IsRequired();
                 customer.Property(c => c.Position).IsRequired();
-                customer.Property(c => c.TokenHash).IsRequired();
+                customer.Property(c => c.IdentityHash).IsRequired();
             });
         }
 

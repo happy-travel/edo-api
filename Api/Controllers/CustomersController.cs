@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using HappyTravel.Edo.Api.Infrastructure;
@@ -30,7 +31,11 @@ namespace HappyTravel.Edo.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> RegisterMasterCustomer([FromBody] RegisterMasterCustomerRequest request)
         {
-            var registerResult = await _registrationService.RegisterMasterCustomer(request.Company, request.MasterCustomer);
+            var externalIdentity = HttpContext.User.Claims.SingleOrDefault(c=> c.Type == "sub")?.Value;
+            if(string.IsNullOrWhiteSpace(externalIdentity))
+                return BadRequest(ProblemDetailsBuilder.Build("User sub claim is required"));
+                
+            var registerResult = await _registrationService.RegisterMasterCustomer(request.Company, request.MasterCustomer, externalIdentity);
             if (registerResult.IsFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(registerResult.Error));
 

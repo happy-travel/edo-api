@@ -8,6 +8,6 @@ namespace HappyTravel.Edo.Data.Customers
         public string Title { get; set; }
         public string Position { get; set; }
         public string Email { get; set; }
-        public string TokenHash { get; set; }
+        public string IdentityHash { get; set; }
     }
 }

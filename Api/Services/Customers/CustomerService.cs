@@ -16,9 +16,9 @@ namespace HappyTravel.Edo.Api.Services.Customers
             _context = context;
         }
         
-        public async Task<Result<Customer>> Create(CustomerRegistrationInfo customerRegistration)
+        public async Task<Result<Customer>> Create(CustomerRegistrationInfo customerRegistration, string externalIdentity)
         {
-            var (_, isFailure, error) = await Validate(customerRegistration);
+            var (_, isFailure, error) = await Validate(customerRegistration, externalIdentity);
             if (isFailure)
                 return Result.Fail<Customer>(error);
 
@@ -29,7 +29,7 @@ namespace HappyTravel.Edo.Api.Services.Customers
                 LastName = customerRegistration.LastName,
                 Position = customerRegistration.Position,
                 Email = customerRegistration.Email,
-                TokenHash = HashGenerator.ComputeHash(customerRegistration.UserToken)
+                IdentityHash = HashGenerator.ComputeHash(externalIdentity)
             };
             
             _context.Customers.Add(createdCustomer);
@@ -41,7 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Customers
         public async Task<Result<CustomerInfo>> Get(string userToken)
         {
             var tokenHash = HashGenerator.ComputeHash(userToken);
-            var customer = await _context.Customers.SingleOrDefaultAsync(c => c.TokenHash == tokenHash);
+            var customer = await _context.Customers.SingleOrDefaultAsync(c => c.IdentityHash == tokenHash);
             
             return customer is null
                 ? Result.Fail<CustomerInfo>("Could not find customer")
@@ -52,14 +52,13 @@ namespace HappyTravel.Edo.Api.Services.Customers
                     customer.Position));
         }
 
-        private async ValueTask<Result> Validate(CustomerRegistrationInfo customerRegistration)
+        private async ValueTask<Result> Validate(CustomerRegistrationInfo customerRegistration, string externalIdentity)
         {
             var fieldValidateResult = GenericValidator<CustomerRegistrationInfo>.Validate(v =>
             {
                 v.RuleFor(c => c.Title).NotEmpty();
                 v.RuleFor(c => c.FirstName).NotEmpty();
                 v.RuleFor(c => c.LastName).NotEmpty();
-                v.RuleFor(c => c.UserToken).NotEmpty();
                 v.RuleFor(c => c.Email).NotEmpty().EmailAddress();
             }, customerRegistration);
 
@@ -67,13 +66,13 @@ namespace HappyTravel.Edo.Api.Services.Customers
                 return fieldValidateResult;
 
             return Result.Combine(
-                await CheckTokenIsUnique(customerRegistration.UserToken),
+                await CheckIdentityIsUnique(externalIdentity),
                 await CheckEmailIsUnique(customerRegistration.Email));
         }
 
-        private async Task<Result> CheckTokenIsUnique(string token)
+        private async Task<Result> CheckIdentityIsUnique(string identity)
         {
-            return await _context.Customers.AnyAsync(c => c.TokenHash == HashGenerator.ComputeHash(token))
+            return await _context.Customers.AnyAsync(c => c.IdentityHash == HashGenerator.ComputeHash(identity))
                 ? Result.Fail("User is already registered")
                 : Result.Ok();
         }
