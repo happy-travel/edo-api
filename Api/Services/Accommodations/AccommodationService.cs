@@ -78,6 +78,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             }
         }
 
+<<<<<<< Updated upstream
+=======
+        public Task<AccommodationBookingInfo[]> GetBookings()
+        {
+            return _accommodationBookingManager.GetBookings();
+        }
+
+        public Task<Result<VoidObject, ProblemDetails>> CancelBooking(int bookingId)
+        {
+            return _accommodationBookingManager.Cancel(bookingId);
+        }
+
+>>>>>>> Stashed changes
         private readonly IDataProviderClient _dataProviderClient;
         private readonly IMemoryFlow _flow;
         private readonly ILocationService _locationService;

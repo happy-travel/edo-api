@@ -35,12 +35,16 @@ namespace HappyTravel.Edo.Api.Infrastructure
                 Content = BuildContent(requestContent)
             }, languageCode, cancellationToken);
 
-
-        private static StringContent BuildContent<T>(T requestContent) 
-            => new StringContent(JsonConvert.SerializeObject(requestContent), Encoding.UTF8, "application/json");
-
-
-        private async Task<Result<T,ProblemDetails>> Send<T>(HttpRequestMessage request, string languageCode, CancellationToken cancellationToken)
+        private static StringContent BuildContent<T>(T requestContent)
+        {
+            var content = requestContent is VoidObject
+                ? string.Empty
+                : JsonConvert.SerializeObject(requestContent);
+            
+            return new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, "application/json");
+        }
+            
+        private async Task<Result<TResponse,ProblemDetails>> Send<TResponse>(HttpRequestMessage request, string languageCode, CancellationToken cancellationToken)
         {
             try
             {
@@ -49,18 +53,18 @@ namespace HappyTravel.Edo.Api.Infrastructure
                     client.DefaultRequestHeaders.Add("Accept-Language", languageCode);
                     
                     using (var response = await client.SendAsync(request, cancellationToken))
-                    using (var stream = await response.Content.ReadAsStreamAsync())
+                    using (var stream = await GetResponseStream(response) )
                     using (var streamReader = new StreamReader(stream))
                     using (var jsonTextReader = new JsonTextReader(streamReader))
                     {
                         if (response.StatusCode != HttpStatusCode.OK)
                         {
                             var error = _serializer.Deserialize<ProblemDetails>(jsonTextReader);
-                            return Result.Fail<T, ProblemDetails>(error);
+                            return Result.Fail<TResponse, ProblemDetails>(error);
                         }
 
-                        var availabilityResponse = _serializer.Deserialize<T>(jsonTextReader);
-                        return Result.Ok<T, ProblemDetails>(availabilityResponse);
+                        var availabilityResponse = _serializer.Deserialize<TResponse>(jsonTextReader);
+                        return Result.Ok<TResponse, ProblemDetails>(availabilityResponse);
                     }
                 }
             }
@@ -69,7 +73,14 @@ namespace HappyTravel.Edo.Api.Infrastructure
                 ex.Data.Add("requested url", request.RequestUri);
 
                 _logger.LogDataProviderClientException(ex);
-                return ProblemDetailsBuilder.Fail<T>(ex.Message);
+                return ProblemDetailsBuilder.Fail<TResponse>(ex.Message);
+            }
+
+            Task<Stream> GetResponseStream(HttpResponseMessage response)
+            {
+                return typeof(TResponse) == typeof(VoidObject)
+                    ? Task.FromResult(Stream.Null)
+                    : response.Content.ReadAsStreamAsync();
             }
         }
     

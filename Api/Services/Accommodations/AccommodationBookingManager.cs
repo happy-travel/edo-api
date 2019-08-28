@@ -7,6 +7,8 @@ using HappyTravel.Edo.Api.Services.CodeGeneration;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
+using HappyTravel.Edo.Data.Booking;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -77,7 +79,53 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 return _context.SaveChangesAsync();
             }
         }
+<<<<<<< Updated upstream
         
+=======
+
+        public async Task<AccommodationBookingInfo[]> GetBookings()
+        {
+            var (_, isFailure, customer, _) = await _customerContext.GetCustomer();
+            if (isFailure)
+                return Array.Empty<AccommodationBookingInfo>();
+
+            return await _context.Bookings
+                .Where(b => b.CustomerId == customer.Id)
+                .Select(b => new AccommodationBookingInfo(b.Id, b.BookingDetails, b.ServiceDetails, b.CompanyId))
+                .ToArrayAsync();
+        }
+
+        public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId)
+        {
+            var (_, isFailure, customer, error) = await _customerContext.GetCustomer();
+            if (isFailure)
+                return ProblemDetailsBuilder.Fail<VoidObject>(error);
+            
+            var booking = await _context.Bookings
+                .SingleOrDefaultAsync(b => b.Id == bookingId && b.CustomerId == customer.Id);
+
+            if (booking.Equals(default))
+                return ProblemDetailsBuilder.Fail<VoidObject>($"Could not find booking with id {bookingId}");
+
+            return await ExecuteBookingCancel()
+                .OnSuccess(async voidObj => await ChangeBookingToCancelled(booking));
+            
+            Task<Result<VoidObject, ProblemDetails>> ExecuteBookingCancel()
+            {
+                return _dataProviderClient.Post<VoidObject, VoidObject>(
+                    new Uri(_options.Netstorming + "hotels/booking/" + booking + "/cancel", UriKind.Absolute), 
+                    VoidObject.Instance);
+            }
+
+            Task ChangeBookingToCancelled(Booking bookingToCancel)
+            {
+                bookingToCancel.Status = BookingStatusCodes.Cancelled;
+                _context.Update(bookingToCancel);
+                return _context.SaveChangesAsync();
+            }
+        }
+
+>>>>>>> Stashed changes
         private readonly EdoContext _context;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ICustomerContext _customerContext;

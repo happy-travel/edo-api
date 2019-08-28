@@ -25,6 +25,22 @@
             <param name="request"></param>
             <returns></returns>
         </member>
+<<<<<<< Updated upstream
+=======
+        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.CancelBooking(System.Int32)">
+            <summary>
+                Cancel accommodation booking.
+            </summary>
+            <param name="bookingId">Id of booking to cancel</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.GetBookings">
+            <summary>
+                Get current customer bookings.
+            </summary>
+            <returns>Bookings of current customer.</returns>
+        </member>
+>>>>>>> Stashed changes
         <member name="M:HappyTravel.Edo.Api.Controllers.CustomersController.RegisterMasterCustomer(HappyTravel.Edo.Api.Models.Customers.RegisterMasterCustomerRequest)">
             <summary>
                 Registers master customer with related company
@@ -77,6 +93,11 @@
                 Returns methods available for customer payments
             </summary>
             <returns>List of payment methods.</returns>
+        </member>
+        <member name="T:HappyTravel.Edo.Api.Infrastructure.VoidObject">
+            <summary>
+            Empty object, used for Result T,E  to provide typed error with no result.
+            </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.RichAccommodationDetails.Id">
             <summary>
