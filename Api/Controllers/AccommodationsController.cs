@@ -49,7 +49,7 @@ namespace HappyTravel.Edo.Api.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("availabilities/accommodations")]
-        [ProducesResponseType(typeof(AvailabilityResponse), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(DataProviderAvailabilityResponse), (int)HttpStatusCode.OK)]
         public async Task<IActionResult> GetAvailability([FromBody] AvailabilityRequest request)
         {
             var (_, isFailure, response, error) = await _service.GetAvailable(request, LanguageCode);

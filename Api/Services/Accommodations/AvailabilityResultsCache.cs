@@ -13,24 +13,24 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             _flow = flow;
         }
 
-        public Task Set(AvailabilityResponse availabilityResponse)
+        public Task Set(DataProviderAvailabilityResponse dataProviderAvailabilityResponse)
         {
             _flow.Set(
-                _flow.BuildKey(KeyPrefix, availabilityResponse.AvailabilityId.ToString()),
-                availabilityResponse,
+                _flow.BuildKey(KeyPrefix, dataProviderAvailabilityResponse.AvailabilityId.ToString()),
+                dataProviderAvailabilityResponse,
                 ExpirationPeriod);
 
             return Task.CompletedTask;
         }
 
-        public Task<AvailabilityResponse> Get(int id)
+        public Task<DataProviderAvailabilityResponse> Get(int id)
         {
-            _flow.TryGetValue<AvailabilityResponse>(_flow.BuildKey(KeyPrefix, id.ToString()),
+            _flow.TryGetValue<DataProviderAvailabilityResponse>(_flow.BuildKey(KeyPrefix, id.ToString()),
                 out var availabilityResponse);
             return Task.FromResult(availabilityResponse);
         }
         
-        private const string KeyPrefix = nameof(AvailabilityResponse) + "AvailabilityResults";
+        private const string KeyPrefix = nameof(DataProviderAvailabilityResponse) + "AvailabilityResults";
         private static readonly TimeSpan ExpirationPeriod = TimeSpan.FromHours(1);
         private readonly IMemoryFlow _flow;
     }

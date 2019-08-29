@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Availabilities
 {
-    public readonly struct AvailabilityResponse
+    public readonly struct DataProviderAvailabilityResponse
     {
         [JsonConstructor]
-        private AvailabilityResponse(int availabilityId, int numberOfNights, DateTime checkInDate, DateTime checkOutDate, List<SlimAvailabilityResult> results)
+        private DataProviderAvailabilityResponse(int availabilityId, int numberOfNights, DateTime checkInDate, DateTime checkOutDate, List<SlimAvailabilityResult> results)
         {
             AvailabilityId = availabilityId;
             CheckInDate = checkInDate;
@@ -22,9 +22,9 @@ namespace HappyTravel.Edo.Api.Models.Availabilities
         public int NumberOfNights { get; }
         public List<SlimAvailabilityResult> Results { get; }
         
-        public override bool Equals(object obj) => obj is AvailabilityResponse other && Equals(other);
+        public override bool Equals(object obj) => obj is DataProviderAvailabilityResponse other && Equals(other);
 
-        public bool Equals(AvailabilityResponse other)
+        public bool Equals(DataProviderAvailabilityResponse other)
         {
             return (AvailabilityId, CheckInDate, NumberOfNights, Results) ==
                    (other.AvailabilityId, other.CheckInDate, other.NumberOfNights, other.Results);

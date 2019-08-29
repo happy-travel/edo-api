@@ -12,7 +12,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
     public interface IAccommodationService
     {
         ValueTask<Result<RichAccommodationDetails, ProblemDetails>> Get(string accommodationId, string languageCode);
-        ValueTask<Result<AvailabilityResponse, ProblemDetails>> GetAvailable(AvailabilityRequest request, string languageCode);
         Task<Result<AccommodationBookingDetails, ProblemDetails>> Book(AccommodationBookingRequest request, string languageCode);
         Task<List<AccommodationBookingInfo>> GetBookings();
         Task<Result<VoidObject, ProblemDetails>> CancelBooking(int bookingId);

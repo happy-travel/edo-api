@@ -41,16 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 TimeSpan.FromDays(1));
 
 
-        public async ValueTask<Result<AvailabilityResponse, ProblemDetails>> GetAvailable(AvailabilityRequest request, string languageCode)
-        {
-            var (_, isFailure, location, error) = await _locationService.Get(request.Location, languageCode);
-            if (isFailure)
-                return Result.Fail<AvailabilityResponse, ProblemDetails>(error);
-
-            return await _dataProviderClient.Post<InnerAvailabilityRequest, AvailabilityResponse>(new Uri(_options.Netstorming + "hotels/availability", UriKind.Absolute),
-                new InnerAvailabilityRequest(request, location), languageCode)
-                .OnSuccess(response => _availabilityResultsCache.Set(response));
-        }
+        
 
 
         public async Task<Result<AccommodationBookingDetails, ProblemDetails>> Book(AccommodationBookingRequest request, string languageCode)
