@@ -83,7 +83,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             }
         }
 
-        public Task<Result<PaymentResponse>> ProcessPaymentResponse(JObject response, CustomerInfo customerInfo)
+        public Task<Result<PaymentResponse>> ProcessPaymentResponse(JObject response)
         {
             return _payfortService.ProcessPaymentResponse(response)
                 .OnSuccess(StorePayment);
@@ -113,6 +113,16 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 return Result.Ok(new PaymentResponse(payment.Secure3d, payment.Status));
             }
         }
+
+
+        public async Task<bool> CanPayWithAccount(CustomerInfo customerInfo)
+        {
+            var companyId = customerInfo.CompanyId;
+            return await _context.PaymentAccounts
+                .Where(a => a.CompanyId == companyId)
+                .AnyAsync(a => a.Balance + a.CreditLimit > 0);
+        }
+
 
         private async Task<Result> Validate(PaymentRequest request)
         {

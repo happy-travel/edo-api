@@ -486,7 +486,7 @@ namespace HappyTravel.Edo.Data
         
         public DbSet<UserInvitation> UserInvitations { get; set; }
         
-        public DbSet<PaymentAccount> PaymentAccounts { get; set; }
+        public virtual DbSet<PaymentAccount> PaymentAccounts { get; set; }
         
         public DbSet<Administrator> Administrators { get; set; }
         

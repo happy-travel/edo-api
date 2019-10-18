@@ -1,4 +1,5 @@
 using FloxDc.CacheFlow;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Converters;
 using HappyTravel.Edo.UnitTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,7 @@ namespace HappyTravel.Edo.UnitTests
             services.AddSingleton<IJsonSerializer, NewtonsoftJsonSerializer>();
             services.AddSingleton<IMemoryFlow, FakeMemoryFlow>();
             services.AddTransient(provider => MockEdoContext.Create());
+            services.AddSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
         }
     }
 }

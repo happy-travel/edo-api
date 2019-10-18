@@ -258,6 +258,12 @@
                 Processes payment callback
             </summary>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.PaymentsController.CanPayWithAccount">
+            <summary>
+                Returns true if payment with company account is available
+            </summary>
+            <returns>Payment with company account is available</returns>
+        </member>
         <member name="T:HappyTravel.Edo.Api.Infrastructure.VoidObject">
             <summary>
             Empty object, used for Result T,E  to provide typed error with no result.

@@ -38,7 +38,7 @@ namespace HappyTravel.Edo.Api.Controllers
         ///     Returns methods available for customer payments
         /// </summary>
         /// <returns>List of payment methods.</returns>
-        [HttpGet("paymentMethods")]
+        [HttpGet("methods")]
         [ProducesResponseType(typeof(IReadOnlyCollection<PaymentMethods>),(int) HttpStatusCode.OK)]
         public IActionResult GetPaymentMethods()
         {
@@ -86,11 +86,23 @@ namespace HappyTravel.Edo.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> PaymentCallback([FromBody]JObject value)
         {
+            return OkOrBadRequest(await _paymentService.ProcessPaymentResponse(value));
+        }
+
+        /// <summary>
+        ///     Returns true if payment with company account is available
+        /// </summary>
+        /// <returns>Payment with company account is available</returns>
+        [HttpGet("accounts/available")]
+        [ProducesResponseType(typeof(bool), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> CanPayWithAccount()
+        {
             var (_, isFailure, customerInfo, error) = await _customerContext.GetCustomerInfo();
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
 
-            return OkOrBadRequest(await _paymentService.ProcessPaymentResponse(value, customerInfo));
+            return Ok(await _paymentService.CanPayWithAccount(customerInfo));
         }
 
 

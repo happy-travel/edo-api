@@ -40,7 +40,8 @@ namespace HappyTravel.Edo.Api.Services.Management
                 var administrator = await _context.Administrators
                     .SingleOrDefaultAsync(c => c.IdentityHash == identityHash);
 
-                return Result.Ok(administrator);
+                if(administrator != default)
+                    return Result.Ok(administrator);
             }
 
             var clientIdClaim = _tokenInfoAccessor.GetClientId();
@@ -50,7 +51,8 @@ namespace HappyTravel.Edo.Api.Services.Management
                 var administrator = await _context.Administrators
                     .SingleOrDefaultAsync(c => c.IdentityHash == clientIdClaim);
 
-                return Result.Ok(administrator);
+                if(administrator != default)
+                    return Result.Ok(administrator);
             }
 
             return Result.Fail<Administrator>("Could not get administrator");
