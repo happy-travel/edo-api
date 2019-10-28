@@ -62,13 +62,20 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     language: request.LanguageCode,
                     returnUrl: _options.ReturnUrl,
                     settlementReference: request.ReferenceCode,
-                    tokenName: request.Token
+                    tokenName: request.Token,
+                    rememberMe: ToPayfortBoolean(request.IsStoredToken),
+                    cardSecurityCode: GetSecurityCode(),
+                    signature: string.Empty
                 );
 
                 var jObject = JObject.FromObject(paymentRequest, Serializer);
-                (_, _, paymentRequest.Signature, _) = _signatureService.Calculate(jObject, SignatureTypes.Request);
+                var (_, _, signature, _) = _signatureService.Calculate(jObject, SignatureTypes.Request);
+                paymentRequest = new PayfortPaymentRequest(paymentRequest, signature);
                 var json = JsonConvert.SerializeObject(paymentRequest, SerializerSettings);
                 return new StringContent(json, Encoding.UTF8, "application/json");
+
+                // Does not need for new card.
+                string GetSecurityCode() => request.IsNewCard ? null : request.SecurityCode;
             }
         }
 

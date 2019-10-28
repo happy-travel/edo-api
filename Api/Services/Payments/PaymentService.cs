@@ -44,23 +44,41 @@ namespace HappyTravel.Edo.Api.Services.Payments
         public Task<Result<PaymentResponse>> Pay(PaymentRequest request, string languageCode, string ipAddress, CustomerInfo customerInfo)
         {
             return Validate(request)
+                .OnSuccess(CreateRequest)
                 .OnSuccess(Pay)
                 .OnSuccess(CheckStatus)
                 .OnSuccessWithTransaction(_context, payment => Result.Ok(payment)
                     .OnSuccess(StorePayment)
                     .OnSuccess(MarkBookingAsPaid)
+                    .OnSuccess(MarkCreditCardAsUsed)
                     .OnSuccess(CreateResponse));
 
-            Task<Result<CreditCardPaymentResult>> Pay()
+
+            async Task<CreditCardPaymentRequest> CreateRequest()
             {
-                return _payfortService.Pay(new CreditCardPaymentRequest(amount: request.Amount,
+                var isNewCard = true;
+                if (request.IsStoredToken)
+                {
+                    var card = await _context.CreditCards.FirstAsync(c => c.Token == request.Token);
+                    isNewCard = card.Used != true;
+                }
+
+                return new CreditCardPaymentRequest(amount: request.Amount,
                     currency: request.Currency,
-                    token: request.Token, 
+                    token: request.Token,
                     customerName: $"{customerInfo.FirstName} {customerInfo.LastName}",
                     customerEmail: customerInfo.Email,
                     customerIp: ipAddress,
                     referenceCode: request.ReferenceCode,
-                    languageCode: languageCode));
+                    languageCode: languageCode,
+                    isStoredToken: request.IsStoredToken,
+                    securityCode: request.SecurityCode,
+                    isNewCard: isNewCard);
+            }
+
+            Task<Result<CreditCardPaymentResult>> Pay(CreditCardPaymentRequest paymentRequest)
+            {
+                return _payfortService.Pay(paymentRequest);
             }
 
             Result<CreditCardPaymentResult> CheckStatus(CreditCardPaymentResult payment)
@@ -71,6 +89,9 @@ namespace HappyTravel.Edo.Api.Services.Payments
             async Task<Result<CreditCardPaymentResult>> StorePayment(CreditCardPaymentResult payment)
             {
                 var booking = await _context.Bookings.FirstAsync(b => b.ReferenceCode == request.ReferenceCode);
+                var card = request.IsStoredToken
+                    ? await _context.CreditCards.FirstOrDefaultAsync(c => c.Token == request.Token)
+                    : null;
                 var now = _dateTimeProvider.UtcNow();
                 var info = new CreditCardPaymentInfo(ipAddress, payment.ExternalCode, payment.Message, payment.AuthorizationCode, payment.ExpirationDate);
                 _context.ExternalPayments.Add(new ExternalPayment()
@@ -82,7 +103,8 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     Created = now,
                     Modified = now,
                     Status = payment.Status,
-                    Data = JsonConvert.SerializeObject(info)
+                    Data = JsonConvert.SerializeObject(info),
+                    CreditCardId = card?.Id
                 });
 
                 await _context.SaveChangesAsync();
@@ -96,6 +118,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 .OnSuccessWithTransaction(_context, payment => Result.Ok(payment)
                     .OnSuccess(StorePayment)
                     .OnSuccess(MarkBookingAsPaid)
+                    .OnSuccess(MarkCreditCardAsUsed)
                     .OnSuccess(CreateResponse));
 
 
@@ -140,6 +163,27 @@ namespace HappyTravel.Edo.Api.Services.Payments
             return Result.Ok(payment);
         }
 
+        private async Task<Result<CreditCardPaymentResult>> MarkCreditCardAsUsed(CreditCardPaymentResult payment)
+        {
+            if (payment.Status != PaymentStatuses.Success)
+                return Result.Ok(payment);
+
+            var query = from booking in _context.Bookings
+                join payments in _context.ExternalPayments on booking.Id equals payments.BookingId
+                join cards in _context.CreditCards on payments.CreditCardId equals cards.Id
+                where booking.ReferenceCode == payment.ReferenceCode
+                select cards;
+
+            var card = await query.FirstOrDefaultAsync();
+            if (card?.Used != false)
+                return Result.Ok(payment);
+
+            card.Used = true;
+            _context.Update(card);
+            await _context.SaveChangesAsync();
+            return Result.Ok(payment);
+        }
+
 
         public async Task<bool> CanPayWithAccount(CustomerInfo customerInfo)
         {
@@ -163,19 +207,31 @@ namespace HappyTravel.Edo.Api.Services.Payments
             if (fieldValidateResult.IsFailure)
                 return fieldValidateResult;
 
-            return Result.Combine(await CheckReferenceCode(request.ReferenceCode));
-        }
+            return Result.Combine(await CheckReferenceCode(request.ReferenceCode),
+                await CheckToken());
 
-        private async Task<Result> CheckReferenceCode(string referenceCode)
-        {
-            var booking = await _context.Bookings.Where(b => b.ReferenceCode == referenceCode).FirstOrDefaultAsync();
-            if (booking == null)
-                return Result.Fail("Invalid Reference code");
+            async Task<Result> CheckReferenceCode(string referenceCode)
+            {
+                var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.ReferenceCode == referenceCode);
+                if (booking == null)
+                    return Result.Fail("Invalid Reference code");
             
-            if (InvalidBookingStatuses.Contains(booking.Status))
-                return Result.Fail($"Invalid booking status: {booking.Status.ToString()}");
-            
-            return Result.Ok();
+                return InvalidBookingStatuses.Contains(booking.Status)
+                    ? Result.Fail($"Invalid booking status: {booking.Status.ToString()}")
+                    : Result.Ok();
+            }
+
+
+            async Task<Result> CheckToken()
+            {
+                if (!request.IsStoredToken)
+                    return Result.Ok();
+
+                var card = await _context.CreditCards.FirstOrDefaultAsync(c => c.Token == request.Token);
+                return card == null
+                    ? Result.Fail("Cannot find a credit card by payment token")
+                    : Result.Ok();
+            }
         }
 
         public Task<Result> ReplenishAccount(int accountId, PaymentData payment)

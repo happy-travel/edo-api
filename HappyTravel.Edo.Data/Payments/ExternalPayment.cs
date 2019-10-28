@@ -8,6 +8,7 @@ namespace HappyTravel.Edo.Data.Payments
         public int Id { get; set; }
         public decimal Amount { get; set; }
         public int BookingId { get; set; }
+        public int? CreditCardId { get; set; }
         public string Currency { get; set; }
         public string AccountNumber { get; set; }
         public DateTime Created { get; set; }

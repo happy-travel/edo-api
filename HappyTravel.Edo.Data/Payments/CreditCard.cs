@@ -10,6 +10,7 @@ namespace HappyTravel.Edo.Data.Payments
         public string ExpirationDate { get; set; }
         public string Token { get; set; }
         public string HolderName { get; set; }
+        public bool Used { get; set; }
         public CreditCardOwnerType OwnerType { get; set; }
         public int OwnerId { get; set; }
     }

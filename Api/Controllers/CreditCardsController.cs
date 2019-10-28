@@ -79,12 +79,12 @@ namespace HappyTravel.Edo.Api.Controllers
         ///     Calculates signature from json model
         /// </summary>
         /// <returns>signature</returns>
-        [HttpPost("signatures/{type}")]
+        [HttpPost("signatures")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public IActionResult Signature([FromBody]JObject value, SignatureTypes type)
+        public IActionResult Signature([FromBody]JObject value)
         {
-            var (_, isFailure, signature, error) =  _signatureService.Calculate(value, type);
+            var (_, isFailure, signature, error) =  _signatureService.Calculate(value, SignatureTypes.Request);
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
             return Ok(signature);
