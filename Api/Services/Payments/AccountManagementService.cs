@@ -81,9 +81,9 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     .OnSuccess(UpdateCreditLimit)
                     .OnSuccess(WriteAuditLog))
                 .OnBoth(UnlockAccount);
-                
+
             // TODO logs.
-            
+
             async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
             {
                 var (isSuccess, _, error) = await _locker.Acquire<PaymentAccount>(account.Id, nameof(IPaymentProcessingService));
@@ -105,14 +105,14 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     ? Result.Fail<PaymentAccount>("Could not find payment account")
                     : Result.Ok(account);
             }
-            
+
             async Task<Result> CheckPermissions()
             {
                 return (await _administratorContext.HasPermission(AdministratorPermissions.CreditLimitChange)
                     ? Result.Ok()
                     : Result.Fail("No rights to change credit limit"));
             }
-            
+
             bool CreditLimitIsValid()
             {
                 return creditLimit >= 0;
@@ -126,7 +126,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 await _context.SaveChangesAsync();
                 return Result.Ok((currentCreditLimit, creditLimit));
             }
-            
+
             Task<Result> WriteAuditLog((decimal creditLimitBefore, decimal creditLimitAfter) limitChanges)
             {
                 return _managementAuditService.Write(ManagementEventType.AccountCreditLimitChange,
@@ -134,6 +134,16 @@ namespace HappyTravel.Edo.Api.Services.Payments
                         limitChanges.creditLimitAfter));
             }
         }
+
+
+        public async Task<Result<PaymentAccount>> Find(int companyId, Currencies currency)
+        {
+            var account = await _context.PaymentAccounts.FirstOrDefaultAsync(a => a.CompanyId == companyId && a.Currency == currency);
+            return account == null
+                ? Result.Fail<PaymentAccount>($"Cannot find payment account for company {companyId} and currency {currency}")
+                : Result.Ok(account);
+        }
+
 
         private readonly EdoContext _context;
         private readonly IDateTimeProvider _dateTimeProvider;

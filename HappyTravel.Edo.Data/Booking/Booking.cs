@@ -3,7 +3,7 @@ using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Data.Booking
 {
-    public class Booking
+    public class Booking : IEntity
     {
         public int Id { get; set; }
         

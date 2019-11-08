@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Data;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions
 {
@@ -54,6 +55,18 @@ namespace HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions
             
             return await WithTransactionScope(context, () => f(result));
         }
+
+        public static async Task<Result<T, E>> OnSuccessWithTransaction<T, E>(
+            this Task<Result<T, E>> self,
+            EdoContext context,
+            Func<T, Task<Result<T, E>>> f)
+        {
+            var (_, isFailure, result, error) = await self.ConfigureAwait(Result.DefaultConfigureAwait);
+            if (isFailure)
+                return Result.Fail<T, E>(error);
+            
+            return await WithTransactionScope(context, () => f(result));
+        }
         
         public static async Task<Result> OnSuccessWithTransaction<T>(
             this Result<T> self,
@@ -74,13 +87,21 @@ namespace HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions
             return strategy.ExecuteAsync((object)null,
                 operation: async (dbContext, state, cancellationToken) =>
                 {
-                    using (var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken))
+                    IDbContextTransaction transaction = null;
+                    // Nested transaction support
+                    if (dbContext.Database.CurrentTransaction == null)
+                        transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+                    try
                     {
                         var result = await operation().ConfigureAwait(Result.DefaultConfigureAwait);
                         if (result.IsSuccess)
-                            transaction.Commit();
+                            transaction?.Commit();
 
                         return result;
+                    }
+                    finally
+                    {
+                        transaction?.Dispose();
                     }
                 },
                 // This delegate is not used in NpgSql.

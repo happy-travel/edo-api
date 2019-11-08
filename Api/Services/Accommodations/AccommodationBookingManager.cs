@@ -121,14 +121,47 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 var currentDetails = JsonConvert.DeserializeObject<AccommodationBookingDetails>(bookingToCancel.BookingDetails);
                 bookingToCancel.BookingDetails = JsonConvert.SerializeObject(new AccommodationBookingDetails(currentDetails,
                         BookingStatusCodes.Cancelled));
-                
+
                 _context.Update(bookingToCancel);
                 await _context.SaveChangesAsync();
                 return bookingToCancel;
             }
         }
 
-        
+
+        public async Task<Result> MarkBookingAsFrozen(int bookingId)
+        {
+            
+            var (_, isFailure, customerData, error) = await _customerContext.GetCustomerInfo();
+            if (isFailure)
+                return Result.Fail(error);
+            
+            var booking = await _context.Bookings
+                .SingleOrDefaultAsync(b => b.Id == bookingId && b.CustomerId == customerData.CustomerId);
+            
+            if (booking is null)
+                return Result.Fail($"Could not find booking with id '{bookingId}'");
+            
+            if (booking.Status == BookingStatusCodes.MoneyFrozen)
+                return Result.Fail("Booking was already has status MoneyFrozen");
+
+            await ChangeBookingToFrozen(booking);
+
+            return Result.Ok();
+
+            Task ChangeBookingToFrozen(Booking bookingToFreeze)
+            {
+                bookingToFreeze.Status = BookingStatusCodes.MoneyFrozen;
+                var currentDetails = JsonConvert.DeserializeObject<AccommodationBookingDetails>(bookingToFreeze.BookingDetails);
+                bookingToFreeze.BookingDetails = JsonConvert.SerializeObject(new AccommodationBookingDetails(currentDetails,
+                    BookingStatusCodes.MoneyFrozen));
+
+                _context.Update(bookingToFreeze);
+                return _context.SaveChangesAsync();
+            }
+        }
+
+
         private readonly EdoContext _context;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ICustomerContext _customerContext;

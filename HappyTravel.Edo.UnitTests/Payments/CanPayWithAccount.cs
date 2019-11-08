@@ -21,7 +21,8 @@ namespace HappyTravel.Edo.UnitTests.Payments
         public CanPayWithAccount(Mock<EdoContext> edoContextMock, IDateTimeProvider dateTimeProvider)
         {
             _paymentService = new PaymentService(Mock.Of<IAdministratorContext>(), Mock.Of<IPaymentProcessingService>(), edoContextMock.Object,
-                Mock.Of<IPayfortService>(), dateTimeProvider, Mock.Of<IServiceAccountContext>(), Mock.Of<ICreditCardService>());
+                Mock.Of<IPayfortService>(), dateTimeProvider, Mock.Of<IServiceAccountContext>(), Mock.Of<ICreditCardService>(),
+                Mock.Of<ICustomerContext>());
 
             edoContextMock
                 .Setup(c => c.PaymentAccounts)

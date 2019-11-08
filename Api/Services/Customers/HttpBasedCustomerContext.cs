@@ -2,6 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Infrastructure.Users;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,13 @@ namespace HappyTravel.Edo.Api.Services.Customers
             return _customerInfo.Equals(default)
                 ? Result.Fail<CustomerInfo>("Could not get customer data")
                 : Result.Ok(_customerInfo);
+        }
+
+
+        public async Task<Result<UserInfo>> GetUserInfo()
+        {
+            return (await GetCustomerInfo())
+                .OnSuccess((customer) => new UserInfo(customer.CustomerId, UserTypes.Customer));
         }
 
 

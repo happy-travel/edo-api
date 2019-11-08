@@ -25,16 +25,15 @@ namespace HappyTravel.Edo.Api.Models.Bookings
             RoomDetails = roomDetails ?? new List<BookingRoomDetailsWithPrice>(0);
         }
         
-        public AccommodationBookingDetails(AccommodationBookingDetails currentDetails, BookingStatusCodes status)
+        public AccommodationBookingDetails(AccommodationBookingDetails currentDetails, BookingStatusCodes status) : this(currentDetails.ReferenceCode,
+            status, currentDetails.CheckInDate,
+            currentDetails.CheckOutDate, 
+            currentDetails.CityCode, currentDetails.AccommodationId,
+            currentDetails.TariffCode, currentDetails.ContractTypeId, currentDetails.Deadline,
+            currentDetails.RoomDetails)
         {
-            this = new AccommodationBookingDetails(currentDetails.ReferenceCode,
-                status, currentDetails.CheckInDate,
-                currentDetails.CheckOutDate, 
-                currentDetails.CityCode, currentDetails.AccommodationId,
-                currentDetails.TariffCode, currentDetails.ContractTypeId, currentDetails.Deadline,
-                currentDetails.RoomDetails);
         }
-		
+
         public string ReferenceCode { get; }
         public BookingStatusCodes Status { get; }
         public DateTime CheckInDate { get; }

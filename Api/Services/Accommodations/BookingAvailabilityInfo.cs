@@ -1,11 +1,13 @@
 using System;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Bookings;
+using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations
 {
     public readonly struct BookingAvailabilityInfo
     {
+        [JsonConstructor]
         public BookingAvailabilityInfo(
             string accommodationId,
             string accommodationName,

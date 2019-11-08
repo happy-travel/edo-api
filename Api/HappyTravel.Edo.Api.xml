@@ -1003,6 +1003,26 @@
             Payment status.
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Payments.FreezePaymentData.Amount">
+            <summary>
+            Money amount.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Payments.FreezePaymentData.Currency">
+            <summary>
+            Payment currency.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Payments.FreezePaymentData.ReferenceCode">
+            <summary>
+            Reference code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Payments.FreezePaymentData.Reason">
+            <summary>
+            Reason for payment.
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Payments.PaymentData.Amount">
             <summary>
             Money amount.
