@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Payments
 {
-    public readonly struct FreezePaymentData
+    public readonly struct FrozenMoneyData
     {
         [JsonConstructor]
-        public FreezePaymentData(decimal amount, Currencies currency, string referenceCode, string reason)
+        public FrozenMoneyData(decimal amount, Currencies currency, string referenceCode, string reason)
         {
             Amount = amount;
             Currency = currency;

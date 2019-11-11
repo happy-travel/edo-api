@@ -87,10 +87,10 @@ namespace HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions
             return strategy.ExecuteAsync((object)null,
                 operation: async (dbContext, state, cancellationToken) =>
                 {
-                    IDbContextTransaction transaction = null;
-                    // Nested transaction support
-                    if (dbContext.Database.CurrentTransaction == null)
-                        transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+                    // Nested transaction support. We can commit only in top-level
+                    var transaction = dbContext.Database.CurrentTransaction is null 
+                        ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+                        : null;
                     try
                     {
                         var result = await operation().ConfigureAwait(Result.DefaultConfigureAwait);

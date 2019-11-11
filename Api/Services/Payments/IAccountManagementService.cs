@@ -11,6 +11,6 @@ namespace HappyTravel.Edo.Api.Services.Payments
         Task<Result> Create(Company company, Currencies currency);
         Task<Result> ChangeCreditLimit(int accountId, decimal creditLimit);
 
-        Task<Result<PaymentAccount>> Find(int companyId, Currencies currency);
+        Task<Result<PaymentAccount>> Get(int companyId, Currencies currency);
     }
 }

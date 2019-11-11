@@ -6,7 +6,7 @@ using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
-using HappyTravel.Edo.Api.Infrastructure.DatabaseExtentions;
+using HappyTravel.Edo.Api.Infrastructure.DatabaseExtensions;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.Users;
 using HappyTravel.Edo.Api.Models.Accommodations;
@@ -142,12 +142,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             Task<AccommodationBookingDetails> FreezeMoneyFromAccount(AccommodationBookingDetails details)
             {
                 return Result.Ok()
-                    .Ensure(CanFreeze, "Money cannot be frozen for accomandation")
-                    .OnSuccess(GetCustomer)
-                    .OnSuccess(GetAccount)
-                    .OnSuccessWithTransaction(_context, account =>
-                        GetUser()
-                            .OnSuccess(user => FreezeMoney(account, user))
+                    .Ensure(CanFreeze, "Money cannot be frozen for accommodation")
+                    .OnSuccess(GetData)
+                    .OnSuccessWithTransaction(_context, tuple =>
+                            FreezeMoney(tuple.account, tuple.user)
                             .OnSuccess(GetBooking)
                             .OnSuccess(MarkBookingAsFrozen)
                     )
@@ -160,37 +158,46 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     // TODO: notify if fails
                     if (isFreezeFailure)
                     {
-                        _logger.LogDebug($"Connot Freeze money: {freezeError}");
+                        _logger.LogDebug($"Could not freeze money: {freezeError}");
                         return details;
                     }
 
                     return new AccommodationBookingDetails(details, BookingStatusCodes.MoneyFrozen);
                 }
 
+
                 bool CanFreeze() =>
                     request.PaymentMethod == PaymentMethods.BankTransfer && BookingStatusesForFreeze.Contains(details.Status);
 
-                async Task<Result<CustomerInfo>> GetCustomer() =>
-                    await _customerContext.GetCustomerInfo();
 
-                Task<Result<UserInfo>> GetUser() =>
-                    _customerContext.GetUserInfo();
+                async Task<Result<(PaymentAccount account, UserInfo user)>> GetData()
+                {
+                    var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
+                    if (isCustomerFailure)
+                        return Result.Fail<(PaymentAccount account, UserInfo user)>(customerError);
 
+                    var (_, isUserFailure, user, userError) = await _customerContext.GetUserInfo();
+                    if (isUserFailure)
+                        return Result.Fail<(PaymentAccount account, UserInfo user)>(userError);
 
-                Task<Result<PaymentAccount>> GetAccount(CustomerInfo customerInfo) =>
-                    Enum.TryParse<Currencies>(bookingAvailability.Agreement.CurrencyCode, out var currency)
-                        ? _accountManagementService.Find(customerInfo.CompanyId, currency)
-                        : Task.FromResult(Result.Fail<PaymentAccount>($"Invalid currency in details: {bookingAvailability.Agreement.CurrencyCode}"));
+                    if (!Enum.TryParse<Currencies>(bookingAvailability.Agreement.CurrencyCode, out var currency))
+                        return Result.Fail<(PaymentAccount account, UserInfo user)>(
+                                $"Invalid currency in details: {bookingAvailability.Agreement.CurrencyCode}");
+
+                    var result = await _accountManagementService.Get(customerInfo.CompanyId, currency);
+                    return result.Map(account => (account, user));
+                }
 
 
                 Task<Result> FreezeMoney(PaymentAccount account, UserInfo userInfo) =>
                     _paymentProcessingService.FreezeMoney(account.Id,
-                        new FreezePaymentData(amount: bookingAvailability.Agreement.Price.Total, currency: account.Currency, reason: $"Freeze money after booking {details.ReferenceCode}",
+                        new FrozenMoneyData(amount: bookingAvailability.Agreement.Price.Total, currency: account.Currency, reason: $"Freeze money after booking {details.ReferenceCode}",
                             referenceCode: details.ReferenceCode), userInfo);
 
 
                 Task<Booking> GetBooking() =>
                     _context.Bookings.FirstAsync(b => b.ReferenceCode == details.ReferenceCode);
+
 
                 Task<Result> MarkBookingAsFrozen(Booking booking)
                 {
@@ -228,6 +235,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             return Result.Ok<BookingAvailabilityInfo, ProblemDetails>(availability.AddDeadlineDetails(deadlineDetailsResponse.Value));
         }
 
+
         private BookingAvailabilityInfo ExtractBookingAvailabilityInfo(AvailabilityResponse response, Guid agreementId)
         {
             if (response.Equals(default))
@@ -249,17 +257,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 .SingleOrDefault();
         }
 
+
         public Task<List<AccommodationBookingInfo>> GetBookings()
         {
             return _accommodationBookingManager.Get();
         }
+
 
         public Task<Result<VoidObject, ProblemDetails>> CancelBooking(int bookingId)
         {
             // TODO: implement money charge for cancel after deadline.
             return GetBooking()
                     .OnSuccessWithTransaction(_context, booking =>
-                        UnFreezeMoney(booking)
+                        UnfreezeMoney(booking)
                             .OnSuccess(() => _accommodationBookingManager.Cancel(bookingId))
                     )
                 .OnSuccess(CancelSupplierOrder);
@@ -276,7 +286,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             }
 
 
-            async Task<Result<VoidObject, ProblemDetails>> UnFreezeMoney(Booking booking)
+            async Task<Result<VoidObject, ProblemDetails>> UnfreezeMoney(Booking booking)
             {
                 if (booking.Status != BookingStatusCodes.MoneyFrozen)
                     return Result.Ok<VoidObject, ProblemDetails>(VoidObject.Instance);
@@ -291,13 +301,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     ? ProblemDetailsBuilder.Fail<VoidObject>(unFreezeError)
                     : Result.Ok<VoidObject, ProblemDetails>(VoidObject.Instance);
 
+
                 async Task<Result<CustomerInfo>> GetCustomer() =>
                     await _customerContext.GetCustomerInfo();
 
 
                 Task<Result<PaymentAccount>> GetAccount(CustomerInfo customerInfo) => 
                     Enum.TryParse<Currencies>(bookingAvailability.Agreement.CurrencyCode, out var currency)
-                        ? _accountManagementService.Find(customerInfo.CompanyId, currency)
+                        ? _accountManagementService.Get(customerInfo.CompanyId, currency)
                         : Task.FromResult(Result.Fail<PaymentAccount>($"Invalid currency in details: {bookingAvailability.Agreement.CurrencyCode}"));
 
 
@@ -305,7 +316,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 {
                     return GetUser()
                         .OnSuccess(userInfo =>
-                        _paymentProcessingService.UnFreezeMoney(account.Id, new FreezePaymentData(amount: bookingAvailability.Agreement.Price.Total,
+                        _paymentProcessingService.UnfreezeMoney(account.Id, new FrozenMoneyData(amount: bookingAvailability.Agreement.Price.Total,
                             currency: account.Currency, reason: $"UnFreeze money after booking cancellation {booking.ReferenceCode}",
                             referenceCode: booking.ReferenceCode), userInfo));
 
@@ -323,7 +334,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 return VoidObject.Instance;
             }
         }
-        
+
+
         private static readonly HashSet<BookingStatusCodes> BookingStatusesForFreeze = new HashSet<BookingStatusCodes>
         {
             BookingStatusCodes.Pending, BookingStatusCodes.Confirmed

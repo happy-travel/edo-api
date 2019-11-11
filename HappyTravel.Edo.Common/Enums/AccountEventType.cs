@@ -7,6 +7,6 @@
         ChargeMoney = 2,
         FreezeMoney = 3,
         ReleaseFrozenMoney = 4,
-        UnFreezeMoney = 5
+        UnfreezeMoney = 5
     }
 }

@@ -39,9 +39,15 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 )
                 .OnBoth(UnlockAccount);
 
+
             bool ReasonIsProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
+
             bool CurrencyIsCorrect(PaymentAccount account) => account.Currency == paymentData.Currency;
+
+
+            Task<Result> UnlockAccount(Result<PaymentAccount> result) => this.UnlockAccount(result, accountId);
+
 
             async Task<PaymentAccount> AddMoney(PaymentAccount account)
             {
@@ -50,6 +56,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 await _context.SaveChangesAsync();
                 return account;
             }
+
 
             async Task<PaymentAccount> WriteAuditLog(PaymentAccount account)
             {
@@ -62,29 +69,33 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
                 return account;
             }
-            
-            async Task<Result> UnlockAccount(Result<PaymentAccount> result)
-            {
-                await _locker.Release<PaymentAccount>(accountId);
-                return result;
-            }
         }
 
         public Task<Result> ChargeMoney(int accountId, PaymentData paymentData, UserInfo user)
         {
             return GetAccount(accountId)
-                .Ensure(account =>
-                    ReasonIsProvided(account, paymentData.Reason), "Payment reason cannot be empty")
-                .Ensure(account =>
-                    CurrencyIsCorrect(account, paymentData.Currency), "Account and payment currency mismatch")
+                .Ensure(ReasonIsProvided, "Payment reason cannot be empty")
+                .Ensure(CurrencyIsCorrect, "Account and payment currency mismatch")
+                .Ensure(BalanceIsSufficient, "Could not charge money, insufficient balance")
                 .OnSuccess(LockAccount)
-                .Ensure(account =>
-                    BalanceIsSufficient(account, paymentData.Amount), "Could not charge money, insufficient balance")
                 .OnSuccessWithTransaction(_context, account => Result.Ok(account)
                     .OnSuccess(ChargeMoney)
                     .OnSuccess(WriteAuditLog)
                 )
-                .OnBoth(result => UnlockAccount(result, accountId));
+                .OnBoth(UnlockAccount);
+
+
+            bool ReasonIsProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
+
+
+            bool CurrencyIsCorrect(PaymentAccount account) => account.Currency == paymentData.Currency;
+
+
+            bool BalanceIsSufficient(PaymentAccount account) => this.BalanceIsSufficient(account, paymentData.Amount);
+
+
+            Task<Result> UnlockAccount(Result<PaymentAccount> result) => this.UnlockAccount(result, accountId);
+
 
             async Task<PaymentAccount> ChargeMoney(PaymentAccount account)
             {
@@ -93,6 +104,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 await _context.SaveChangesAsync();
                 return account;
             }
+
 
             async Task<PaymentAccount> WriteAuditLog(PaymentAccount account)
             {
@@ -108,19 +120,27 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public Task<Result> FreezeMoney(int accountId, FreezePaymentData paymentData, UserInfo user)
+        public Task<Result> FreezeMoney(int accountId, FrozenMoneyData paymentData, UserInfo user)
         {
             return GetAccount(accountId)
-                .Ensure(account =>
-                    ReasonIsProvided(account, paymentData.Reason), "Payment reason cannot be empty")
-                .Ensure(account =>
-                    CurrencyIsCorrect(account, paymentData.Currency), "Account and payment currency mismatch")
+                .Ensure(ReasonIsProvided, "Payment reason cannot be empty")
+                .Ensure(CurrencyIsCorrect, "Account and payment currency mismatch")
                 .OnSuccess(LockAccount)
                 .OnSuccessWithTransaction(_context, account => Result.Ok(account)
                     .OnSuccess(FreezeMoney)
                     .OnSuccess(WriteAuditLog)
                 )
-                .OnBoth(result => UnlockAccount(result, accountId));
+                .OnBoth(UnlockAccount);
+
+
+            bool ReasonIsProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
+
+
+            bool CurrencyIsCorrect(PaymentAccount account) => account.Currency == paymentData.Currency;
+
+
+            Task<Result> UnlockAccount(Result<PaymentAccount> result) => this.UnlockAccount(result, accountId);
+
 
             async Task<PaymentAccount> FreezeMoney(PaymentAccount account)
             {
@@ -130,6 +150,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 await _context.SaveChangesAsync();
                 return account;
             }
+
 
             async Task<PaymentAccount> WriteAuditLog(PaymentAccount account)
             {
@@ -145,21 +166,31 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public Task<Result> ReleaseFrozenMoney(int accountId, FreezePaymentData paymentData, UserInfo user)
+        public Task<Result> ReleaseFrozenMoney(int accountId, FrozenMoneyData paymentData, UserInfo user)
         {
             return GetAccount(accountId)
-                .Ensure(account =>
-                    ReasonIsProvided(account, paymentData.Reason), "Payment reason cannot be empty")
-                .Ensure(account =>
-                    CurrencyIsCorrect(account, paymentData.Currency), "Account and payment currency mismatch")
-                .Ensure(account =>
-                    FrozenIsSufficient(account, paymentData.Amount), "Could not release frozen money, insufficient frozen balance")
+                .Ensure(ReasonIsProvided, "Payment reason cannot be empty")
+                .Ensure(CurrencyIsCorrect, "Account and payment currency mismatch")
+                .Ensure(FrozenIsSufficient, "Could not release frozen money, insufficient frozen balance")
                 .OnSuccess(LockAccount)
                 .OnSuccessWithTransaction(_context, account => Result.Ok(account)
                     .OnSuccess(ReleaseFrozenMoney)
                     .OnSuccess(WriteAuditLog)
                 )
-                .OnBoth(result => UnlockAccount(result, accountId));
+                .OnBoth(UnlockAccount);
+
+
+            bool ReasonIsProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
+
+
+            bool CurrencyIsCorrect(PaymentAccount account) => account.Currency == paymentData.Currency;
+
+
+            bool FrozenIsSufficient(PaymentAccount account) => this.FrozenIsSufficient(account, paymentData.Amount);
+
+
+            Task<Result> UnlockAccount(Result<PaymentAccount> result) => this.UnlockAccount(result, accountId);
+
 
             async Task<PaymentAccount> ReleaseFrozenMoney(PaymentAccount account)
             {
@@ -168,6 +199,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 await _context.SaveChangesAsync();
                 return account;
             }
+
 
             Task<PaymentAccount> WriteAuditLog(PaymentAccount account)
             {
@@ -176,23 +208,33 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public Task<Result> UnFreezeMoney(int accountId, FreezePaymentData paymentData, UserInfo user)
+        public Task<Result> UnfreezeMoney(int accountId, FrozenMoneyData paymentData, UserInfo user)
         {
             return GetAccount(accountId)
-                .Ensure(account =>
-                    ReasonIsProvided(account, paymentData.Reason), "Payment reason cannot be empty")
-                .Ensure(account =>
-                    CurrencyIsCorrect(account, paymentData.Currency), "Account and payment currency mismatch")
-                .Ensure(account =>
-                    FrozenIsSufficient(account, paymentData.Amount), "Could not release frozen money, insufficient frozen balance")
+                .Ensure(ReasonIsProvided, "Payment reason cannot be empty")
+                .Ensure(CurrencyIsCorrect, "Account and payment currency mismatch")
+                .Ensure(FrozenIsSufficient, "Could not release frozen money, insufficient frozen balance")
                 .OnSuccess(LockAccount)
                 .OnSuccessWithTransaction(_context, account => Result.Ok(account)
-                    .OnSuccess(ReleaseFrozenMoney)
+                    .OnSuccess(UnfreezeMoney)
                     .OnSuccess(WriteAuditLog)
                 )
-                .OnBoth(result => UnlockAccount(result, accountId));
+                .OnBoth(UnlockAccount);
 
-            async Task<PaymentAccount> ReleaseFrozenMoney(PaymentAccount account)
+
+            bool ReasonIsProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
+
+
+            bool CurrencyIsCorrect(PaymentAccount account) => account.Currency == paymentData.Currency;
+
+
+            bool FrozenIsSufficient(PaymentAccount account) => this.FrozenIsSufficient(account, paymentData.Amount);
+
+
+            Task<Result> UnlockAccount(Result<PaymentAccount> result) => this.UnlockAccount(result, accountId);
+
+
+            async Task<PaymentAccount> UnfreezeMoney(PaymentAccount account)
             {
                 account.Frozen -= paymentData.Amount;
                 account.Balance += paymentData.Amount;
@@ -201,24 +243,20 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 return account;
             }
 
+
             Task<PaymentAccount> WriteAuditLog(PaymentAccount account)
             {
-                return WriteFreezeAuditLog(account, paymentData, AccountEventType.UnFreezeMoney, user);
+                return WriteFreezeAuditLog(account, paymentData, AccountEventType.UnfreezeMoney, user);
             }
         }
 
 
-        private static bool BalanceIsSufficient(PaymentAccount account, decimal amount) =>
+        private bool BalanceIsSufficient(PaymentAccount account, decimal amount) =>
             account.Balance + account.CreditLimit >= amount;
 
-        private static bool FrozenIsSufficient(PaymentAccount account, decimal amount) =>
+
+        private bool FrozenIsSufficient(PaymentAccount account, decimal amount) =>
             account.Frozen >= amount;
-
-        private static bool ReasonIsProvided(PaymentAccount account, string reason) =>
-            !string.IsNullOrEmpty(reason);
-
-        private static bool CurrencyIsCorrect(PaymentAccount account, Currencies currency) =>
-            account.Currency == currency;
 
 
         private async Task<Result<PaymentAccount>> GetAccount(int accountId)
@@ -229,6 +267,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 : Result.Ok(account);
         }
 
+
         private async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
         {
             var (isSuccess, _, error) = await _locker.Acquire<PaymentAccount>(account.Id, nameof(IPaymentProcessingService));
@@ -237,10 +276,11 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 : Result.Fail<PaymentAccount>(error);
         }
 
-        private async Task<PaymentAccount> WriteFreezeAuditLog(PaymentAccount account, FreezePaymentData paymentData, AccountEventType eventType, UserInfo user)
+
+        private async Task<PaymentAccount> WriteFreezeAuditLog(PaymentAccount account, FrozenMoneyData paymentData, AccountEventType eventType, UserInfo user)
         {
             var eventData = new AccountBalanceWithReferenceCodeLogEventData(paymentData.Reason, paymentData.ReferenceCode, account.Balance, account.CreditLimit, account.Frozen);
-            await _auditService.Write(AccountEventType.UnFreezeMoney,
+            await _auditService.Write(AccountEventType.UnfreezeMoney,
                 account.Id, 
                 paymentData.Amount,
                 user, 
@@ -248,6 +288,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
             return account;
         }
+
 
         private async Task<Result> UnlockAccount(Result<PaymentAccount> result, int accountId)
         {

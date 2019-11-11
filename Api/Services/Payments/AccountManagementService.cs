@@ -38,11 +38,13 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 .OnSuccess(CreateAccount)
                 .OnSuccess(LogSuccess)
                 .OnFailure(LogFailure);
-            
+
+
             bool CompanyIsVerified()
             {
                 return company.State == CompanyStates.Verified;
             }
+
 
             async Task<PaymentAccount> CreateAccount()
             {
@@ -59,17 +61,20 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 return account;
             }
 
+
             void LogSuccess(PaymentAccount account)
             {
                 _logger.LogPaymentAccountCreationSuccess(
                     $"Successfully created payment account for company: '{company.Id}', account id: {account.Id}");
             }
 
+
             void LogFailure(string error)
             {
                 _logger.LogPaymentAccountCreationFailed($"Failed to create account for company {company.Id}, error {error}");
             }
         }
+
 
         public Task<Result> ChangeCreditLimit(int accountId, decimal creditLimit)
         {
@@ -82,7 +87,6 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     .OnSuccess(WriteAuditLog))
                 .OnBoth(UnlockAccount);
 
-            // TODO logs.
 
             async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
             {
@@ -91,12 +95,14 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     ? Result.Ok(account)
                     : Result.Fail<PaymentAccount>(error);
             }
-        
+
+
             async Task<Result> UnlockAccount(Result accountResult)
             {
                 await _locker.Release<PaymentAccount>(accountId);
                 return accountResult;
             }
+
 
             async Task<Result<PaymentAccount>> GetAccount()
             {
@@ -106,6 +112,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     : Result.Ok(account);
             }
 
+
             async Task<Result> CheckPermissions()
             {
                 return (await _administratorContext.HasPermission(AdministratorPermissions.CreditLimitChange)
@@ -113,10 +120,12 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     : Result.Fail("No rights to change credit limit"));
             }
 
+
             bool CreditLimitIsValid()
             {
                 return creditLimit >= 0;
             }
+
 
             async Task<Result<(decimal creditLimitBefore, decimal creditLimitAfter)>> UpdateCreditLimit(PaymentAccount account)
             {
@@ -127,6 +136,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 return Result.Ok((currentCreditLimit, creditLimit));
             }
 
+
             Task<Result> WriteAuditLog((decimal creditLimitBefore, decimal creditLimitAfter) limitChanges)
             {
                 return _managementAuditService.Write(ManagementEventType.AccountCreditLimitChange,
@@ -136,7 +146,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public async Task<Result<PaymentAccount>> Find(int companyId, Currencies currency)
+        public async Task<Result<PaymentAccount>> Get(int companyId, Currencies currency)
         {
             var account = await _context.PaymentAccounts.FirstOrDefaultAsync(a => a.CompanyId == companyId && a.Currency == currency);
             return account == null
