@@ -54,7 +54,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 .OnSuccess(CheckStatus)
                 .OnSuccessWithTransaction(_context, payment => Result.Ok(payment)
                     .OnSuccess(StorePayment)
-                    .OnSuccess(MarkBookingAsPaid)
+                    .OnSuccess(ChangePaymentStatusForBookingToPaid)
                     .OnSuccess(MarkCreditCardAsUsed)
                     .OnSuccess(CreateResponse));
 
@@ -81,15 +81,18 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     isNewCard: isNewCard);
             }
 
+
             Task<Result<CreditCardPaymentResult>> Pay(CreditCardPaymentRequest paymentRequest)
             {
                 return _payfortService.Pay(paymentRequest);
             }
 
+
             Result<CreditCardPaymentResult> CheckStatus(CreditCardPaymentResult payment) =>
                 payment.Status == PaymentStatuses.Failed ?
                     Result.Fail<CreditCardPaymentResult>($"Payment error: {payment.Message}") :
                     Result.Ok(payment);
+
 
             async Task StorePayment(CreditCardPaymentResult payment)
             {
@@ -143,7 +146,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 return await Result.Ok(paymentResult)
                     .OnSuccessWithTransaction(_context, (payment) => Result.Ok(payment)
                     .OnSuccess(StorePayment)
-                    .OnSuccess((p) => MarkBookingAsPaid(p, booking))
+                    .OnSuccess((p) => ChangePaymentStatusForBookingToPaid(p, booking))
                     .OnSuccess(MarkCreditCardAsUsed)
                     .OnSuccess(CreateResponse));
 
@@ -169,7 +172,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
         private static PaymentResponse CreateResponse(CreditCardPaymentResult payment) =>
             new PaymentResponse(payment.Secure3d, payment.Status, payment.Message);
 
-        private async Task MarkBookingAsPaid(CreditCardPaymentResult payment)
+        private async Task ChangePaymentStatusForBookingToPaid(CreditCardPaymentResult payment)
         {
             // Only when payment is completed
             if (payment.Status != PaymentStatuses.Success)
@@ -177,16 +180,16 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
             // ReferenceCode should always contain valid booking reference code. We check it in CheckReferenceCode or StorePayment
             var booking = await _context.Bookings.FirstAsync(b => b.ReferenceCode == payment.ReferenceCode);
-            return await MarkBookingAsPaid(payment, booking);
+            await ChangePaymentStatusForBookingToPaid(payment, booking);
         }
 
-        private async Task<CreditCardPaymentResult> MarkBookingAsPaid(CreditCardPaymentResult payment, Booking booking)
+        private async Task ChangePaymentStatusForBookingToPaid(CreditCardPaymentResult payment, Booking booking)
         {
             // Only when payment is completed
             if (payment.Status != PaymentStatuses.Success)
-                return payment;
+                return;
 
-            booking.Status = BookingStatusCodes.PaymentComplete;
+            booking.PaymentStatus = BookingPaymentStatuses.Paid;
             _context.Update(booking);
             await _context.SaveChangesAsync();
         }
@@ -321,7 +324,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
         private static readonly HashSet<BookingStatusCodes> BookingStatusesForPayment = new HashSet<BookingStatusCodes>
         {
-            BookingStatusCodes.Pending, BookingStatusCodes.Confirmed, BookingStatusCodes.MoneyFrozen
+            BookingStatusCodes.Pending, BookingStatusCodes.Confirmed
         };
 
         private readonly IAdministratorContext _adminContext;

@@ -118,6 +118,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             async Task<Booking> ChangeBookingToCancelled(Booking bookingToCancel)
             {
                 bookingToCancel.Status = BookingStatusCodes.Cancelled;
+                if (booking.PaymentStatus == BookingPaymentStatuses.MoneyFrozen)
+                    booking.PaymentStatus = BookingPaymentStatuses.Cancelled;
                 var currentDetails = JsonConvert.DeserializeObject<AccommodationBookingDetails>(bookingToCancel.BookingDetails);
                 bookingToCancel.BookingDetails = JsonConvert.SerializeObject(new AccommodationBookingDetails(currentDetails,
                         BookingStatusCodes.Cancelled));
@@ -129,7 +131,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
-        public async Task<Result> MarkBookingAsFrozen(int bookingId)
+        public async Task<Result> ChangePaymentStatusForBookingToFrozen(int bookingId)
         {
             
             var (_, isFailure, customerData, error) = await _customerContext.GetCustomerInfo();
@@ -142,20 +144,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             if (booking is null)
                 return Result.Fail($"Could not find booking with id '{bookingId}'");
             
-            if (booking.Status == BookingStatusCodes.MoneyFrozen)
+            if (booking.PaymentStatus == BookingPaymentStatuses.MoneyFrozen)
                 return Result.Fail("Booking was already has status MoneyFrozen");
 
-            await ChangeBookingToFrozen(booking);
+            await ChangeStatus(booking);
 
             return Result.Ok();
 
-            Task ChangeBookingToFrozen(Booking bookingToFreeze)
+            Task ChangeStatus(Booking bookingToFreeze)
             {
-                bookingToFreeze.Status = BookingStatusCodes.MoneyFrozen;
-                var currentDetails = JsonConvert.DeserializeObject<AccommodationBookingDetails>(bookingToFreeze.BookingDetails);
-                bookingToFreeze.BookingDetails = JsonConvert.SerializeObject(new AccommodationBookingDetails(currentDetails,
-                    BookingStatusCodes.MoneyFrozen));
-
+                bookingToFreeze.PaymentStatus = BookingPaymentStatuses.MoneyFrozen;
                 _context.Update(bookingToFreeze);
                 return _context.SaveChangesAsync();
             }

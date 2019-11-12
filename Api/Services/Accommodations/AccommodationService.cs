@@ -149,20 +149,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                             .OnSuccess(GetBooking)
                             .OnSuccess(MarkBookingAsFrozen)
                     )
-                    .OnBoth(CreateResult);
+                    .OnBoth(OnComplete);
 
 
-                AccommodationBookingDetails CreateResult(Result result)
+                AccommodationBookingDetails OnComplete(Result result)
                 {
                     var (_, isFreezeFailure, freezeError) = result;
                     // TODO: notify if fails
                     if (isFreezeFailure)
                     {
                         _logger.LogDebug($"Could not freeze money: {freezeError}");
-                        return details;
                     }
 
-                    return new AccommodationBookingDetails(details, BookingStatusCodes.MoneyFrozen);
+                    return details;
                 }
 
 
@@ -203,7 +202,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 {
                     // Booking was created in current instance of DbContext, so we need to detach it to change status
                     _context.Detach(booking);
-                    return _accommodationBookingManager.MarkBookingAsFrozen(booking.Id);
+                    return _accommodationBookingManager.ChangePaymentStatusForBookingToFrozen(booking.Id);
                 }
             }
         }
@@ -288,17 +287,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
             async Task<Result<VoidObject, ProblemDetails>> UnfreezeMoney(Booking booking)
             {
-                if (booking.Status != BookingStatusCodes.MoneyFrozen)
+                // TODO: Need refund money if status is paid?
+                if (booking.PaymentStatus != BookingPaymentStatuses.MoneyFrozen)
                     return Result.Ok<VoidObject, ProblemDetails>(VoidObject.Instance);
             
                 var bookingAvailability = JsonConvert.DeserializeObject<BookingAvailabilityInfo>(booking.ServiceDetails);
 
-                var (_, isUnFreezeFailure, unFreezeError) = await GetCustomer()
+                var (_, isUnfreezeFailure, unfreezeError) = await GetCustomer()
                     .OnSuccess(GetAccount)
-                    .OnSuccess(UnFreezeMoneyFromAccount);
+                    .OnSuccess(UnfreezeMoneyFromAccount);
 
-                return isUnFreezeFailure
-                    ? ProblemDetailsBuilder.Fail<VoidObject>(unFreezeError)
+                return isUnfreezeFailure
+                    ? ProblemDetailsBuilder.Fail<VoidObject>(unfreezeError)
                     : Result.Ok<VoidObject, ProblemDetails>(VoidObject.Instance);
 
 
@@ -312,12 +312,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                         : Task.FromResult(Result.Fail<PaymentAccount>($"Invalid currency in details: {bookingAvailability.Agreement.CurrencyCode}"));
 
 
-                Task<Result> UnFreezeMoneyFromAccount(PaymentAccount account)
+                Task<Result> UnfreezeMoneyFromAccount(PaymentAccount account)
                 {
                     return GetUser()
                         .OnSuccess(userInfo =>
                         _paymentProcessingService.UnfreezeMoney(account.Id, new FrozenMoneyData(amount: bookingAvailability.Agreement.Price.Total,
-                            currency: account.Currency, reason: $"UnFreeze money after booking cancellation {booking.ReferenceCode}",
+                            currency: account.Currency, reason: $"Unfreeze money after booking cancellation {booking.ReferenceCode}",
                             referenceCode: booking.ReferenceCode), userInfo));
 
 
