@@ -21,6 +21,7 @@
     <PackageReference Include="FloxDc.Bento.Responses" Version="1.1.0-beta2" />
     <PackageReference Include="FloxDc.CacheFlow" Version="1.5.2" />
     <PackageReference Include="FloxDc.CacheFlow.MessagePack" Version="1.5.0" />
+    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.0" />
     <PackageReference Include="HappyTravel.VaultClient" Version="1.0.2" />
     <PackageReference Include="HappyTravel.SentryLogger" Version="1.0.1" />
     <PackageReference Include="FluentValidation" Version="8.4.0" />

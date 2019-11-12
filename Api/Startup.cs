@@ -30,6 +30,7 @@ using HappyTravel.Edo.Api.Services.Payments;
 using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
+using HappyTravel.StdOutLogger.Extensions;
 using HappyTravel.VaultClient;
 using HappyTravel.VaultClient.Extensions;
 using IdentityModel.Client;
@@ -373,7 +374,7 @@ namespace HappyTravel.Edo.Api
                 options.SwaggerEndpoint("/swagger/v1.0/swagger.json", "HappyTravel.com Edo API");
                 options.RoutePrefix = string.Empty;
             });
-
+            app.UseHttpContextLogging();
             app.UseCors(builder => builder
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
