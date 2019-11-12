@@ -79,20 +79,17 @@ data:
             server_name  localhost;
         
             location / {
-                gzip on;
-                gzip_comp_level 9;
-                gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript;
-                add_header Cache-Control must-revalidate;
-                expires 31536000;
-                proxy_set_header content-type "application/json";
                 proxy_pass http://edo;
             }
-        
+
+            location = /en/api/1.0/external/payments/callback {
+               proxy_pass http://edo;
+            }
+
             location = /health {
                 add_header Content-Type text/plain;
                 access_log off;
                 return 200 "healthy\n";
             }
-    
         }
     }  
