@@ -366,6 +366,7 @@ namespace HappyTravel.Edo.Api
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IOptions<RequestLocalizationOptions> localizationOptions)
         {
+            app.UseHttpContextLogging(options => options.CollectRequestResponseLog = true);
             app.UseBentoExceptionHandler(env.IsProduction());
 
             app.UseSwagger();
@@ -374,7 +375,6 @@ namespace HappyTravel.Edo.Api
                 options.SwaggerEndpoint("/swagger/v1.0/swagger.json", "HappyTravel.com Edo API");
                 options.RoutePrefix = string.Empty;
             });
-            app.UseHttpContextLogging();
             app.UseCors(builder => builder
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
