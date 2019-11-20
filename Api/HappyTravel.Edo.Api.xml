@@ -164,6 +164,11 @@
                 Processes payment callback
             </summary>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.InternalPaymentsController.CompletePayments(HappyTravel.Edo.Api.Models.Payments.ProcessPaymentsInfo)">
+            <summary>
+                Complete payments after check-in date of booking
+            </summary>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.LocationsController.GetCountries(System.String)">
             <summary>
                 Returns a list of world countries.

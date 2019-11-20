@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -21,5 +22,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
         Task<Result<PaymentResponse>> ProcessPaymentResponse(JObject response);
 
         Task<bool> CanPayWithAccount(CustomerInfo customerInfo);
+
+        Task<Result<string>> CompletePayments(DateTime date);
     }
 }

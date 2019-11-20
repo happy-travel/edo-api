@@ -198,20 +198,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                         userInfo);
 
 
-                async Task<Result> ChangePaymentStatusToFrozen()
+                async Task ChangePaymentStatusToFrozen()
                 {
                     var booking = await _context.Bookings.FirstAsync(b => b.ReferenceCode == details.ReferenceCode);
                     // Booking was created in current instance of DbContext, so we need to detach it to change status
                     _context.Detach(booking);
 
                     if (booking.PaymentStatus == BookingPaymentStatuses.MoneyFrozen)
-                        return Result.Ok();
+                        return;
 
                     booking.PaymentStatus = BookingPaymentStatuses.MoneyFrozen;
                     _context.Update(booking);
                     await _context.SaveChangesAsync();
-
-                    return Result.Ok();
                 }
             }
         }

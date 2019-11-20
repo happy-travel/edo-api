@@ -3,7 +3,7 @@ using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Data.Payments
 {
-    public class PaymentAccount
+    public class PaymentAccount : IEntity
     {
         public int Id { get; set; }
         public int CompanyId { get; set; }
