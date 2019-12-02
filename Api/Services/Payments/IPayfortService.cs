@@ -13,8 +13,8 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
         Result<CreditCardPaymentResult> ProcessPaymentResponse(JObject response);
 
-        Task<Result> Capture(CreditCardCaptureRequest request);
+        Task<Result> Capture(CreditCardCaptureMoneyRequest moneyRequest);
 
-        Task<Result> Void(CreditCardVoidRequest request);
+        Task<Result> Void(CreditCardVoidMoneyRequest moneyRequest);
     }
 }

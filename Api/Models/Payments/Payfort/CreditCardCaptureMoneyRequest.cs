@@ -3,10 +3,10 @@ using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Payments.Payfort
 {
-    public readonly struct CreditCardVoidRequest
+    public readonly struct CreditCardCaptureMoneyRequest
     {
         [JsonConstructor]
-        public CreditCardVoidRequest(decimal amount, Currencies currency, string externalId, string referenceCode, string languageCode)
+        public CreditCardCaptureMoneyRequest(decimal amount, Currencies currency, string externalId, string referenceCode, string languageCode)
         {
             Amount = amount;
             Currency = currency;

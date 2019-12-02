@@ -20,7 +20,7 @@ using HappyTravel.Edo.Data.Booking;
 using HappyTravel.Edo.Data.Infrastructure.DatabaseExtensions;
 using HappyTravel.Edo.Data.Payments;
 using HappyTravel.EdoContracts.Accommodations.Enums;
-using HappyTravel.EdoContracts.General.Enums;
+using enums = HappyTravel.EdoContracts.General.Enums;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -55,7 +55,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
         public IReadOnlyCollection<Currencies> GetCurrencies() => new ReadOnlyCollection<Currencies>(Currencies);
 
-        public IReadOnlyCollection<PaymentMethods> GetAvailableCustomerPaymentMethods() => new ReadOnlyCollection<PaymentMethods>(PaymentMethods);
+        public IReadOnlyCollection<enums.PaymentMethods> GetAvailableCustomerPaymentMethods() => new ReadOnlyCollection<enums.PaymentMethods>(PaymentMethods);
 
 
         public Task<Result<PaymentResponse>> Pay(PaymentRequest request, string languageCode, string ipAddress, CustomerInfo customerInfo)
@@ -165,11 +165,11 @@ namespace HappyTravel.Edo.Api.Services.Payments
             {
                 var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.ReferenceCode == paymentResult.ReferenceCode);
                 if (booking == null)
-                    return Result.Fail<PaymentResponse>($"Cannot find a booking by the reference code {paymentResult.ReferenceCode}");
+                    return Result.Fail<PaymentResponse>($"Could not find a booking by the reference code {paymentResult.ReferenceCode}");
 
                 var paymentEntity = await _context.ExternalPayments.FirstOrDefaultAsync(p => p.BookingId == booking.Id);
                 if (paymentEntity == null)
-                    return Result.Fail<PaymentResponse>($"Cannot find a payment record with the booking ID {booking.Id}");
+                    return Result.Fail<PaymentResponse>($"Could not find a payment record with the booking ID {booking.Id}");
 
                 // Payment can be completed before. Nothing to do now.
                 if (paymentEntity.Status == PaymentStatuses.Success)
@@ -247,8 +247,10 @@ namespace HappyTravel.Edo.Api.Services.Payments
             var bookings = await _context.Bookings
                 .Where(booking =>
                     BookingStatusesForPayment.Contains(booking.Status) &&
-                    (booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.BankTransfer && PaymentStatusesForComplete.Contains(booking.PaymentStatus) ||
-                        booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.CreditCard && booking.PaymentStatus == BookingPaymentStatuses.Authorized))
+                    (// Is bank transfer for complete
+                        booking.PaymentMethod == enums.PaymentMethods.BankTransfer && PaymentStatusesForComplete.Contains(booking.PaymentStatus) ||
+                    // Is Credit Card For Complete
+                        booking.PaymentMethod == enums.PaymentMethods.CreditCard && booking.PaymentStatus == BookingPaymentStatuses.Authorized))
                 .ToListAsync();
 
             var date = deadlineDate.Date;
@@ -287,7 +289,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             Result Validate()
             {
                 return bookings.Count != model.BookingIds.Count
-                    ? Result.Fail("Invalid booking ids. Cannot to find all bookings from model.")
+                    ? Result.Fail("Invalid booking ids. Could not find some of requested bookings.")
                     : Result.Combine(bookings.Select(ValidateBooking).ToArray());
 
 
@@ -295,15 +297,18 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     => GenericValidator<Booking>.Validate(v =>
                     {
                         v.RuleFor(c => c.PaymentStatus)
-                            .Must(status => booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.BankTransfer && PaymentStatusesForComplete.Contains(status) ||
-                                booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.CreditCard && booking.PaymentStatus == BookingPaymentStatuses.Authorized)
+                            .Must(status => booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.BankTransfer &&
+                                PaymentStatusesForComplete.Contains(status) ||
+                                booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.CreditCard &&
+                                booking.PaymentStatus == BookingPaymentStatuses.Authorized)
                             .WithMessage(
                                 $"Invalid payment status for booking '{booking.ReferenceCode}' with payment method '{booking.PaymentMethod}': {booking.PaymentStatus}");
                         v.RuleFor(c => c.Status)
                             .Must(status => BookingStatusesForPayment.Contains(status))
                             .WithMessage($"Invalid booking status for booking '{booking.ReferenceCode}': {booking.Status}");
                         v.RuleFor(c => c.PaymentMethod)
-                            .Must(method => method == EdoContracts.General.Enums.PaymentMethods.BankTransfer || method == EdoContracts.General.Enums.PaymentMethods.CreditCard)
+                            .Must(method => method == EdoContracts.General.Enums.PaymentMethods.BankTransfer ||
+                                method == EdoContracts.General.Enums.PaymentMethods.CreditCard)
                             .WithMessage($"Invalid payment method for booking '{booking.ReferenceCode}': {booking.PaymentMethod}");
                     }, booking);
             }
@@ -372,7 +377,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                         Task<Result> CompleteCreditCardPayment(ExternalPayment payment)
                         {
                             var info = JsonConvert.DeserializeObject<CreditCardPaymentInfo>(payment.Data);
-                            return _payfortService.Capture(new CreditCardCaptureRequest(currency: currency,
+                            return _payfortService.Capture(new CreditCardCaptureMoneyRequest(currency: currency,
                                 amount: bookingAvailability.Agreement.Price.NetTotal,
                                 externalId: info.ExternalId,
                                 referenceCode: booking.ReferenceCode,
@@ -446,7 +451,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             var bookingAvailability = JsonConvert.DeserializeObject<BookingAvailabilityInfo>(booking.ServiceDetails);
 
             return Result.Ok()
-                .Ensure(CanAuthorize, "Money cannot be authorized for accommodation")
+                .Ensure(CanAuthorize, $"Could not authorize money for booking '{booking.ReferenceCode}")
                 .OnSuccess(GetAccountAndUser)
                 .OnSuccess(AuthorizeMoney);
 
@@ -463,8 +468,10 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     return Result.Fail<(PaymentAccount, UserInfo)>(userError);
 
                 if (!Enum.TryParse<Currencies>(bookingAvailability.Agreement.Price.CurrencyCode, out var currency))
+                {
                     return Result.Fail<(PaymentAccount, UserInfo)>(
                         $"Unsupported currency in agreement: {bookingAvailability.Agreement.Price.CurrencyCode}");
+                }
 
                 var result = await _accountManagementService.Get(customerInfo.CompanyId, currency);
                 return result.Map(account => (account, user));
@@ -501,7 +508,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 case EdoContracts.General.Enums.PaymentMethods.CreditCard:
                     return GetPayment(booking)
                         .OnSuccess(VoidMoneyFromCreditCard);
-                default: return Task.FromResult(Result.Fail($"Cannot void money for booking with payment method '{booking.PaymentMethod}'"));
+                default: return Task.FromResult(Result.Fail($"Could not void money for booking with payment method '{booking.PaymentMethod}'"));
             }
 
             async Task<Result<CustomerInfo>> GetCustomer() => await _customerContext.GetCustomerInfo();
@@ -524,7 +531,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             Task<Result> VoidMoneyFromCreditCard(ExternalPayment payment)
             {
                 var info = JsonConvert.DeserializeObject<CreditCardPaymentInfo>(payment.Data);
-                return _payfortService.Void(new CreditCardVoidRequest(currency: currency,
+                return _payfortService.Void(new CreditCardVoidMoneyRequest(currency: currency,
                     amount: bookingAvailability.Agreement.Price.NetTotal,
                     externalId: info.ExternalId,
                     referenceCode: booking.ReferenceCode,
@@ -651,8 +658,8 @@ namespace HappyTravel.Edo.Api.Services.Payments
             .Cast<Currencies>()
             .ToArray();
 
-        private static readonly PaymentMethods[] PaymentMethods = Enum.GetValues(typeof(PaymentMethods))
-            .Cast<PaymentMethods>()
+        private static readonly enums.PaymentMethods[] PaymentMethods = Enum.GetValues(typeof(enums.PaymentMethods))
+            .Cast<enums.PaymentMethods>()
             .ToArray();
 
         private static readonly HashSet<BookingStatusCodes> BookingStatusesForPayment = new HashSet<BookingStatusCodes>
