@@ -192,12 +192,22 @@
                 Processes payment callback
             </summary>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.InternalBookingsController.GetBookingsForCancellation(System.DateTime)">
+            <summary>
+                Gets bookings for cancellation by deadline date
+            </summary>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.InternalBookingsController.CancelBookings(HappyTravel.Edo.Api.Models.Bookings.ListOfBookingIds)">
+            <summary>
+                Cancels bookings
+            </summary>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.InternalPaymentsController.GetBookingsForCompletion(System.DateTime)">
             <summary>
                 Gets bookings for payment completion by deadline date
             </summary>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.InternalPaymentsController.CompletePayments(HappyTravel.Edo.Api.Models.Payments.CompletePaymentsModel)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.InternalPaymentsController.CompletePayments(HappyTravel.Edo.Api.Models.Bookings.ListOfBookingIds)">
             <summary>
                 Completes payments for bookings
             </summary>
@@ -570,6 +580,11 @@
             Indicates if extra cot needed.
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Bookings.ListOfBookingIds.BookingIds">
+            <summary>
+                List of booking ids
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Branches.BranchInfo.Title">
             <summary>
             Title of branch.
@@ -863,11 +878,6 @@
         <member name="P:HappyTravel.Edo.Api.Models.Payments.AuthorizedMoneyData.Reason">
             <summary>
                 Reason for payment.
-            </summary>
-        </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Payments.CompletePaymentsModel.BookingIds">
-            <summary>
-                List of booking ids that should be completed
             </summary>
         </member>
         <member name="T:HappyTravel.Edo.Api.Models.Payments.CreditCards.CreditCardInfo">

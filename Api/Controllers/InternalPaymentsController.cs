@@ -1,7 +1,9 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Payments;
+using HappyTravel.Edo.Api.Services.Accommodations;
 using HappyTravel.Edo.Api.Services.Payments;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +24,7 @@ namespace HappyTravel.Edo.Api.Controllers
         ///     Gets bookings for payment completion by deadline date
         /// </summary>
         [HttpGet("complete/{deadlineDate}")]
-        [ProducesResponseType(typeof(CompletePaymentsModel), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ListOfBookingIds), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetBookingsForCompletion(DateTime deadlineDate)
         {
@@ -36,7 +38,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [HttpPost("complete")]
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> CompletePayments(CompletePaymentsModel model)
+        public async Task<IActionResult> CompletePayments(ListOfBookingIds model)
         {
             return OkOrBadRequest(await _paymentService.Complete(model));
         }

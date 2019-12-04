@@ -19,6 +19,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         Task<Result<List<SlimAccommodationBookingInfo>>> GetCustomerBookings();
         Task<Result<VoidObject, ProblemDetails>> CancelBooking(int bookingId);
         Task<Result<BookingAvailabilityInfo, ProblemDetails>> GetBookingAvailability(int availabilityId, Guid agreementId, string languageCode);
-
+        Task<Result<ListOfBookingIds>> GetBookingsForCancellation(DateTime deadlineDate);
+        Task<Result<string>> CancelBookings(ListOfBookingIds model);
     }
 }

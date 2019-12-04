@@ -9,6 +9,7 @@ using FluentValidation;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.Users;
+using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Models.Payments.Payfort;
 using HappyTravel.Edo.Api.Services.Accommodations;
@@ -235,14 +236,14 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public async Task<Result<CompletePaymentsModel>> GetBookingsForCompletion(DateTime deadlineDate)
+        public async Task<Result<ListOfBookingIds>> GetBookingsForCompletion(DateTime deadlineDate)
         {
             if (deadlineDate == default)
-                return Result.Fail<CompletePaymentsModel>("Deadline date should be specified");
+                return Result.Fail<ListOfBookingIds>("Deadline date should be specified");
 
             var (_, isFailure, _, error) = await _serviceAccountContext.GetUserInfo();
             if (isFailure)
-                return Result.Fail<CompletePaymentsModel>(error);
+                return Result.Fail<ListOfBookingIds>(error);
 
             var bookings = await _context.Bookings
                 .Where(booking =>
@@ -263,11 +264,11 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 .Select(booking => booking.Id)
                 .ToList();
 
-            return Result.Ok(new CompletePaymentsModel(bookingIds));
+            return Result.Ok(new ListOfBookingIds(bookingIds));
         }
 
 
-        public async Task<Result<string>> Complete(CompletePaymentsModel model)
+        public async Task<Result<string>> Complete(ListOfBookingIds model)
         {
             var (_, isUserFailure, user, userError) = await _serviceAccountContext.GetUserInfo();
             if (isUserFailure)
@@ -297,9 +298,9 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     => GenericValidator<Booking>.Validate(v =>
                     {
                         v.RuleFor(c => c.PaymentStatus)
-                            .Must(status => booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.BankTransfer &&
+                            .Must(status => booking.PaymentMethod == Enums.PaymentMethods.BankTransfer &&
                                 PaymentStatusesForComplete.Contains(status) ||
-                                booking.PaymentMethod == EdoContracts.General.Enums.PaymentMethods.CreditCard &&
+                                booking.PaymentMethod == Enums.PaymentMethods.CreditCard &&
                                 booking.PaymentStatus == BookingPaymentStatuses.Authorized)
                             .WithMessage(
                                 $"Invalid payment status for booking '{booking.ReferenceCode}' with payment method '{booking.PaymentMethod}': {booking.PaymentStatus}");
@@ -307,8 +308,8 @@ namespace HappyTravel.Edo.Api.Services.Payments
                             .Must(status => BookingStatusesForPayment.Contains(status))
                             .WithMessage($"Invalid booking status for booking '{booking.ReferenceCode}': {booking.Status}");
                         v.RuleFor(c => c.PaymentMethod)
-                            .Must(method => method == EdoContracts.General.Enums.PaymentMethods.BankTransfer ||
-                                method == EdoContracts.General.Enums.PaymentMethods.CreditCard)
+                            .Must(method => method == Enums.PaymentMethods.BankTransfer ||
+                                method == Enums.PaymentMethods.CreditCard)
                             .WithMessage($"Invalid payment method for booking '{booking.ReferenceCode}': {booking.PaymentMethod}");
                     }, booking);
             }

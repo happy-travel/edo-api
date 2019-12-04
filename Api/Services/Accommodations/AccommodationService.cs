@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
+using FluentValidation;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Bookings;
+using HappyTravel.Edo.Api.Models.Payments;
+using HappyTravel.Edo.Api.Models.Payments.Payfort;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Api.Services.Deadline;
 using HappyTravel.Edo.Api.Services.Locations;
+using HappyTravel.Edo.Api.Services.Management;
 using HappyTravel.Edo.Api.Services.Markups;
 using HappyTravel.Edo.Api.Services.Markups.Availability;
 using HappyTravel.Edo.Api.Services.Payments;
@@ -21,10 +26,13 @@ using HappyTravel.Edo.Data.Booking;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.Edo.Data.Infrastructure.DatabaseExtensions;
+using HappyTravel.Edo.Data.Payments;
+using HappyTravel.EdoContracts.Accommodations.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using AvailabilityRequest = HappyTravel.EdoContracts.Accommodations.AvailabilityRequest;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations
@@ -45,7 +53,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             IPermissionChecker permissionChecker,
             EdoContext context,
             IPaymentService paymentService,
-            ILogger<AccommodationService> logger)
+            ILogger<AccommodationService> logger,
+            IServiceAccountContext serviceAccountContext)
         {
             _flow = flow;
             _dataProviderClient = dataProviderClient;
@@ -62,6 +71,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             _context = context;
             _paymentService = paymentService;
             _logger = logger;
+            _serviceAccountContext = serviceAccountContext;
         }
 
 
@@ -251,6 +261,113 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
+        public async Task<Result<ListOfBookingIds>> GetBookingsForCancellation(DateTime deadlineDate)
+        {
+            if (deadlineDate == default)
+                return Result.Fail<ListOfBookingIds>("Deadline date should be specified");
+
+            var (_, isFailure, _, error) = await _serviceAccountContext.GetUserInfo();
+            if (isFailure)
+                return Result.Fail<ListOfBookingIds>(error);
+
+            // Could not cancel bookings after check-in date
+            var currentDateUtc = DateTime.UtcNow;
+            var bookings = await _context.Bookings
+                .Where(booking =>
+                    BookingStatusesForCancellation.Contains(booking.Status) &&
+                    booking.PaymentStatus == BookingPaymentStatuses.NotPaid &&
+                    booking.BookingDate > currentDateUtc)
+                .ToListAsync();
+
+            // Day before deadline
+            var date = deadlineDate.Date.AddDays(1);
+            var bookingIds = bookings
+                .Where(booking =>
+                {
+                    var availabilityInfo = JsonConvert.DeserializeObject<BookingAvailabilityInfo>(booking.ServiceDetails);
+                    return availabilityInfo.Agreement.DeadlineDate.Date <= date;
+                })
+                .Select(booking => booking.Id)
+                .ToList();
+
+            return Result.Ok(new ListOfBookingIds(bookingIds));
+        }
+
+
+        public async Task<Result<string>> CancelBookings(ListOfBookingIds model)
+        {
+            var (_, isUserFailure, _, userError) = await _serviceAccountContext.GetUserInfo();
+            if (isUserFailure)
+                return Result.Fail<string>(userError);
+
+            var bookings = await GetBookings();
+
+            return await Validate()
+                .OnSuccess(ProcessBookings);
+
+
+            Task<List<Booking>> GetBookings()
+            {
+                var ids = model.BookingIds;
+                return _context.Bookings.Where(booking => ids.Contains(booking.Id)).ToListAsync();
+            }
+
+
+            Result Validate()
+            {
+                return bookings.Count != model.BookingIds.Count
+                    ? Result.Fail("Invalid booking ids. Could not find some of requested bookings.")
+                    : Result.Combine(bookings.Select(ValidateBooking).ToArray());
+
+
+                Result ValidateBooking(Booking booking)
+                    => GenericValidator<Booking>.Validate(v =>
+                    {
+                        v.RuleFor(c => c.PaymentStatus)
+                            .Must(status => booking.PaymentStatus == BookingPaymentStatuses.NotPaid)
+                            .WithMessage(
+                                $"Invalid payment status for booking '{booking.ReferenceCode}': {booking.PaymentStatus}");
+                        v.RuleFor(c => c.Status)
+                            .Must(status => BookingStatusesForCancellation.Contains(status))
+                            .WithMessage($"Invalid booking status for booking '{booking.ReferenceCode}': {booking.Status}");
+                    }, booking);
+            }
+
+
+            Task<string> ProcessBookings()
+            {
+                return Combine(bookings.Select(ProcessBooking));
+
+
+                Task<Result<string>> ProcessBooking(Booking booking)
+                {
+                    return CancelBooking(booking.Id)
+                        .OnBoth(CreateResult);
+
+
+                    Result<string> CreateResult(Result<VoidObject, ProblemDetails> result)
+                        => result.IsSuccess
+                            ? Result.Ok($"Booking '{booking.ReferenceCode}' was cancelled.")
+                            : Result.Fail<string>($"Unable to cancel booking '{booking.ReferenceCode}'. Reason: {result.Error.Detail}");
+                }
+
+
+                async Task<string> Combine(IEnumerable<Task<Result<string>>> results)
+                {
+                    var builder = new StringBuilder();
+
+                    foreach (var result in results)
+                    {
+                        var (_, isFailure, value, error) = await result;
+                        builder.AppendLine(isFailure ? error : value);
+                    }
+
+                    return builder.ToString();
+                }
+            }
+        }
+
+
         private async Task<Result<BookingAvailabilityInfo, ProblemDetails>> GetBookingAvailability(AvailabilityDetailsWithMarkup responseWithMarkup,
             int availabilityId, Guid agreementId, string languageCode)
         {
@@ -293,6 +410,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 .SingleOrDefault();
         }
 
+        private static readonly HashSet<BookingStatusCodes> BookingStatusesForCancellation = new HashSet<BookingStatusCodes>
+        {
+            BookingStatusCodes.Pending, BookingStatusCodes.Confirmed
+        };
+
 
         private readonly IAccommodationBookingManager _accommodationBookingManager;
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
@@ -305,6 +427,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         private readonly IMemoryFlow _flow;
         private readonly ILocationService _locationService;
         private readonly ILogger<AccommodationService> _logger;
+        private readonly IServiceAccountContext _serviceAccountContext;
         private readonly IMarkupLogger _markupLogger;
         private readonly IAvailabilityMarkupService _markupService;
         private readonly DataProviderOptions _options;
