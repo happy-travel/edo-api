@@ -39,6 +39,14 @@
             <param name="request"></param>
             <returns></returns>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.ModifyBooking(System.Int32,HappyTravel.Edo.Api.Models.Bookings.BookingModifiedData)">
+            <summary>
+                Modifies booking.
+            </summary>
+            <param name="bookingId"></param>
+            <param name="request">Modified booking data</param>
+            <returns>New booking data</returns>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.CancelBooking(System.Int32)">
             <summary>
                 Cancel accommodation booking.

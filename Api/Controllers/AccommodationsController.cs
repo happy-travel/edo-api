@@ -105,6 +105,25 @@ namespace HappyTravel.Edo.Api.Controllers
 
 
         /// <summary>
+        ///     Modifies booking.
+        /// </summary>
+        /// <param name="bookingId"></param>
+        /// <param name="request">Modified booking data</param>
+        /// <returns>New booking data</returns>
+        [HttpPost("bookings/accommodations/{bookingId}/modify")]
+        [ProducesResponseType((int)HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        public async Task<IActionResult> ModifyBooking(int bookingId, BookingModifiedData request)
+        {
+            var (_, isFailure, bookingDetails, error) = await _service.ModifyBooking(bookingId, request, LanguageCode);
+            if (isFailure)
+                return BadRequest(error);
+
+            return Ok(bookingDetails);
+        }
+
+
+        /// <summary>
         ///     Cancel accommodation booking.
         /// </summary>
         /// <param name="bookingId">Id of booking to cancel</param>

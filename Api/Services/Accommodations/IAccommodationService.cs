@@ -15,11 +15,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         ValueTask<Result<AvailabilityDetails, ProblemDetails>> GetAvailable(Models.Availabilities.AvailabilityRequest request, string languageCode);
         Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(long availabilityId, string accommodationId, string languageCode);
         Task<Result<BookingDetails, ProblemDetails>> Book(AccommodationBookingRequest request, string languageCode);
+        Task<Result<BookingDetails, ProblemDetails>> ModifyBooking(int bookingId, BookingModifiedData modifiedData, string language);
         Task<Result<AccommodationBookingInfo>> GetBooking(int bookingId);
         Task<Result<AccommodationBookingInfo>> GetBooking(string referenceCode);
         Task<Result<List<SlimAccommodationBookingInfo>>> GetCustomerBookings();
         Task<Result<VoidObject, ProblemDetails>> CancelBooking(int bookingId);
         Task<Result<BookingAvailabilityInfo, ProblemDetails>> GetBookingAvailability(int availabilityId, Guid agreementId, string languageCode);
-
     }
 }

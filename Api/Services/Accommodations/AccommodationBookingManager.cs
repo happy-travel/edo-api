@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Models.Availabilities;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Services.CodeGeneration;
 using HappyTravel.Edo.Api.Services.Customers;
@@ -40,7 +41,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
-        public async Task<Result<BookingDetails, ProblemDetails>> Book(AccommodationBookingRequest bookingRequest, BookingAvailabilityInfo availabilityInfo, string languageCode)
+        public async Task<Result<BookingDetails, ProblemDetails>> Book(AccommodationBookingRequest bookingRequest, BookingAvailabilityInfo availabilityInfo,
+            string languageCode)
         {
             var (_, isFailure, customerInfo, error) = await _customerContext.GetCustomerInfo();
 
@@ -63,19 +65,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             {
                 // TODO: will be implemented in NIJO-31 
                 var features = new List<Feature>(); //bookingRequest.Features
-                
+
                 var roomDetails = bookingRequest.RoomDetails
                     .Select(d => new SlimRoomDetails(d.Type, d.Passengers, d.IsExtraBedNeeded))
                     .ToList();
 
-                var innerRequest = new BookingRequest(bookingRequest.AvailabilityId, 
+                var innerRequest = new BookingRequest(bookingRequest.AvailabilityId,
                     bookingRequest.AgreementId,
                     bookingRequest.Nationality,
                     PaymentMethods.BankTransfer,
                     referenceCode,
                     bookingRequest.Residency,
-                    roomDetails, 
-                    features, 
+                    roomDetails,
+                    features,
                     bookingRequest.RejectIfUnavailable);
 
                 return _dataProviderClient.Post<BookingRequest, BookingDetails>(
@@ -184,6 +186,49 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 await _context.SaveChangesAsync();
                 return bookingToCancel;
             }
+        }
+
+
+        public async Task<Result<BookingDetails, ProblemDetails>> ModifyBooking(int bookingId, BookingModifiedData modifiedData, string languageCode)
+        {
+            var bookingDataResult = await Get(bookingId);
+            if (bookingDataResult.IsFailure)
+                return ProblemDetailsBuilder.Fail<BookingDetails>(bookingDataResult.Error);
+
+            var bookingData = bookingDataResult.Value;
+            var bookingDetails = bookingData.BookingDetails;
+            var serviceDetails = bookingData.ServiceDetails;
+
+            var roomDetails = modifiedData.RoomDetails
+                .Select(d => new SlimRoomDetails(d.Type, d.Passengers, d.IsExtraBedNeeded))
+                .ToList();
+            var features = new List<Feature>();
+
+            var availabilityId = serviceDetails.DeadlineDetails.AvailabilityId;
+
+            var modifyRequest = new ModifyBookingRequest(
+                modifiedData.CheckInDate,
+                modifiedData.CheckOutDate,
+                serviceDetails.Agreement.Rooms,
+                modifiedData.Features,
+                new BookingRequest(availabilityId,
+                    serviceDetails.Agreement.Id,
+                    modifiedData.Nationality,
+                    PaymentMethods.BankTransfer,
+                    bookingDetails.ReferenceCode,
+                    modifiedData.Residency,
+                    roomDetails,
+                    features,
+                    modifiedData.RejectIfUnavailable),
+                new SearchInfo(availabilityId,
+                    bookingDetails.TariffCode,
+                    serviceDetails.AccommodationId)
+            );
+
+
+            return await _dataProviderClient.Post<ModifyBookingRequest, BookingDetails>(
+                new Uri( _options.Netstorming + "bookings/accommodations/modify", UriKind.Absolute),
+                modifyRequest, languageCode);
         }
 
 
