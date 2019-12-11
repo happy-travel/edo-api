@@ -184,7 +184,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             {
                 return IsSuccess(model)
                     ? Result.Ok()
-                    : Result.Fail($"Unable capture payment for booking '{moneyRequest.ReferenceCode}': '{model.ResponseMessage}'");
+                    : Result.Fail($"Unable void payment for booking '{moneyRequest.ReferenceCode}': '{model.ResponseMessage}'");
 
                 bool IsSuccess(PayfortVoidResponse captureResponse) => captureResponse.ResponseCode == PayfortConstants.VoidSuccessResponseCode;
             }
@@ -273,7 +273,9 @@ namespace HappyTravel.Edo.Api.Services.Payments
         private Result<T> ParseResponse<T>(JObject response)
         {
             var model = response.ToObject<T>(Serializer);
-            return model == null ? Result.Fail<T>($"Invalid payfort payment response: '{response}'") : Result.Ok(model);
+            return model == null 
+                ? Result.Fail<T>($"Invalid payfort payment response: '{response}'") 
+                : Result.Ok(model);
         }
 
 
