@@ -15,7 +15,8 @@ namespace HappyTravel.Edo.Api.Models.Payments.Payfort
         {
             {Currencies.EUR, 100},
             {Currencies.USD, 100},
-            {Currencies.AED, 100}
+            {Currencies.AED, 100},
+            {Currencies.SAR, 100}
         };
     }
 }

@@ -7,6 +7,7 @@ using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Booking;
+using HappyTravel.EdoContracts.General;
 using HappyTravel.EdoContracts.General.Enums;
 using Newtonsoft.Json.Linq;
 
@@ -27,5 +28,6 @@ namespace HappyTravel.Edo.Api.Services.Payments
         Task<Result> VoidMoney(Booking booking);
         Task<Result> CompleteOffline(int bookingId);
         Task<Result<ProcessResult>> NotifyPaymentsNeeded(List<int> bookingIds);
+        Task<Result<Price>> GetPendingAmount(int bookingId);
     }
 }

@@ -43,9 +43,23 @@ namespace HappyTravel.Edo.Api.Services.Payments
             Result<PayfortPaymentResponse> CheckResponseSignature(PayfortPaymentResponse model) => CheckSignature(response, model);
 
 
-            CreditCardPaymentResult CreateResult(PayfortPaymentResponse model)
+            Result<CreditCardPaymentResult> CreateResult(PayfortPaymentResponse model)
             {
-                return new CreditCardPaymentResult(model, GetStatus(model));
+                var (_, isFailure, amount, error) = FromPayfortAmount(model.Amount, model.Currency);
+                if (isFailure)
+                    return Result.Fail<CreditCardPaymentResult>(error);
+
+                return Result.Ok(new CreditCardPaymentResult(
+                    referenceCode: model.SettlementReference,
+                    secure3d: model.Secure3d,
+                    authorizationCode: model.AuthorizationCode,
+                    externalCode: model.FortId,
+                    expirationDate: model.ExpirationDate,
+                    cardNumber: model.CardNumber,
+                    status: GetStatus(model),
+                    message: $"{model.ResponseCode}: {model.ResponseMessage}",
+                    amount: amount,
+                    internalReferenceCode: model.MerchantReference));
 
 
                 PaymentStatuses GetStatus(PayfortPaymentResponse payment)
@@ -271,8 +285,8 @@ namespace HappyTravel.Edo.Api.Services.Payments
         private Result<T> ParseResponse<T>(JObject response)
         {
             var model = response.ToObject<T>(Serializer);
-            return model == null 
-                ? Result.Fail<T>($"Invalid payfort payment response: '{response}'") 
+            return model == null
+                ? Result.Fail<T>($"Invalid payfort payment response: '{response}'")
                 : Result.Ok(model);
         }
 
@@ -295,6 +309,19 @@ namespace HappyTravel.Edo.Api.Services.Payments
 
         private static string ToPayfortAmount(decimal amount, Currencies currency)
             => decimal.ToInt64(amount * PayfortConstants.ExponentMultipliers[currency]).ToString();
+
+
+        private static Result<decimal> FromPayfortAmount(string amount, string currency)
+        {
+            if (!Enum.TryParse<Currencies>(currency, out var currencyEnum))
+                return Result.Fail<decimal>($"Invalid currency in response: {currency}");
+
+            if (!decimal.TryParse(amount, out var amountNumber))
+                return Result.Fail<decimal>("");
+
+            var result = amountNumber / PayfortConstants.ExponentMultipliers[currencyEnum];
+            return Result.Ok(result);
+        }
 
 
         private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings

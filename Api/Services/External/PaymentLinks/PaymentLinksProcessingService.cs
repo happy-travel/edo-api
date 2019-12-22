@@ -111,7 +111,8 @@ namespace HappyTravel.Edo.Api.Services.External.PaymentLinks
                     languageCode,
                     true,
                     // Is not needed for new card
-                    null));
+                    null,
+                    link.ReferenceCode));
             }
 
 
