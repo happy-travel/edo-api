@@ -13,5 +13,6 @@ namespace HappyTravel.Edo.Data.Payments
         public int AccountId { get; set; }
         public decimal Amount { get; set; }
         public string EventData { get; set; }
+        public string ReferenceCode { get; set; }
     }
 }
