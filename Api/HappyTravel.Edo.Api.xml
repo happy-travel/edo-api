@@ -471,6 +471,12 @@
             </summary>
             <param name="bookingId">Booking id for completion</param>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.PaymentsController.GetPendingAmount(System.Int32)">
+            <summary>
+                Get pending amount for booking
+            </summary>
+            <param name="bookingId">Booking id</param>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.PaymentsHistoryController.GetCustomerHistory(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentHistoryRequest)">
             <summary>
             Gets payment history for a current customer.

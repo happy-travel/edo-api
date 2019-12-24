@@ -7,6 +7,7 @@ using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Api.Services.Payments;
 using HappyTravel.Edo.Common.Enums;
+using HappyTravel.EdoContracts.General;
 using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -161,6 +162,16 @@ namespace HappyTravel.Edo.Api.Controllers
 
             return NoContent();
         }
+
+
+        /// <summary>
+        ///     Get pending amount for booking
+        /// </summary>
+        /// <param name="bookingId">Booking id</param>
+        [HttpPost("pending/{bookingId}")]
+        [ProducesResponseType(typeof(Price), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
+        public Task<IActionResult> GetPendingAmount(int bookingId) => OkOrBadRequest(_paymentService.GetPendingAmount(bookingId));
 
 
         private readonly ICustomerContext _customerContext;
