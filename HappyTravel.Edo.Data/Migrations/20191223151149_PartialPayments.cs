@@ -19,7 +19,7 @@ namespace HappyTravel.Edo.Data.Migrations
                 value: 2);
 
             migrationBuilder.Sql(@"update ""AccountBalanceAuditLogs""
-            set ""ReferenceCode"" = ""EventData""::json->'referenceCode';");
+            set ""ReferenceCode"" = ""EventData""::json->>'referenceCode';");
 
             migrationBuilder.Sql(@"update ""ExternalPayments""
             set ""Data"" = ""Data"" || jsonb_build_object('internalReferenceCode', ""ReferenceCode"")

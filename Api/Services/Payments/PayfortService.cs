@@ -103,7 +103,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     signature: string.Empty,
                     accessCode: _options.AccessCode,
                     merchantIdentifier: _options.Identifier,
-                    merchantReference: moneyRequest.ReferenceCode,
+                    merchantReference: moneyRequest.InternalReferenceCode,
                     amount: ToPayfortAmount(moneyRequest.Amount, moneyRequest.Currency),
                     currency: moneyRequest.Currency.ToString(),
                     language: moneyRequest.LanguageCode,
@@ -134,7 +134,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             {
                 return IsSuccess(model)
                     ? Result.Ok()
-                    : Result.Fail($"Unable capture payment for booking '{moneyRequest.ReferenceCode}': '{model.ResponseMessage}'");
+                    : Result.Fail($"Unable capture payment for booking '{moneyRequest.InternalReferenceCode}': '{model.ResponseMessage}'");
 
                 bool IsSuccess(PayfortCaptureResponse captureResponse) => captureResponse.ResponseCode == PayfortConstants.CaptureSuccessResponseCode;
             }
@@ -168,7 +168,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     signature: string.Empty,
                     accessCode: _options.AccessCode,
                     merchantIdentifier: _options.Identifier,
-                    merchantReference: moneyRequest.ReferenceCode,
+                    merchantReference: moneyRequest.InternalReferenceCode,
                     language: moneyRequest.LanguageCode,
                     fortId: moneyRequest.ExternalId
                 );
@@ -196,7 +196,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             {
                 return IsSuccess(model)
                     ? Result.Ok()
-                    : Result.Fail($"Unable void payment for booking '{moneyRequest.ReferenceCode}': '{model.ResponseMessage}'");
+                    : Result.Fail($"Unable void payment for booking '{moneyRequest.InternalReferenceCode}': '{model.ResponseMessage}'");
 
                 bool IsSuccess(PayfortVoidResponse captureResponse) => captureResponse.ResponseCode == PayfortConstants.VoidSuccessResponseCode;
             }
@@ -229,7 +229,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     signature: string.Empty,
                     accessCode: _options.AccessCode,
                     merchantIdentifier: _options.Identifier,
-                    merchantReference: request.ReferenceCode,
+                    merchantReference: request.InternalReferenceCode,
                     amount: ToPayfortAmount(request.Amount, request.Currency),
                     currency: request.Currency.ToString(),
                     customerName: request.CustomerName,
