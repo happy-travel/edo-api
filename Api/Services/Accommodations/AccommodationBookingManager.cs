@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
-using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.CodeProcessors;
+using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Api.Services.Management;
 using HappyTravel.Edo.Common.Enums;
@@ -22,23 +22,20 @@ using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations
 {
     internal class AccommodationBookingManager : IAccommodationBookingManager
     {
-        public AccommodationBookingManager(IOptions<DataProviderOptions> options,
-            IDataProviderClient dataProviderClient,
+        public AccommodationBookingManager(IDataProviderFactory dataProviderFactory,
             EdoContext context,
             IDateTimeProvider dateTimeProvider,
             ICustomerContext customerContext,
             IServiceAccountContext serviceAccountContext,
             ITagProcessor tagProcessor)
         {
-            _dataProviderClient = dataProviderClient;
-            _options = options.Value;
+            _dataProviderFactory = dataProviderFactory;
             _context = context;
             _dateTimeProvider = dateTimeProvider;
             _customerContext = customerContext;
@@ -79,9 +76,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     features,
                     bookingRequest.RejectIfUnavailable);
 
-                return _dataProviderClient.Post<BookingRequest, BookingDetails>(
-                    new Uri(_options.Netstorming + "bookings/accommodations", UriKind.Absolute),
-                    innerRequest, languageCode);
+                // TODO: Replace this with conditional data provider support
+                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
+                return dataProvider.Book(innerRequest, languageCode);
             }
 
 
@@ -170,8 +167,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
 
             Task<Result<VoidObject, ProblemDetails>> ExecuteBookingCancel()
-                => _dataProviderClient.Post(new Uri(_options.Netstorming + "bookings/accommodations/" + booking.ReferenceCode + "/cancel",
-                    UriKind.Absolute));
+            {
+                // TODO: Replace this with conditional data provider support
+                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
+                return dataProvider.CancelBooking(booking.ReferenceCode);
+            }
 
 
             async Task<Booking> ChangeBookingToCancelled(Booking bookingToCancel)
@@ -224,11 +224,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             => _context.Bookings.Where(b => b.CustomerId == customerId && b.ItineraryNumber == itn).AnyAsync();
 
 
+        private readonly IDataProviderFactory _dataProviderFactory;
         private readonly EdoContext _context;
         private readonly ICustomerContext _customerContext;
-        private readonly IDataProviderClient _dataProviderClient;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly DataProviderOptions _options;
         private readonly IServiceAccountContext _serviceAccountContext;
         private readonly ITagProcessor _tagProcessor;
     }

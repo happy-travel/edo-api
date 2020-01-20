@@ -14,6 +14,7 @@ using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Markups.Availability;
+using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Api.Services.Deadline;
 using HappyTravel.Edo.Api.Services.Locations;
@@ -41,8 +42,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
     public class AccommodationService : IAccommodationService
     {
         public AccommodationService(IMemoryFlow flow,
-            IOptions<DataProviderOptions> options,
-            IDataProviderClient dataProviderClient,
             ILocationService locationService,
             IAccommodationBookingManager accommodationBookingManager,
             IAvailabilityResultsCache availabilityResultsCache,
@@ -57,16 +56,15 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             ILogger<AccommodationService> logger,
             IServiceAccountContext serviceAccountContext,
             IDateTimeProvider dateTimeProvider,
-            IBookingMailingService bookingMailingService)
+            IBookingMailingService bookingMailingService,
+            IDataProviderFactory dataProviderFactory)
         {
             _flow = flow;
-            _dataProviderClient = dataProviderClient;
             _locationService = locationService;
             _accommodationBookingManager = accommodationBookingManager;
             _availabilityResultsCache = availabilityResultsCache;
             _customerContext = customerContext;
             _markupService = markupService;
-            _options = options.Value;
             _cancellationPoliciesService = cancellationPoliciesService;
             _supplierOrderService = supplierOrderService;
             _markupLogger = markupLogger;
@@ -77,14 +75,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             _serviceAccountContext = serviceAccountContext;
             _dateTimeProvider = dateTimeProvider;
             _bookingMailingService = bookingMailingService;
+            _dataProviderFactory = dataProviderFactory;
         }
 
 
         public ValueTask<Result<AccommodationDetails, ProblemDetails>> Get(string accommodationId, string languageCode)
-            => _flow.GetOrSetAsync(_flow.BuildKey(nameof(AccommodationService), "Accommodations", languageCode, accommodationId),
-                async () => await _dataProviderClient.Get<AccommodationDetails>(
-                    new Uri($"{_options.Netstorming}accommodations/{accommodationId}", UriKind.Absolute), languageCode),
+        {
+            // TODO: replace with conditional data provider
+            var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
+            return _flow.GetOrSetAsync(_flow.BuildKey(nameof(AccommodationService), "Accommodations", languageCode, accommodationId),
+                async () => await dataProvider.GetAccommodation(accommodationId, languageCode),
                 TimeSpan.FromDays(1));
+        }
 
 
         public async ValueTask<Result<AvailabilityDetails, ProblemDetails>> GetAvailable(AvailabilityRequest request, string languageCode)
@@ -118,9 +120,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     request.CheckOutDate,
                     request.Filters, roomDetails, request.AccommodationIds, location,
                     request.PropertyType, request.Ratings);
+                
+                // TODO: replace with conditional data provider
+                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
 
-                return _dataProviderClient.Post<EdoContracts.Accommodations.AvailabilityRequest, AvailabilityDetails>(
-                    new Uri(_options.Netstorming + "availabilities/accommodations", UriKind.Absolute), contract, languageCode);
+                return dataProvider.GetAvailability(contract, languageCode);
             }
 
 
@@ -156,8 +160,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ExecuteRequest()
             {
-                return _dataProviderClient.Post<SingleAccommodationAvailabilityDetails>(
-                    new Uri(_options.Netstorming + "accommodations/" + accommodationId + "/availabilities/" + availabilityId, UriKind.Absolute), languageCode);
+                // TODO: replace with conditional data provider
+                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
+                return dataProvider.GetAvailability(availabilityId, accommodationId, languageCode);
             }
 
 
@@ -183,8 +188,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
 
             Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> ExecuteRequest()
-                => _dataProviderClient.Post<SingleAccommodationAvailabilityDetailsWithDeadline>(
-                    new Uri($"{_options.Netstorming}accommodations/availabilities/{availabilityId}/agreements/{agreementId}", UriKind.Absolute), languageCode);
+            {
+                // TODO: replace with conditional data provider
+                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
+                return dataProvider.GetExactAvailability(availabilityId, agreementId, languageCode);
+            }
 
 
             async Task<(SingleAccommodationAvailabilityDetailsWithMarkup, DeadlineDetails)>
@@ -488,19 +496,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         private readonly IAccommodationBookingManager _accommodationBookingManager;
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
         private readonly IBookingMailingService _bookingMailingService;
+        private readonly IDataProviderFactory _dataProviderFactory;
         private readonly ICancellationPoliciesService _cancellationPoliciesService;
         private readonly EdoContext _context;
         private readonly ICustomerContext _customerContext;
 
 
-        private readonly IDataProviderClient _dataProviderClient;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IMemoryFlow _flow;
         private readonly ILocationService _locationService;
         private readonly ILogger<AccommodationService> _logger;
         private readonly IMarkupLogger _markupLogger;
         private readonly IAvailabilityMarkupService _markupService;
-        private readonly DataProviderOptions _options;
         private readonly IPaymentService _paymentService;
         private readonly IPermissionChecker _permissionChecker;
         private readonly IServiceAccountContext _serviceAccountContext;

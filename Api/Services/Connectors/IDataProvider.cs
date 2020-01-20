@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
@@ -20,7 +21,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         Task<Result<AccommodationDetails, ProblemDetails>> GetAccommodation(string accommodationId, string languageCode);
 
 
-        Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(long availabilityId, string agreementId,
+        Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(long availabilityId, Guid agreementId,
             string languageCode);
 
 

@@ -48,7 +48,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(long availabilityId, string agreementId, string languageCode)
+        public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(long availabilityId, Guid agreementId, string languageCode)
         {
             return _dataProviderClient.Post<SingleAccommodationAvailabilityDetailsWithDeadline>(
                 new Uri($"{_baseUrl}accommodations/availabilities/{availabilityId}/agreements/{agreementId}", UriKind.Absolute), languageCode);

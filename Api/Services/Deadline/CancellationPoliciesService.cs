@@ -4,23 +4,19 @@ using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
-using HappyTravel.Edo.Api.Infrastructure.DataProviders;
-using HappyTravel.Edo.Api.Infrastructure.Options;
+using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace HappyTravel.Edo.Api.Services.Deadline
 {
     public class CancellationPoliciesService : ICancellationPoliciesService
     {
-        public CancellationPoliciesService(IDataProviderClient dataProviderClient,
-            IOptions<DataProviderOptions> options,
+        public CancellationPoliciesService(IDataProviderFactory dataProviderFactory,
             IMemoryFlow flow)
         {
-            _dataProviderClient = dataProviderClient;
-            _options = options.Value;
+            _dataProviderFactory = dataProviderFactory;
             _flow = flow;
         }
 
@@ -66,16 +62,13 @@ namespace HappyTravel.Edo.Api.Services.Deadline
         private Task<Result<DeadlineDetails, ProblemDetails>> GetDeadlineDetailsFromNetstorming(
             string accommodationId, string availabilityId, string agreementCode, string languageCode)
         {
-            var uri = new Uri($"{_options.Netstorming}accommodations/{accommodationId}/deadline/{availabilityId}/{agreementCode}", UriKind.Absolute);
-            return _dataProviderClient.Get<DeadlineDetails>(uri, languageCode);
+            // TODO: replace with conditional data provider
+            var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
+            return dataProvider.GetDeadline(accommodationId, availabilityId, agreementCode, languageCode);
         }
 
-
-        private readonly IDataProviderClient _dataProviderClient;
-
-
         private readonly TimeSpan _expirationPeriod = TimeSpan.FromHours(1);
+        private readonly IDataProviderFactory _dataProviderFactory;
         private readonly IMemoryFlow _flow;
-        private readonly DataProviderOptions _options;
     }
 }

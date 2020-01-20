@@ -18,6 +18,7 @@ using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks;
 using HappyTravel.Edo.Api.Services.Accommodations;
 using HappyTravel.Edo.Api.Services.CodeProcessors;
+using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Api.Services.CurrencyConversion;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Api.Services.Deadline;
@@ -386,6 +387,7 @@ namespace HappyTravel.Edo.Api
             services.AddTransient<IPaymentHistoryService, PaymentHistoryService>();
 
             services.AddTransient<IBookingDocumentsService, BookingDocumentsService>();
+            services.AddTransient<IDataProviderFactory, DataProviderFactory>();
 
             services.Configure<PaymentNotificationOptions>(po =>
             {
