@@ -57,7 +57,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             IServiceAccountContext serviceAccountContext,
             IDateTimeProvider dateTimeProvider,
             IBookingMailingService bookingMailingService,
-            IDataProviderFactory dataProviderFactory)
+            IDataProviderFactory dataProviderFactory,
+            IMultiDataProviderAvailabilityManager availabilityManager)
         {
             _flow = flow;
             _locationService = locationService;
@@ -76,6 +77,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             _dateTimeProvider = dateTimeProvider;
             _bookingMailingService = bookingMailingService;
             _dataProviderFactory = dataProviderFactory;
+            _availabilityManager = availabilityManager;
         }
 
 
@@ -124,7 +126,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 // TODO: replace with conditional data provider
                 var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
 
-                return dataProvider.GetAvailability(contract, languageCode);
+                return _availabilityManager.GetAvailability(contract, languageCode);
             }
 
 
@@ -497,6 +499,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
         private readonly IBookingMailingService _bookingMailingService;
         private readonly IDataProviderFactory _dataProviderFactory;
+        private readonly IMultiDataProviderAvailabilityManager _availabilityManager;
         private readonly ICancellationPoliciesService _cancellationPoliciesService;
         private readonly EdoContext _context;
         private readonly ICustomerContext _customerContext;

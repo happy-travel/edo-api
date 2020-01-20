@@ -5,5 +5,6 @@ namespace HappyTravel.Edo.Api.Services.Connectors
     public interface IDataProviderFactory
     {
         IDataProvider Get(DataProviders dataProvider);
+        IDataProvider[] GetAll();
     }
 }

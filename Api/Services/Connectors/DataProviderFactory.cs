@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Common.Enums;
@@ -19,6 +20,8 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
 
         public IDataProvider Get(DataProviders dataProvider) => _dataProviders[dataProvider];
+
+        public IDataProvider[] GetAll() => _dataProviders.Values.ToArray();
 
         private readonly Dictionary<DataProviders, IDataProvider> _dataProviders;
     }
