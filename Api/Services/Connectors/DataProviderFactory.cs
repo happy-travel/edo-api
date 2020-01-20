@@ -21,7 +21,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
         public IDataProvider Get(DataProviders dataProvider) => _dataProviders[dataProvider];
 
-        public IDataProvider[] GetAll() => _dataProviders.Values.ToArray();
+        public IEnumerable<(DataProviders, IDataProvider)> GetAll() => _dataProviders.Select(dp=> (dp.Key, dp.Value));
 
         private readonly Dictionary<DataProviders, IDataProvider> _dataProviders;
     }

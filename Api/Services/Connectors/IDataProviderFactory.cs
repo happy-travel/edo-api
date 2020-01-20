@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Connectors
@@ -5,6 +6,6 @@ namespace HappyTravel.Edo.Api.Services.Connectors
     public interface IDataProviderFactory
     {
         IDataProvider Get(DataProviders dataProvider);
-        IDataProvider[] GetAll();
+        IEnumerable<(DataProviders Key, IDataProvider Provider)> GetAll();
     }
 }

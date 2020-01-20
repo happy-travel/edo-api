@@ -58,7 +58,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             IDateTimeProvider dateTimeProvider,
             IBookingMailingService bookingMailingService,
             IDataProviderFactory dataProviderFactory,
-            IMultiDataProviderAvailabilityManager availabilityManager)
+            IMultiProviderAvailabilityManager availabilityManager)
         {
             _flow = flow;
             _locationService = locationService;
@@ -111,7 +111,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 .OnSuccess(ReturnResponseWithMarkup);
 
 
-            Task<Result<AvailabilityDetails, ProblemDetails>> ExecuteRequest()
+            async Task<Result<AvailabilityDetails, ProblemDetails>> ExecuteRequest()
             {
                 var roomDetails = request.RoomDetails
                     .Select(r => new RoomRequestDetails(r.AdultsNumber, r.ChildrenNumber, r.ChildrenAges, r.Type,
@@ -123,10 +123,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     request.Filters, roomDetails, request.AccommodationIds, location,
                     request.PropertyType, request.Ratings);
                 
-                // TODO: replace with conditional data provider
-                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
-
-                return _availabilityManager.GetAvailability(contract, languageCode);
+                var (isSuccess, _, result, availabilityError) = await _availabilityManager.GetAvailability(contract, languageCode);
+                return isSuccess
+                    ? Result.Ok<AvailabilityDetails, ProblemDetails>(result)
+                    : ProblemDetailsBuilder.Fail<AvailabilityDetails>(availabilityError);
             }
 
 
@@ -499,7 +499,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
         private readonly IBookingMailingService _bookingMailingService;
         private readonly IDataProviderFactory _dataProviderFactory;
-        private readonly IMultiDataProviderAvailabilityManager _availabilityManager;
+        private readonly IMultiProviderAvailabilityManager _availabilityManager;
         private readonly ICancellationPoliciesService _cancellationPoliciesService;
         private readonly EdoContext _context;
         private readonly ICustomerContext _customerContext;
