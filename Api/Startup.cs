@@ -389,6 +389,7 @@ namespace HappyTravel.Edo.Api
             services.AddTransient<IBookingDocumentsService, BookingDocumentsService>();
             services.AddTransient<IDataProviderFactory, DataProviderFactory>();
             services.AddTransient<IMultiProviderAvailabilityManager, MultiProviderAvailabilityManager>();
+            services.AddTransient<IAvailabilityService, AvailabilityService>();
 
             services.Configure<PaymentNotificationOptions>(po =>
             {

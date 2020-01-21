@@ -61,11 +61,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             IMultiProviderAvailabilityManager availabilityManager)
         {
             _flow = flow;
-            _locationService = locationService;
             _accommodationBookingManager = accommodationBookingManager;
             _availabilityResultsCache = availabilityResultsCache;
             _customerContext = customerContext;
-            _markupService = markupService;
             _cancellationPoliciesService = cancellationPoliciesService;
             _supplierOrderService = supplierOrderService;
             _markupLogger = markupLogger;
@@ -77,7 +75,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             _dateTimeProvider = dateTimeProvider;
             _bookingMailingService = bookingMailingService;
             _dataProviderFactory = dataProviderFactory;
-            _availabilityManager = availabilityManager;
         }
 
 
@@ -88,151 +85,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             return _flow.GetOrSetAsync(_flow.BuildKey(nameof(AccommodationService), "Accommodations", languageCode, accommodationId),
                 async () => await dataProvider.GetAccommodation(accommodationId, languageCode),
                 TimeSpan.FromDays(1));
-        }
-
-
-        public async ValueTask<Result<AvailabilityDetails, ProblemDetails>> GetAvailable(AvailabilityRequest request, string languageCode)
-        {
-            var (_, isFailure, location, error) = await _locationService.Get(request.Location, languageCode);
-            if (isFailure)
-                return Result.Fail<AvailabilityDetails, ProblemDetails>(error);
-
-            var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
-            if (isCustomerFailure)
-                return ProblemDetailsBuilder.Fail<AvailabilityDetails>(customerError);
-
-            var (_, permissionDenied, permissionError) =
-                await _permissionChecker.CheckInCompanyPermission(customerInfo, InCompanyPermissions.AccommodationAvailabilitySearch);
-            if (permissionDenied)
-                return ProblemDetailsBuilder.Fail<AvailabilityDetails>(permissionError);
-
-            return await ExecuteRequest()
-                .OnSuccess(ApplyMarkup)
-                .OnSuccess(ReturnResponseWithMarkup);
-
-
-            async Task<Result<AvailabilityDetails, ProblemDetails>> ExecuteRequest()
-            {
-                var roomDetails = request.RoomDetails
-                    .Select(r => new RoomRequestDetails(r.AdultsNumber, r.ChildrenNumber, r.ChildrenAges, r.Type,
-                        r.IsExtraBedNeeded))
-                    .ToList();
-
-                var contract = new EdoContracts.Accommodations.AvailabilityRequest(request.Nationality, request.Residency, request.CheckInDate,
-                    request.CheckOutDate,
-                    request.Filters, roomDetails, request.AccommodationIds, location,
-                    request.PropertyType, request.Ratings);
-                
-                var (isSuccess, _, result, availabilityError) = await _availabilityManager.GetAvailability(contract, languageCode);
-                return isSuccess
-                    ? Result.Ok<AvailabilityDetails, ProblemDetails>(result)
-                    : ProblemDetailsBuilder.Fail<AvailabilityDetails>(availabilityError);
-            }
-
-
-            Task<AvailabilityDetailsWithMarkup> ApplyMarkup(AvailabilityDetails response) => _markupService.Apply(customerInfo, response);
-
-            AvailabilityDetails ReturnResponseWithMarkup(AvailabilityDetailsWithMarkup markup) => markup.ResultResponse;
-        }
-
-
-        public async Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(string accommodationId, long availabilityId, 
-            string languageCode)
-        {
-            var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
-            if (isCustomerFailure)
-                return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>(customerError);
-
-            return await CheckPermissions()
-                .OnSuccess(ExecuteRequest)
-                .OnSuccess(ApplyMarkup)
-                .OnSuccess(ReturnResponseWithMarkup);
-
-
-            async Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> CheckPermissions()
-            {
-                var (_, permissionDenied, permissionError) =
-                    await _permissionChecker.CheckInCompanyPermission(customerInfo, InCompanyPermissions.AccommodationAvailabilitySearch);
-                if (permissionDenied)
-                    return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>(permissionError);
-
-                return Result.Ok<SingleAccommodationAvailabilityDetails, ProblemDetails>(default);
-            }
-
-
-            Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ExecuteRequest()
-            {
-                // TODO: replace with conditional data provider
-                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
-                return dataProvider.GetAvailability(availabilityId, accommodationId, languageCode);
-            }
-
-
-            Task<SingleAccommodationAvailabilityDetailsWithMarkup> ApplyMarkup(SingleAccommodationAvailabilityDetails response)
-                => _markupService.Apply(customerInfo, response);
-
-
-            SingleAccommodationAvailabilityDetails ReturnResponseWithMarkup(SingleAccommodationAvailabilityDetailsWithMarkup markup) => markup.ResultResponse;
-        }
-
-
-        public async Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(long availabilityId, Guid agreementId,
-            string languageCode)
-        {
-            var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
-            if (isCustomerFailure)
-                return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetailsWithDeadline>(customerError);
-
-            return await ExecuteRequest()
-                .OnSuccess(ApplyMarkup)
-                .OnSuccess(SaveToCache)
-                .OnSuccess(ReturnResponseWithMarkup);
-
-
-            Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> ExecuteRequest()
-            {
-                // TODO: replace with conditional data provider
-                var dataProvider = _dataProviderFactory.Get(DataProviders.Netstorming);
-                return dataProvider.GetExactAvailability(availabilityId, agreementId, languageCode);
-            }
-
-
-            async Task<(SingleAccommodationAvailabilityDetailsWithMarkup, DeadlineDetails)>
-                ApplyMarkup(SingleAccommodationAvailabilityDetailsWithDeadline response)
-                => (await _markupService.Apply(customerInfo,
-                    new SingleAccommodationAvailabilityDetails(
-                        response.AvailabilityId,
-                        response.CheckInDate,
-                        response.CheckOutDate,
-                        response.NumberOfNights,
-                        response.AccommodationDetails,
-                        new List<Agreement> 
-                            {response.Agreement})), 
-                    response.DeadlineDetails);
-                    
-
-
-            Task SaveToCache((SingleAccommodationAvailabilityDetailsWithMarkup, DeadlineDetails) responseWithDeadline)
-            {
-                var (availabilityWithMarkup, _) = responseWithDeadline;
-                return _availabilityResultsCache.Set(availabilityWithMarkup);
-            }
-
-
-            SingleAccommodationAvailabilityDetailsWithDeadline ReturnResponseWithMarkup(
-                (SingleAccommodationAvailabilityDetailsWithMarkup, DeadlineDetails) responseWithDeadline)
-            {
-                var (availabilityWithMarkup, deadlineDetails) = responseWithDeadline;
-                var result = availabilityWithMarkup.ResultResponse;
-                return new SingleAccommodationAvailabilityDetailsWithDeadline(
-                    result.AvailabilityId,
-                    result.CheckInDate,
-                    result.CheckOutDate,
-                    result.NumberOfNights,
-                    result.AccommodationDetails,
-                    result.Agreements.SingleOrDefault(),
-                    deadlineDetails);
-            }
         }
 
 
@@ -499,7 +351,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
         private readonly IBookingMailingService _bookingMailingService;
         private readonly IDataProviderFactory _dataProviderFactory;
-        private readonly IMultiProviderAvailabilityManager _availabilityManager;
         private readonly ICancellationPoliciesService _cancellationPoliciesService;
         private readonly EdoContext _context;
         private readonly ICustomerContext _customerContext;
@@ -507,10 +358,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IMemoryFlow _flow;
-        private readonly ILocationService _locationService;
         private readonly ILogger<AccommodationService> _logger;
         private readonly IMarkupLogger _markupLogger;
-        private readonly IAvailabilityMarkupService _markupService;
         private readonly IPaymentService _paymentService;
         private readonly IPermissionChecker _permissionChecker;
         private readonly IServiceAccountContext _serviceAccountContext;

@@ -17,9 +17,10 @@ namespace HappyTravel.Edo.Api.Controllers
     [Produces("application/json")]
     public class AccommodationsController : BaseController
     {
-        public AccommodationsController(IAccommodationService service)
+        public AccommodationsController(IAccommodationService service, IAvailabilityService availabilityService)
         {
             _service = service;
+            _availabilityService = availabilityService;
         }
 
 
@@ -57,7 +58,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetAvailability([FromBody] AvailabilityRequest request)
         {
-            var (_, isFailure, response, error) = await _service.GetAvailable(request, LanguageCode);
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(request, LanguageCode);
             if (isFailure)
                 return BadRequest(error);
 
@@ -79,7 +80,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetAvailabilityForAccommodation([FromRoute] string accommodationId, [FromRoute]  long availabilityId)
         {
-            var (_, isFailure, response, error) = await _service.GetAvailable(accommodationId, availabilityId, LanguageCode);
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(accommodationId, availabilityId, LanguageCode);
             if (isFailure)
                 return BadRequest(error);
 
@@ -98,7 +99,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetExactAvailability([FromRoute] long availabilityId, [FromRoute] Guid agreementId)
         {
-            var (_, isFailure, availabilityInfo, error) = await _service.GetExactAvailability(availabilityId, agreementId, LanguageCode);
+            var (_, isFailure, availabilityInfo, error) = await _availabilityService.GetExactAvailability(availabilityId, agreementId, LanguageCode);
             if (isFailure)
                 return BadRequest(error);
 
@@ -196,5 +197,6 @@ namespace HappyTravel.Edo.Api.Controllers
 
 
         private readonly IAccommodationService _service;
+        private readonly IAvailabilityService _availabilityService;
     }
 }
