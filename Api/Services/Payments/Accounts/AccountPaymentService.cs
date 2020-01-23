@@ -254,7 +254,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 }
 
 
-                PaymentResponse CreateResult() => new PaymentResponse(string.Empty, PaymentStatuses.Success, string.Empty);
+                PaymentResponse CreateResult() => new PaymentResponse(string.Empty, CreditCardPaymentStatuses.Success, string.Empty);
             }
 
 

@@ -47,7 +47,7 @@ namespace HappyTravel.Edo.Data
 
         public DbSet<ManagementAuditLogEntry> ManagementAuditLog { get; set; }
         public DbSet<CreditCard> CreditCards { get; set; }
-        public DbSet<ExternalPayment> ExternalPayments { get; set; }
+        public DbSet<Payment> Payments { get; set; }
         public DbSet<AccountBalanceAuditLogEntry> AccountBalanceAuditLogs { get; set; }
         public DbSet<CreditCardAuditLogEntry> CreditCardAuditLogs { get; set; }
 
@@ -545,7 +545,7 @@ namespace HappyTravel.Edo.Data
         private void BuildPayment(ModelBuilder builder)
         {
             builder
-                .Entity<ExternalPayment>(payment =>
+                .Entity<Payment>(payment =>
                 {
                     payment.HasKey(p => p.Id);
                     payment.Property(p => p.BookingId).IsRequired();

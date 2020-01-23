@@ -9,7 +9,7 @@ namespace HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks
     {
         [JsonConstructor]
         public PaymentLinkData(decimal amount, string email, ServiceTypes serviceType, Currencies currency, string comment, string referenceCode,
-            PaymentStatuses paymentStatus)
+            CreditCardPaymentStatuses creditCardPaymentStatus)
         {
             Amount = amount;
             Email = email;
@@ -17,7 +17,7 @@ namespace HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks
             Currency = currency;
             Comment = comment;
             ReferenceCode = referenceCode;
-            PaymentStatus = paymentStatus;
+            CreditCardPaymentStatus = creditCardPaymentStatus;
         }
 
 
@@ -59,6 +59,6 @@ namespace HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks
         /// <summary>
         ///     Payment status.
         /// </summary>
-        public PaymentStatuses PaymentStatus { get; }
+        public CreditCardPaymentStatuses CreditCardPaymentStatus { get; }
     }
 }

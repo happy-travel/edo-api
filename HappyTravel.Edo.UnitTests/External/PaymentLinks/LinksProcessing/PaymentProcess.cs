@@ -140,7 +140,7 @@ namespace HappyTravel.Edo.UnitTests.External.PaymentLinks.LinksProcessing
 
         private static readonly PaymentLinkData[] Links =
         {
-            new PaymentLinkData(100.1m, "test@test.com", ServiceTypes.HTL, Currencies.AED, "comment", "HTL-000X2", PaymentStatuses.Created)
+            new PaymentLinkData(100.1m, "test@test.com", ServiceTypes.HTL, Currencies.AED, "comment", "HTL-000X2", CreditCardPaymentStatuses.Created)
         };
 
         private static readonly IPayfortSignatureService SignatureServiceStub = Mock.Of<IPayfortSignatureService>();
@@ -159,7 +159,7 @@ namespace HappyTravel.Edo.UnitTests.External.PaymentLinks.LinksProcessing
                     AnyString,
                     AnyString,
                     AnyString,
-                    PaymentStatuses.Created,
+                    CreditCardPaymentStatuses.Created,
                     "Message1",
                     100.1m,
                     AnyString)
@@ -172,7 +172,7 @@ namespace HappyTravel.Edo.UnitTests.External.PaymentLinks.LinksProcessing
                     AnyString,
                     AnyString,
                     AnyString,
-                    PaymentStatuses.Success,
+                    CreditCardPaymentStatuses.Success,
                     "Message2",
                     100.1m,
                     AnyString)

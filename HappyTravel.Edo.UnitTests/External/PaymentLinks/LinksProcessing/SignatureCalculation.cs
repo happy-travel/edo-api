@@ -79,7 +79,7 @@ namespace HappyTravel.Edo.UnitTests.External.PaymentLinks.LinksProcessing
         private static readonly IOptions<PayfortOptions> EmptyPayfortOptions = Options.Create(new PayfortOptions());
 
         private static readonly PaymentLinkData LinkData = new PaymentLinkData((decimal) 100.1, "test@test.com", ServiceTypes.HTL, Currencies.AED, "comment",
-            ReferenceCode, PaymentStatuses.Created);
+            ReferenceCode, CreditCardPaymentStatuses.Created);
 
         private static readonly IPaymentNotificationService NotificationServiceMock = Mock.Of<IPaymentNotificationService>();
         

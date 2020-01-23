@@ -63,14 +63,14 @@ namespace HappyTravel.Edo.Api.Services.Payments.Payfort
                     merchantReference: model.MerchantReference));
 
 
-                PaymentStatuses GetStatus(PayfortPaymentResponse payment)
+                CreditCardPaymentStatuses GetStatus(PayfortPaymentResponse payment)
                 {
                     switch (payment.ResponseCode)
                     {
                         case PayfortConstants.PaymentSuccessResponseCode:
-                        case PayfortConstants.AuthorizationSuccessResponseCode: return PaymentStatuses.Success;
-                        case PayfortConstants.PaymentSecure3dResponseCode: return PaymentStatuses.Secure3d;
-                        default: return PaymentStatuses.Failed;
+                        case PayfortConstants.AuthorizationSuccessResponseCode: return CreditCardPaymentStatuses.Success;
+                        case PayfortConstants.PaymentSecure3dResponseCode: return CreditCardPaymentStatuses.Secure3d;
+                        default: return CreditCardPaymentStatuses.Failed;
                     }
                 }
             }

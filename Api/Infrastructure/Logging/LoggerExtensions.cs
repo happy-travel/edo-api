@@ -53,6 +53,10 @@ namespace HappyTravel.Edo.Api.Infrastructure.Logging
             ExternalPaymentLinkSendFailedEventOccured = LoggerMessage.Define<string>(LogLevel.Error,
                 new EventId((int) LoggerEvents.ExternalPaymentLinkSendFailed, LoggerEvents.ExternalPaymentLinkSendFailed.ToString()),
                 $"ERROR | {nameof(PaymentLinkService)}: {{message}}");
+
+            UnableCaptureAllAmountForBookingEventOccured = LoggerMessage.Define<string>(LogLevel.Critical,
+                new EventId((int) LoggerEvents.UnableCaptureAllAmountForBooking, LoggerEvents.UnableCaptureAllAmountForBooking.ToString()),
+                $"CRITICAL | {nameof(PaymentLinkService)}: {{message}}");
         }
 
 
@@ -96,6 +100,10 @@ namespace HappyTravel.Edo.Api.Infrastructure.Logging
             => ExternalPaymentLinkSendFailedEventOccured(logger, message, null);
 
 
+        internal static void LogUnableCaptureAllAmountForBooking(this ILogger logger, string message)
+            => UnableCaptureAllAmountForBookingEventOccured(logger, message, null);
+
+
         private static readonly Action<ILogger, Exception> DataProviderClientExceptionOccurred;
         private static readonly Action<ILogger, Exception> GeoCoderExceptionOccurred;
         private static readonly Action<ILogger, Exception> PayfortClientExceptionOccurred;
@@ -108,5 +116,6 @@ namespace HappyTravel.Edo.Api.Infrastructure.Logging
         private static readonly Action<ILogger, string, Exception> EntityLockFailedEventOccured;
         private static readonly Action<ILogger, string, Exception> ExternalPaymentLinkSendSuccessEventOccured;
         private static readonly Action<ILogger, string, Exception> ExternalPaymentLinkSendFailedEventOccured;
+        private static readonly Action<ILogger, string, Exception> UnableCaptureAllAmountForBookingEventOccured;
     }
 }

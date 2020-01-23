@@ -157,7 +157,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
             PaymentLinkData ToLinkData(PaymentLink link)
             {
                 var paymentStatus = string.IsNullOrWhiteSpace(link.LastPaymentResponse)
-                    ? PaymentStatuses.Created
+                    ? CreditCardPaymentStatuses.Created
                     : _jsonSerializer.DeserializeObject<PaymentResponse>(link.LastPaymentResponse).Status;
 
                 return new PaymentLinkData(link.Amount, link.Email, link.ServiceType, link.Currency, link.Comment, link.ReferenceCode, paymentStatus);

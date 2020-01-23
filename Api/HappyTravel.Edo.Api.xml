@@ -1115,7 +1115,7 @@
                 Link reference code.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks.PaymentLinkData.PaymentStatus">
+        <member name="P:HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks.PaymentLinkData.CreditCardPaymentStatus">
             <summary>
                 Payment status.
             </summary>

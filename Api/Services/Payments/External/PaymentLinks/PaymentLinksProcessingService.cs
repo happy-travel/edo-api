@@ -113,7 +113,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
                     link.ReferenceCode));
 
 
-            bool IsPaymentComplete(CreditCardPaymentResult paymentResult) => paymentResult.Status == PaymentStatuses.Success;
+            bool IsPaymentComplete(CreditCardPaymentResult paymentResult) => paymentResult.Status == CreditCardPaymentStatuses.Success;
 
             Task SendBillToCustomer() => this.SendBillToCustomer(link);
 
@@ -140,7 +140,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
             }
 
 
-            bool IsLinkNotPaid(PaymentResponse _) => link.PaymentStatus != PaymentStatuses.Success;
+            bool IsLinkNotPaid(PaymentResponse _) => link.CreditCardPaymentStatus != CreditCardPaymentStatuses.Success;
 
             Task SendBillToCustomer() => this.SendBillToCustomer(link);
 
