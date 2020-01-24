@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
+using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Customers;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Models.Markups.Availability;
@@ -11,6 +13,7 @@ using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.EdoContracts.General;
 using HappyTravel.EdoContracts.General.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Services.Markups.Availability
 {
@@ -22,7 +25,7 @@ namespace HappyTravel.Edo.Api.Services.Markups.Availability
         }
 
 
-        public async Task<AvailabilityDetailsWithMarkup> Apply(CustomerInfo customerInfo, AvailabilityDetails supplierResponse)
+        public async Task<AvailabilityDetailsWithMarkup> Apply(CustomerInfo customerInfo, CombinedAvailabilityDetails supplierResponse)
         {
             var markup = await _markupService.Get(customerInfo, AvailabilityPolicyTarget);
             var resultResponse = await ApplyMarkup(supplierResponse, markup.Function);
@@ -52,18 +55,26 @@ namespace HappyTravel.Edo.Api.Services.Markups.Availability
         }
 
 
-        private static async ValueTask<AvailabilityDetails> ApplyMarkup(AvailabilityDetails supplierResponse, AggregatedMarkupFunction aggregatedMarkupFunction)
+        private static async ValueTask<CombinedAvailabilityDetails> ApplyMarkup(CombinedAvailabilityDetails supplierResponse, AggregatedMarkupFunction aggregatedMarkupFunction)
         {
-            var availabilityResults = new List<SlimAvailabilityResult>(supplierResponse.Results.Count);
-            foreach (var availabilityResult in supplierResponse.Results)
-            {
-                var agreements = await ApplyMarkupToAgreements(availabilityResult.Agreements, aggregatedMarkupFunction);
-                availabilityResults.Add(new SlimAvailabilityResult(availabilityResult.AccommodationDetails, agreements));
-            }
+            // TODO: rewrite markup calculation
+            return supplierResponse;
 
-            return new AvailabilityDetails(supplierResponse.AvailabilityId, supplierResponse.NumberOfNights, supplierResponse.CheckInDate,
-                supplierResponse.CheckOutDate, availabilityResults);
+            // var availabilityResults = new List<SlimAvailabilityResult>(supplierResponse.Results.Count);
+            // foreach (var availabilityResult in supplierResponse.Results)
+            // {
+            //     var agreements = await ApplyMarkupToAgreements(availabilityResult.Agreements, aggregatedMarkupFunction);
+            //     availabilityResults.Add(new SlimAvailabilityResult(availabilityResult.AccommodationDetails, agreements));
+            // }
+            //
+            // return new AvailabilityDetails(supplierResponse.AvailabilityId, supplierResponse.NumberOfNights, supplierResponse.CheckInDate,
+            //     supplierResponse.CheckOutDate, availabilityResults);
         }
+        
+        
+
+
+        
 
 
         private static async Task<List<Agreement>> ApplyMarkupToAgreements(List<Agreement> sourceAgreements, AggregatedMarkupFunction aggregatedMarkupFunction)

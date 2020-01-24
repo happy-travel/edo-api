@@ -1,8 +1,11 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
+using HappyTravel.Edo.Api.Services.Locations;
 using HappyTravel.EdoContracts.Accommodations;
+using HappyTravel.EdoContracts.Accommodations.Internals;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Services.Connectors
@@ -10,19 +13,35 @@ namespace HappyTravel.Edo.Api.Services.Connectors
     public class DataProvider : IDataProvider
     {
         private readonly IDataProviderClient _dataProviderClient;
+        private readonly ILocationService _locationService;
         private readonly string _baseUrl;
 
-        public DataProvider(IDataProviderClient dataProviderClient, string baseUrl)
+        public DataProvider(IDataProviderClient dataProviderClient, ILocationService locationService, string baseUrl)
         {
             _dataProviderClient = dataProviderClient;
+            _locationService = locationService;
             _baseUrl = baseUrl;
         }
 
 
-        public Task<Result<AvailabilityDetails, ProblemDetails>> GetAvailability(AvailabilityRequest availabilityRequest, string languageCode)
+        public async Task<Result<AvailabilityDetails, ProblemDetails>> GetAvailability(HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest request, string languageCode)
         {
-            return _dataProviderClient.Post<AvailabilityRequest, AvailabilityDetails>(
-                new Uri(_baseUrl + "availabilities/accommodations", UriKind.Absolute), availabilityRequest, languageCode);
+            var (_, isFailure, location, error) = await _locationService.Get(request.Location, languageCode);
+            if (isFailure)
+                return Result.Fail<AvailabilityDetails, ProblemDetails>(error);
+            
+            var roomDetails = request.RoomDetails
+                .Select(r => new RoomRequestDetails(r.AdultsNumber, r.ChildrenNumber, r.ChildrenAges, r.Type,
+                    r.IsExtraBedNeeded))
+                .ToList();
+
+            var contract = new EdoContracts.Accommodations.AvailabilityRequest(request.Nationality, request.Residency, request.CheckInDate,
+                request.CheckOutDate,
+                request.Filters, roomDetails, request.AccommodationIds, location,
+                request.PropertyType, request.Ratings);
+            
+            return await _dataProviderClient.Post<AvailabilityRequest, AvailabilityDetails>(
+                new Uri(_baseUrl + "availabilities/accommodations", UriKind.Absolute), contract, languageCode);
         }
 
 

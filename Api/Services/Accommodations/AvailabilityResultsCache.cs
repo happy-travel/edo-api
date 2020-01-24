@@ -4,6 +4,7 @@ using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Models.Markups.Availability;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations
@@ -16,20 +17,22 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
-        public Task Set(SingleAccommodationAvailabilityDetailsWithMarkup availabilityResponse)
+        public Task Set(DataProviders dataProvider, SingleAccommodationAvailabilityDetailsWithMarkup availabilityResponse)
         {
             _flow.Set(
-                _flow.BuildKey(KeyPrefix, availabilityResponse.ResultResponse.AvailabilityId.ToString()),
+                _flow.BuildKey(KeyPrefix, dataProvider.ToString(), availabilityResponse.ResultResponse.AvailabilityId.ToString()),
                 availabilityResponse,
                 ExpirationPeriod);
 
             return Task.CompletedTask;
         }
+        
+        
 
 
-        public Task<Result<SingleAccommodationAvailabilityDetailsWithMarkup>> Get(long id)
+        public Task<Result<SingleAccommodationAvailabilityDetailsWithMarkup>> Get(DataProviders dataProvider, long id)
         {
-            var isValueExist = _flow.TryGetValue<SingleAccommodationAvailabilityDetailsWithMarkup>(_flow.BuildKey(KeyPrefix, id.ToString()),
+            var isValueExist = _flow.TryGetValue<SingleAccommodationAvailabilityDetailsWithMarkup>(_flow.BuildKey(KeyPrefix, dataProvider.ToString(), id.ToString()),
                 out var availabilityResponse);
 
             return isValueExist

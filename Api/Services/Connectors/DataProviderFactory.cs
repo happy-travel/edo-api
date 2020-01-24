@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Infrastructure.Options;
+using HappyTravel.Edo.Api.Services.Locations;
 using HappyTravel.Edo.Common.Enums;
 using Microsoft.Extensions.Options;
 
@@ -9,12 +10,16 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 {
     public class DataProviderFactory : IDataProviderFactory
     {
-        public DataProviderFactory(IOptions<DataProviderOptions> options, IDataProviderClient dataProviderClient)
+        private readonly ILocationService _locationService;
+
+
+        public DataProviderFactory(IOptions<DataProviderOptions> options, IDataProviderClient dataProviderClient, ILocationService locationService)
         {
+            _locationService = locationService;
             _dataProviders = new Dictionary<DataProviders, IDataProvider>
             {
                 // TODO: Add other data providers.
-                {DataProviders.Netstorming, new DataProvider(dataProviderClient, options.Value.Netstorming)}
+                {DataProviders.Netstorming, new DataProvider(dataProviderClient, locationService, options.Value.Netstorming)}
             };
         }
 

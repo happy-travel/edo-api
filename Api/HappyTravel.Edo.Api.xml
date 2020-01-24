@@ -21,21 +21,23 @@
                 This is the "1st step" for availability search. Returns less information to choose accommodation.
             </remarks>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.GetAvailabilityForAccommodation(System.String,System.Int64)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.GetAvailabilityForAccommodation(HappyTravel.Edo.Common.Enums.DataProviders,System.String,System.Int64)">
             <summary>
                 Returns available agreements for given accommodation and accommodation id.
             </summary>
             <param name="availabilityId"></param>
+            <param name="source"></param>
             <param name="accommodationId"></param>
             <returns></returns>
             <remarks>
                 This is the "2nd step" for availability search. Returns richer accommodation details with agreements.
             </remarks>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.GetExactAvailability(System.Int64,System.Guid)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AccommodationsController.GetExactAvailability(HappyTravel.Edo.Common.Enums.DataProviders,System.Int64,System.Guid)">
             <summary>
                 The last 3rd search step before the booking request. Uses the exact search.
             </summary>
+            <param name="source"></param>
             <param name="availabilityId">Availability id from the previous step</param>
             <param name="agreementId">Agreement id from the previous step</param>
             <returns></returns>

@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Models.Accommodations;
+using HappyTravel.Edo.Api.Services.Locations;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
+using AvailabilityRequest = HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest;
 
 namespace HappyTravel.Edo.Api.Services.Connectors
 {
@@ -17,7 +19,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        public async Task<Result<AvailabilityDetails>> GetAvailability(AvailabilityRequest availabilityRequest, string languageCode)
+        public async Task<Result<CombinedAvailabilityDetails>> GetAvailability(AvailabilityRequest availabilityRequest, string languageCode)
         {
             var results = await GetResultsFromConnectors();
 
@@ -27,8 +29,8 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
             if (failedResults.Count == results.Count)
             {
-                var errorMessage = string.Join("; ", failedResults.Select(r => r.Result).Distinct());
-                return Result.Fail<AvailabilityDetails>(errorMessage);
+                var errorMessage = string.Join("; ", failedResults.Select(r => r.Result.Error.Detail).Distinct());
+                return Result.Fail<CombinedAvailabilityDetails>(errorMessage);
             }
 
             var succeededResults = results
@@ -45,9 +47,8 @@ namespace HappyTravel.Edo.Api.Services.Connectors
                     .GetAll()
                     .Select(async providerInfo =>
                     {
-                        var providerKey = providerInfo.Key;
                         var result = await providerInfo.Provider.GetAvailability(availabilityRequest, languageCode);
-                        return (providerKey, result);
+                        return (providerInfo.Key, result);
                     })
                     .ToList();
                     
@@ -60,10 +61,32 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        private AvailabilityDetails CombineAvailabilities(List<(DataProviders ProviderKey, AvailabilityDetails Availability)> availabilities)
+        private CombinedAvailabilityDetails CombineAvailabilities(List<(DataProviders ProviderKey, AvailabilityDetails Availability)> availabilities)
         {
-            // TODO: Add results combination
-            return availabilities.Single().Availability;
+            var firstResult = availabilities.First().Availability;
+
+            var results = availabilities
+                .SelectMany(providerResults =>
+                {
+                    var (providerKey, providerAvailability) = providerResults;
+                    return providerAvailability
+                        .Results
+                        .Select(r =>
+                        {
+                            var result = new AvailabilityResult(providerAvailability.AvailabilityId,
+                                r.AccommodationDetails,
+                                r.Agreements);
+
+                            return ProviderData.Create(providerKey, result);
+                        })
+                        .ToList();
+                })
+                .ToList();
+            
+            return new CombinedAvailabilityDetails(firstResult.NumberOfNights,
+                firstResult.CheckInDate,
+                firstResult.CheckOutDate,
+                results);
         }
 
 
