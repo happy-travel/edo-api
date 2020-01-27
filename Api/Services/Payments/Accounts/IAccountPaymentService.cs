@@ -15,7 +15,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         Task<bool> CanPayWithAccount(CustomerInfo customerInfo);
         Task<Result<AccountBalanceInfo>> GetAccountBalance(Currencies currency);
         Task<Result<string>> CaptureMoney(Booking booking);
-        Task<Result<PaymentResponse>> AuthorizeMoney(AccountPaymentRequest request, CustomerInfo customerInfo);
+        Task<Result<PaymentResponse>> AuthorizeMoney(AccountPaymentRequest request, CustomerInfo customerInfo, string ipAddress);
         Task<Result> VoidMoney(Booking booking);
         Task<Result<Price>> GetPendingAmount(Booking booking);
     }
