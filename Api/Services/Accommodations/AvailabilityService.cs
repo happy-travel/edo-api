@@ -28,7 +28,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             IDataProviderClient dataProviderClient,
             IAvailabilityMarkupService markupService,
             IAvailabilityResultsCache availabilityResultsCache,
-            IMultiProviderAvailabilityManager multiProviderAvailabilityManager,
+            IProviderRouter providerRouter,
             IOptions<DataProviderOptions> options)
         {
             _locationService = locationService;
@@ -37,7 +37,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             _dataProviderClient = dataProviderClient;
             _markupService = markupService;
             _availabilityResultsCache = availabilityResultsCache;
-            _multiProviderAvailabilityManager = multiProviderAvailabilityManager;
+            _providerRouter = providerRouter;
             _options = options.Value;
         }
         
@@ -74,7 +74,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     request.Filters, roomDetails, request.AccommodationIds, location,
                     request.PropertyType, request.Ratings);
 
-                var (isSuccess, _, details, providerError) = await _multiProviderAvailabilityManager.GetAvailability(contract, languageCode);
+                var (isSuccess, _, details, providerError) = await _providerRouter.GetAvailability(contract, languageCode);
                 return isSuccess
                     ? Result.Ok<CombinedAvailabilityDetails, ProblemDetails>(details)
                     : ProblemDetailsBuilder.Fail<CombinedAvailabilityDetails>(providerError);
@@ -87,7 +87,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
-        public async Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(string accommodationId, long availabilityId, 
+        public async Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId, long availabilityId, 
             string languageCode)
         {
             var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
@@ -113,8 +113,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ExecuteRequest()
             {
-                return _dataProviderClient.Post<SingleAccommodationAvailabilityDetails>(
-                    new Uri(_options.Netstorming + "accommodations/" + accommodationId + "/availabilities/" + availabilityId, UriKind.Absolute), languageCode);
+                return _providerRouter.GetAvailable(dataProvider, accommodationId, availabilityId, languageCode);
             }
 
 
@@ -126,7 +125,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
-        public async Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(long availabilityId, Guid agreementId,
+        public async Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(DataProviders dataProvider, long availabilityId, Guid agreementId,
             string languageCode)
         {
             var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
@@ -140,8 +139,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 
 
             Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> ExecuteRequest()
-                => _dataProviderClient.Post<SingleAccommodationAvailabilityDetailsWithDeadline>(
-                    new Uri($"{_options.Netstorming}accommodations/availabilities/{availabilityId}/agreements/{agreementId}", UriKind.Absolute), languageCode);
+                => _providerRouter.GetExactAvailability(dataProvider, availabilityId, agreementId, languageCode);
 
 
             async Task<(SingleAccommodationAvailabilityDetailsWithMarkup, DeadlineDetails)>
@@ -188,7 +186,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         private readonly IDataProviderClient _dataProviderClient;
         private readonly IAvailabilityMarkupService _markupService;
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
-        private readonly IMultiProviderAvailabilityManager _multiProviderAvailabilityManager;
+        private readonly IProviderRouter _providerRouter;
         private readonly DataProviderOptions _options;
     }
 }

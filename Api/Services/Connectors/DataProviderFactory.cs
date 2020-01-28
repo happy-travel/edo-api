@@ -37,6 +37,8 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
+        public IDataProvider Get(DataProviders key) => _dataProviders[key];
+
         private readonly Dictionary<DataProviders, IDataProvider> _dataProviders;
         private readonly DataProviderOptions _options;
     }

@@ -6,6 +6,7 @@ using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Services.Accommodations;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
 using AvailabilityRequest = HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest;
@@ -70,18 +71,19 @@ namespace HappyTravel.Edo.Api.Controllers
         /// <summary>
         ///     Returns available agreements for given accommodation and accommodation id.
         /// </summary>
-        /// <param name="availabilityId"></param>
+        /// <param name="availabilityId">Availability id from 1-st step results.</param>
+        /// <param name="source">Availability source from 1-st step results.</param>
         /// <param name="accommodationId"></param>
         /// <returns></returns>
         /// <remarks>
         ///     This is the "2nd step" for availability search. Returns richer accommodation details with agreements.
         /// </remarks>
-        [HttpPost("accommodations/{accommodationId}/availabilities/{availabilityId}")]
+        [HttpPost("availabilities/{source}/accommodations/{accommodationId}/availabilities/{availabilityId}")]
         [ProducesResponseType(typeof(SingleAccommodationAvailabilityDetails), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetAvailabilityForAccommodation([FromRoute] string accommodationId, [FromRoute]  long availabilityId)
+        public async Task<IActionResult> GetAvailabilityForAccommodation([FromRoute] DataProviders source, [FromRoute] string accommodationId, [FromRoute]  long availabilityId)
         {
-            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(accommodationId, availabilityId, LanguageCode);
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(source, accommodationId, availabilityId, LanguageCode);
             if (isFailure)
                 return BadRequest(error);
 
@@ -92,15 +94,16 @@ namespace HappyTravel.Edo.Api.Controllers
         /// <summary>
         ///     The last 3rd search step before the booking request. Uses the exact search.
         /// </summary>
+        /// <param name="source">Availability source from 1-st step results.</param>
         /// <param name="availabilityId">Availability id from the previous step</param>
         /// <param name="agreementId">Agreement id from the previous step</param>
         /// <returns></returns>
-        [HttpPost("accommodations/availabilities/{availabilityId}/agreements/{agreementId}")]
+        [HttpPost("availabilities/{source}/accommodations/availabilities/{availabilityId}/agreements/{agreementId}")]
         [ProducesResponseType(typeof(SingleAccommodationAvailabilityDetailsWithDeadline), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetExactAvailability([FromRoute] long availabilityId, [FromRoute] Guid agreementId)
+        public async Task<IActionResult> GetExactAvailability([FromRoute] DataProviders source, [FromRoute] long availabilityId, [FromRoute] Guid agreementId)
         {
-            var (_, isFailure, availabilityInfo, error) = await _availabilityService.GetExactAvailability(availabilityId, agreementId, LanguageCode);
+            var (_, isFailure, availabilityInfo, error) = await _availabilityService.GetExactAvailability(source, availabilityId, agreementId, LanguageCode);
             if (isFailure)
                 return BadRequest(error);
 

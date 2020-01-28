@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,9 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Services.Connectors
 {
-    public class MultiProviderAvailabilityManager : IMultiProviderAvailabilityManager
+    public class ProviderRouter : IProviderRouter
     {
-        public MultiProviderAvailabilityManager(IDataProviderFactory dataProviderFactory)
+        public ProviderRouter(IDataProviderFactory dataProviderFactory)
         {
             _dataProviderFactory = dataProviderFactory;
         }
@@ -56,6 +57,20 @@ namespace HappyTravel.Edo.Api.Services.Connectors
                     .Select(t => t.Result)
                     .ToList();
             }
+        }
+
+
+        public Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId, long availabilityId, string languageCode)
+        {
+            var provider = _dataProviderFactory.Get(dataProvider);
+            return provider.GetAvailability(availabilityId, accommodationId, languageCode);
+        }
+
+
+        public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(DataProviders dataProvider, long availabilityId, Guid agreementId, string languageCode)
+        {
+            var provider = _dataProviderFactory.Get(dataProvider);
+            return provider.GetExactAvailability(availabilityId, agreementId, languageCode);
         }
 
 

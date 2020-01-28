@@ -6,12 +6,12 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HappyTravel.Edo.Api.Services.Accommodations
+namespace HappyTravel.Edo.Api.Services.Connectors
 {
-    public interface IAvailabilityService
+    public interface IProviderRouter
     {
-        ValueTask<Result<CombinedAvailabilityDetails, ProblemDetails>> GetAvailable( Models.Availabilities.AvailabilityRequest request, string languageCode);
-
+        Task<Result<CombinedAvailabilityDetails>> GetAvailability(AvailabilityRequest availabilityRequest, string languageCode);
+        
         Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId, long availabilityId, string languageCode);
         
         Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline, ProblemDetails>> GetExactAvailability(DataProviders dataProvider, long availabilityId, Guid agreementId,
