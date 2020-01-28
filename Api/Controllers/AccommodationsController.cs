@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Services.Accommodations;
 using HappyTravel.EdoContracts.Accommodations;
@@ -54,7 +55,7 @@ namespace HappyTravel.Edo.Api.Controllers
         ///     This is the "1st step" for availability search. Returns less information to choose accommodation.
         /// </remarks>
         [HttpPost("availabilities/accommodations")]
-        [ProducesResponseType(typeof(AvailabilityDetails), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(CombinedAvailabilityDetails), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetAvailability([FromBody] AvailabilityRequest request)
         {

@@ -6,6 +6,7 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Infrastructure.Options;
+using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Markups.Availability;
 using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Api.Services.Customers;
@@ -41,48 +42,48 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
         
         
-        public async ValueTask<Result<AvailabilityDetails, ProblemDetails>> GetAvailable(Models.Availabilities.AvailabilityRequest request, string languageCode)
+        public async ValueTask<Result<CombinedAvailabilityDetails, ProblemDetails>> GetAvailable(Models.Availabilities.AvailabilityRequest request, string languageCode)
         {
             var (_, isFailure, location, error) = await _locationService.Get(request.Location, languageCode);
             if (isFailure)
-                return Result.Fail<AvailabilityDetails, ProblemDetails>(error);
+                return Result.Fail<CombinedAvailabilityDetails, ProblemDetails>(error);
 
             var (_, isCustomerFailure, customerInfo, customerError) = await _customerContext.GetCustomerInfo();
             if (isCustomerFailure)
-                return ProblemDetailsBuilder.Fail<AvailabilityDetails>(customerError);
+                return ProblemDetailsBuilder.Fail<CombinedAvailabilityDetails>(customerError);
 
             var (_, permissionDenied, permissionError) =
                 await _permissionChecker.CheckInCompanyPermission(customerInfo, InCompanyPermissions.AccommodationAvailabilitySearch);
             if (permissionDenied)
-                return ProblemDetailsBuilder.Fail<AvailabilityDetails>(permissionError);
+                return ProblemDetailsBuilder.Fail<CombinedAvailabilityDetails>(permissionError);
 
             return await ExecuteRequest()
                 .OnSuccess(ApplyMarkup)
                 .OnSuccess(ReturnResponseWithMarkup);
 
 
-            async Task<Result<AvailabilityDetails, ProblemDetails>> ExecuteRequest()
+            async Task<Result<CombinedAvailabilityDetails, ProblemDetails>> ExecuteRequest()
             {
                 var roomDetails = request.RoomDetails
                     .Select(r => new RoomRequestDetails(r.AdultsNumber, r.ChildrenNumber, r.ChildrenAges, r.Type,
                         r.IsExtraBedNeeded))
                     .ToList();
 
-                var contract = new EdoContracts.Accommodations.AvailabilityRequest(request.Nationality, request.Residency, request.CheckInDate,
+                var contract = new AvailabilityRequest(request.Nationality, request.Residency, request.CheckInDate,
                     request.CheckOutDate,
                     request.Filters, roomDetails, request.AccommodationIds, location,
                     request.PropertyType, request.Ratings);
 
                 var (isSuccess, _, details, providerError) = await _multiProviderAvailabilityManager.GetAvailability(contract, languageCode);
                 return isSuccess
-                    ? Result.Ok<AvailabilityDetails, ProblemDetails>(details)
-                    : ProblemDetailsBuilder.Fail<AvailabilityDetails>(providerError);
+                    ? Result.Ok<CombinedAvailabilityDetails, ProblemDetails>(details)
+                    : ProblemDetailsBuilder.Fail<CombinedAvailabilityDetails>(providerError);
             }
 
 
-            Task<AvailabilityDetailsWithMarkup> ApplyMarkup(AvailabilityDetails response) => _markupService.Apply(customerInfo, response);
+            Task<AvailabilityDetailsWithMarkup> ApplyMarkup(CombinedAvailabilityDetails response) => _markupService.Apply(customerInfo, response);
 
-            AvailabilityDetails ReturnResponseWithMarkup(AvailabilityDetailsWithMarkup markup) => markup.ResultResponse;
+            CombinedAvailabilityDetails ReturnResponseWithMarkup(AvailabilityDetailsWithMarkup markup) => markup.ResultResponse;
         }
 
 

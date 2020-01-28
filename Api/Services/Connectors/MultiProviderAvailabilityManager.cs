@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        public async Task<Result<AvailabilityDetails>> GetAvailability(AvailabilityRequest availabilityRequest, string languageCode)
+        public async Task<Result<CombinedAvailabilityDetails>> GetAvailability(AvailabilityRequest availabilityRequest, string languageCode)
         {
             var results = await GetResultsFromConnectors();
 
@@ -27,7 +28,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
             if (failedResults.Count == results.Count)
             {
                 var errorMessage = string.Join("; ", failedResults.Select(r => r.Result.Error.Detail).Distinct());
-                return Result.Fail<AvailabilityDetails>(errorMessage);
+                return Result.Fail<CombinedAvailabilityDetails>(errorMessage);
             }
 
             var succeededResults = results
@@ -58,11 +59,32 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        private AvailabilityDetails CombineAvailabilities(List<(DataProviders ProviderKey, AvailabilityDetails Availability)> availabilities)
+        private CombinedAvailabilityDetails CombineAvailabilities(List<(DataProviders ProviderKey, AvailabilityDetails Availability)> availabilities)
         {
-            // TODO: implement results combination and new model for combined availability.
             var firstResult = availabilities.First().Availability;
-            return firstResult;
+
+            var results = availabilities
+                .SelectMany(providerResults =>
+                {
+                    var (providerKey, providerAvailability) = providerResults;
+                    return providerAvailability
+                        .Results
+                        .Select(r =>
+                        {
+                            var result = new AvailabilityResult(providerAvailability.AvailabilityId,
+                                r.AccommodationDetails,
+                                r.Agreements);
+
+                            return ProviderData.Create(providerKey, result);
+                        })
+                        .ToList();
+                })
+                .ToList();
+            
+            return new CombinedAvailabilityDetails(firstResult.NumberOfNights,
+                firstResult.CheckInDate,
+                firstResult.CheckOutDate,
+                results);
         }
 
         private readonly IDataProviderFactory _dataProviderFactory;
