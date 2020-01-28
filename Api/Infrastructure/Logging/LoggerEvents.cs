@@ -6,6 +6,7 @@
         GeocoderException = 1001,
         AvailabilityCheckException = 1002,
         DataProviderClientException = 1003,
+        DataProviderRequestError = 1004,
         InvitationCreatedInformation = 1006,
         CustomerRegistrationFailed = 1007,
         CustomerRegistrationSuccess = 1008,

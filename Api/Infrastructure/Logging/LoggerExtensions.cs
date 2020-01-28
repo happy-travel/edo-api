@@ -1,5 +1,6 @@
 ﻿using System;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
+using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Api.Services.Customers;
 using HappyTravel.Edo.Api.Services.Locations;
 using HappyTravel.Edo.Api.Services.Payments;
@@ -17,6 +18,9 @@ namespace HappyTravel.Edo.Api.Infrastructure.Logging
             DataProviderClientExceptionOccurred = LoggerMessage.Define(LogLevel.Critical,
                 new EventId((int) LoggerEvents.DataProviderClientException, LoggerEvents.DataProviderClientException.ToString()),
                 $"CRITICAL | {nameof(DataProviderClient)}: ");
+            DataProviderRequestErrorOccurred = LoggerMessage.Define<string>(LogLevel.Error,
+                new EventId((int) LoggerEvents.DataProviderRequestError, LoggerEvents.DataProviderRequestError.ToString()),
+                $"ERROR | {nameof(DataProvider)}: {{message}}");
             GeoCoderExceptionOccurred = LoggerMessage.Define(LogLevel.Error,
                 new EventId((int) LoggerEvents.GeocoderException, LoggerEvents.GeocoderException.ToString()),
                 $"EXCEPTION | {nameof(GoogleGeoCoder)}: ");
@@ -57,6 +61,8 @@ namespace HappyTravel.Edo.Api.Infrastructure.Logging
 
 
         internal static void LogDataProviderClientException(this ILogger logger, Exception exception) => DataProviderClientExceptionOccurred(logger, exception);
+        
+        internal static void LogDataProviderRequestError(this ILogger logger, string message) => DataProviderRequestErrorOccurred(logger, message, null);
 
         internal static void LogGeocoderException(this ILogger logger, Exception exception) => GeoCoderExceptionOccurred(logger, exception);
 
@@ -97,6 +103,7 @@ namespace HappyTravel.Edo.Api.Infrastructure.Logging
 
 
         private static readonly Action<ILogger, Exception> DataProviderClientExceptionOccurred;
+        private static readonly Action<ILogger, string, Exception> DataProviderRequestErrorOccurred;
         private static readonly Action<ILogger, Exception> GeoCoderExceptionOccurred;
         private static readonly Action<ILogger, Exception> PayfortClientExceptionOccurred;
         private static readonly Action<ILogger, string, Exception> PayfortErrorOccurred;
