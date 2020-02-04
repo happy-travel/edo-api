@@ -411,7 +411,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
         private static readonly HashSet<BookingStatusCodes> BookingStatusesForAuthorization = new HashSet<BookingStatusCodes>
         {
-            BookingStatusCodes.Pending, BookingStatusCodes.Confirmed
+            BookingStatusCodes.Pending, BookingStatusCodes.Confirmed, BookingStatusCodes.WaitingForResponse
         };
 
         private readonly IAccountManagementService _accountManagementService;
