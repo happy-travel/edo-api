@@ -103,7 +103,6 @@ namespace HappyTravel.Edo.Api.Controllers
         [HttpPost("customers/invitations")]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        [MinCompanyState(CompanyStates.ReadOnly)]
         [InCompanyPermissions(InCompanyPermissions.CustomerInvitation)]
         public async Task<IActionResult> InviteCustomer([FromBody] CustomerInvitationInfo request)
         {
