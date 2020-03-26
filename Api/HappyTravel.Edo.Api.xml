@@ -752,11 +752,6 @@
                 Room details from an availability response.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.AgentReference">
-            <summary>
-                Free text, used by user to put additional info.
-            </summary>
-        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.Features">
             <summary>
                 The selected additional accommodation features, if any.

@@ -27,11 +27,10 @@ namespace HappyTravel.Edo.Api.Models.Bookings
             Nationality = nationality;
             RejectIfUnavailable = rejectIfUnavailable;
             Residency = residency;
-            AgentReference = agentReference;
             AgreementId = agreementId;
             MainPassengerName = mainPassengerName;
             PaymentMethod = paymentMethod;
-            
+
             RoomDetails = roomDetails ?? new List<BookingRoomDetails>(0);
             Features = features ?? new List<AccommodationFeature>(0);
 
@@ -69,11 +68,6 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         public List<BookingRoomDetails> RoomDetails { get; }
 
         /// <summary>
-        ///     Free text, used by user to put additional info.
-        /// </summary>
-        public string AgentReference { get; }
-
-        /// <summary>
         ///     The selected additional accommodation features, if any.
         /// </summary>
         public List<AccommodationFeature> Features { get; }
@@ -89,12 +83,12 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         /// </summary>
         [Required]
         public string MainPassengerName { get; }
-        
+
         /// <summary>
         ///     Itinerary number to combine several orders in one pack.
         /// </summary>
         public string ItineraryNumber { get; }
-        
+
         /// <summary>
         ///     Payment method for a booking.
         /// </summary>

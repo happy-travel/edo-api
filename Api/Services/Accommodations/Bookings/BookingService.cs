@@ -53,23 +53,24 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             _paymentService = paymentService;
         }
 
-        
+
         public async Task<Result<string, ProblemDetails>> Register(AccommodationBookingRequest bookingRequest)
         {
-            var (_, isCachedAvailabilityFailure, responseWithMarkup, cachedAvailabilityError) = await _availabilityResultsCache.Get(bookingRequest.DataProvider, bookingRequest.AvailabilityId);
+            var (_, isCachedAvailabilityFailure, responseWithMarkup, cachedAvailabilityError) =
+                await _availabilityResultsCache.Get(bookingRequest.DataProvider, bookingRequest.AvailabilityId);
             if (isCachedAvailabilityFailure)
                 return ProblemDetailsBuilder.Fail<string>(cachedAvailabilityError);
-            
+
             var bookingAvailability = ExtractBookingAvailabilityInfo(responseWithMarkup.Data);
-            
+
             var (_, isFailure, referenceCode, error) = await _bookingManager.Register(bookingRequest, bookingAvailability);
-            
-            return isFailure 
-                ? ProblemDetailsBuilder.Fail<string>(error) 
+
+            return isFailure
+                ? ProblemDetailsBuilder.Fail<string>(error)
                 : Result.Ok<string, ProblemDetails>(referenceCode);
         }
-        
-        
+
+
         public async Task<Result<BookingDetails, ProblemDetails>> Finalize(string referenceCode, string languageCode)
         {
             // TODO: Refactor and simplify method
@@ -84,7 +85,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
             var (_, isBookingFailure, bookingDetails, bookingError) = await SendBookingRequest()
-                    .OnSuccess(details => _bookingManager.Finalize(booking, details))
+                .OnSuccess(details => _bookingManager.Finalize(booking, details))
                 .OnFailure(VoidMoney);
 
             if (isBookingFailure)
@@ -94,12 +95,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
             var processingResult = await ProcessResponse(bookingDetails);
-            
-            return processingResult.IsFailure 
-                ? ProblemDetailsBuilder.Fail<BookingDetails>(processingResult.Error) 
+
+            return processingResult.IsFailure
+                ? ProblemDetailsBuilder.Fail<BookingDetails>(processingResult.Error)
                 : Result.Ok<BookingDetails, ProblemDetails>(bookingDetails);
 
-         
+
             async Task<Result<BookingDetails, ProblemDetails>> SendBookingRequest()
             {
                 try
@@ -143,8 +144,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
             Task VoidMoney(ProblemDetails problemDetails) => _paymentService.VoidMoney(booking);
         }
-        
-        
+
+
         public async Task<Result> ProcessResponse(BookingDetails bookingResponse, Data.Booking.Booking booking = null)
         {
             if (booking is null)
@@ -152,7 +153,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 var (_, isFailure, bookingData, error) = await _bookingManager.Get(bookingResponse.ReferenceCode);
                 if (isFailure)
                 {
-                    _logger.LogBookingProcessResponseFailed($"The booking response with the reference code '{bookingResponse.ReferenceCode}' isn't related with any db record");
+                    _logger.LogBookingProcessResponseFailed(
+                        $"The booking response with the reference code '{bookingResponse.ReferenceCode}' isn't related with any db record");
                     return Result.Fail(error);
                 }
 
@@ -161,12 +163,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
             if (bookingResponse.Status == booking.Status)
                 return Result.Ok();
-            
+
             await _bookingAuditLogService.Add(bookingResponse, booking);
-            
+
             _logger.LogBookingProcessResponseStarted($"Start the booking response processing with the reference code '{bookingResponse.ReferenceCode}'");
-            
-            Result result = default; 
+
+            Result result = default;
             switch (bookingResponse.Status)
             {
                 case BookingStatusCodes.Rejected:
@@ -188,19 +190,22 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return result;
             }
 
-            _logger.LogBookingProcessResponseFailed($"The booking response with the reference code '{bookingResponse.ReferenceCode}' hasn't been processed because of {result.Error}");
+            _logger.LogBookingProcessResponseFailed(
+                $"The booking response with the reference code '{bookingResponse.ReferenceCode}' hasn't been processed because of {result.Error}");
 
             return Result.Fail("The booking response hasn't been processed");
-            
+
+
             Task<Result> ConfirmBooking()
             {
                 return _bookingManager
                     .ConfirmBooking(bookingResponse, booking)
                     .OnSuccess(SaveSupplierOrder);
+
                 //.OnSuccess(LogAppliedMarkups);
             }
-            
-            
+
+
             Task<Result> CancelBooking()
             {
                 return _bookingManager.ConfirmBookingCancellation(bookingResponse, booking)
@@ -213,14 +218,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             {
                 return _bookingManager.UpdateBookingDetails(bookingResponse, booking);
             }
-            
-            
+
+
             async Task CancelSupplierOrder()
             {
                 var referenceCode = booking.ReferenceCode;
                 await _supplierOrderService.Cancel(referenceCode);
             }
-            
+
 
             async Task NotifyCustomer()
             {
@@ -235,13 +240,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 await _bookingMailingService.NotifyBookingCancelled(booking.ReferenceCode, customer.Email, $"{customer.LastName} {customer.FirstName}");
             }
 
-          
+
             async Task SaveSupplierOrder()
             {
                 var supplierPrice = bookingResponse.Agreement.Price.NetTotal;
                 await _supplierOrderService.Add(bookingResponse.ReferenceCode, ServiceTypes.HTL, supplierPrice);
             }
-            
+
+
             //TICKET https://happytravel.atlassian.net/browse/NIJO-315
             /*
             async Task<Result> LogAppliedMarkups()
@@ -257,8 +263,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
             */
         }
-        
-      
+
+
         public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await _bookingManager.Get(bookingId);
@@ -272,7 +278,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 if (isFailure)
                     return ProblemDetailsBuilder.Fail<VoidObject>(error);
             }
-            
 
             if (booking.Status == BookingStatusCodes.Cancelled)
                 return ProblemDetailsBuilder.Fail<VoidObject>("Booking was already cancelled");
@@ -306,6 +311,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
                 var responseResult = await this.ProcessResponse(
                     new BookingDetails(bookingDetails.ReferenceCode,
+                        bookingDetails.AgentReference,
                         BookingStatusCodes.Cancelled,
                         bookingDetails.AccommodationId,
                         bookingDetails.BookingCode,
@@ -317,10 +323,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                         bookingDetails.TariffCode,
                         bookingDetails.RoomDetails,
                         bookingDetails.LocationDescription,
-                        bookingDetails.Agreement), 
+                        bookingDetails.Agreement),
                     b);
 
-                return responseResult.IsFailure 
+                return responseResult.IsFailure
                     ? ProblemDetailsBuilder.Fail<Data.Booking.Booking>(responseResult.Error)
                     : Result.Ok<Data.Booking.Booking, ProblemDetails>(b);
             }
@@ -360,8 +366,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 response.CheckOutDate,
                 response.DeadlineDetails);
         }
-        
-        
+
+
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
         private readonly IBookingManager _bookingManager;
         private readonly IBookingAuditLogService _bookingAuditLogService;

@@ -22,11 +22,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         {
             _booking = booking;
         }
-        
+
 
         public BookingBuilder AddRequestInfo(in AccommodationBookingRequest bookingRequest)
         {
-            _booking.AgentReference = bookingRequest.AgentReference;
             _booking.Nationality = bookingRequest.Nationality;
             _booking.Residency = bookingRequest.Residency;
             _booking.MainPassengerName = bookingRequest.MainPassengerName;
@@ -34,20 +33,21 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             return this;
         }
 
-        
+
         public BookingBuilder AddBookingDetails(in BookingDetails bookingDetails)
         {
+            _booking.AgentReference = bookingDetails.AgentReference;
             _booking.BookingDetails = JsonConvert.SerializeObject(bookingDetails, JsonSerializerSettings);
             return this;
         }
-        
-        
+
+
         public BookingBuilder AddServiceDetails(in BookingAvailabilityInfo availabilityInfo)
         {
             _booking.ServiceDetails = JsonConvert.SerializeObject(availabilityInfo, JsonSerializerSettings);
             return this;
         }
-        
+
 
         public BookingBuilder AddTags(string itn, string referenceNumber)
         {
@@ -56,7 +56,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             return this;
         }
 
-        
+
         public BookingBuilder AddCustomerInfo(CustomerInfo customerInfo)
         {
             _booking.CustomerId = customerInfo.CustomerId;
@@ -64,7 +64,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             return this;
         }
 
-        
+
         public BookingBuilder AddCreationDate(DateTime date)
         {
             _booking.Created = date;
@@ -78,28 +78,28 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             return this;
         }
 
-        
+
         public BookingBuilder AddPaymentMethod(PaymentMethods paymentMethods)
         {
             _booking.PaymentMethod = paymentMethods;
             return this;
         }
-        
+
 
         public BookingBuilder AddPaymentStatus(BookingPaymentStatuses status)
         {
             _booking.PaymentStatus = status;
             return this;
         }
-        
-        
+
+
         public BookingBuilder AddProviderInfo(DataProviders dataProvider)
         {
             _booking.DataProvider = dataProvider;
             return this;
         }
-        
-        
+
+
         public Data.Booking.Booking Build() => _booking;
 
         private readonly Data.Booking.Booking _booking;
