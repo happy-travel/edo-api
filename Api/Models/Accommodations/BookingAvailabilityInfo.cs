@@ -11,7 +11,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         public BookingAvailabilityInfo(
             string accommodationId,
             string accommodationName,
-            in Agreement agreement,
+            in RoomContractSet agreement,
             string cityCode,
             string cityName,
             string countryCode,
@@ -36,7 +36,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         private BookingAvailabilityInfo(
             string accommodationId,
             string accommodationName,
-            in Agreement agreement,
+            in RoomContractSet agreement,
             DeadlineDetails deadlineDetails,
             string cityCode,
             string cityName,
@@ -65,7 +65,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
 
         public string AccommodationId { get; }
         public string AccommodationName { get; }
-        public Agreement Agreement { get; }
+        public RoomContractSet Agreement { get; }
         public DeadlineDetails DeadlineDetails { get; }
         public string CityCode { get; }
         public string CityName { get; }

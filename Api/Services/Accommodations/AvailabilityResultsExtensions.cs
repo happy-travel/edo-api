@@ -18,10 +18,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             var resultsWithMarkup = new List<ProviderData<AvailabilityResult>>(source.Results.Count);
             foreach (var supplierResponse in source.Results)
             {
-                var supplierAgreements = supplierResponse.Data.Agreements;
-                var agreementsWithMarkup = await ProcessAgreementsPrices(supplierAgreements, processFunction);
+                var supplierRoomContractSets = supplierResponse.Data.Agreements;
+                var roomContractSetsWithMarkup = await ProcessRoomContractSetsPrices(supplierRoomContractSets, processFunction);
                 var responseWithMarkup = ProviderData.Create(supplierResponse.Source,
-                    new AvailabilityResult(supplierResponse.Data, agreementsWithMarkup));
+                    new AvailabilityResult(supplierResponse.Data, roomContractSetsWithMarkup));
 
                 resultsWithMarkup.Add(responseWithMarkup);
             }
@@ -33,13 +33,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         public static async ValueTask<SingleAccommodationAvailabilityDetails> ProcessPrices(this SingleAccommodationAvailabilityDetails source,
             PriceProcessFunction processFunction)
         {
-            var agreements = await ProcessAgreementsPrices(source.Agreements, processFunction);
+            var roomContractSets = await ProcessRoomContractSetsPrices(source.Agreements, processFunction);
             return new SingleAccommodationAvailabilityDetails(source.AvailabilityId,
                 source.CheckInDate,
                 source.CheckOutDate,
                 source.NumberOfNights,
                 source.AccommodationDetails,
-                agreements);
+                roomContractSets);
         }
 
 
@@ -51,36 +51,36 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                 return null;
 
             var value = source.Value;
-            var agreement = await ProcessAgreementPrice(value.Agreement, processFunction);
+            var roomContractSet = await ProcessRoomContractSetPrice(value.RoomContractSet, processFunction);
             return new SingleAccommodationAvailabilityDetailsWithDeadline(value.AvailabilityId,
                 value.CheckInDate,
                 value.CheckOutDate,
                 value.NumberOfNights,
                 value.AccommodationDetails,
-                agreement,
+                roomContractSet,
                 value.DeadlineDetails);
         }
 
 
-        private static async Task<List<Agreement>> ProcessAgreementsPrices(List<Agreement> sourceAgreements, PriceProcessFunction priceProcessFunction)
+        private static async Task<List<RoomContractSet>> ProcessRoomContractSetsPrices(List<RoomContractSet> sourceRoomContractSets, PriceProcessFunction priceProcessFunction)
         {
-            var agreements = new List<Agreement>(sourceAgreements.Count);
-            foreach (var agreement in sourceAgreements)
+            var roomContractSets = new List<RoomContractSet>(sourceRoomContractSets.Count);
+            foreach (var roomContractSet in sourceRoomContractSets)
             {
-                var agreementWithMarkup = await ProcessAgreementPrice(agreement, priceProcessFunction);
-                agreements.Add(agreementWithMarkup);
+                var roomContractSetWithMarkup = await ProcessRoomContractSetPrice(roomContractSet, priceProcessFunction);
+                roomContractSets.Add(roomContractSetWithMarkup);
             }
 
-            return agreements;
+            return roomContractSets;
         }
 
 
-        private static async Task<Agreement> ProcessAgreementPrice(Agreement sourceAgreement, PriceProcessFunction priceProcessFunction)
+        private static async Task<RoomContractSet> ProcessRoomContractSetPrice(RoomContractSet sourceRoomContractSet, PriceProcessFunction priceProcessFunction)
         {
-            var currency = sourceAgreement.Price.Currency;
+            var currency = sourceRoomContractSet.Price.Currency;
 
-            var rooms = new List<RoomDetails>(sourceAgreement.Rooms.Count);
-            foreach (var room in sourceAgreement.Rooms)
+            var roomContracts = new List<RoomContract>(sourceRoomContractSet.RoomContracts.Count);
+            foreach (var room in sourceRoomContractSet.RoomContracts)
             {
                 var roomPrices = new List<DailyPrice>(room.RoomPrices.Count);
                 foreach (var roomPrice in room.RoomPrices)
@@ -91,43 +91,56 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                     roomPrices.Add(BuildDailyPrice(roomPrice, roomNetTotal, roomGross, roomCurrency));
                 }
 
-                rooms.Add(BuildRoomDetails(room, roomPrices));
+                roomContracts.Add(BuildRoomContracts(room, roomPrices));
             }
 
-            var (agreementGross, agreementCurrency) = await priceProcessFunction(sourceAgreement.Price.Gross, currency);
-            var (agreementNetTotal, _) = await priceProcessFunction(sourceAgreement.Price.NetTotal, currency);
-            var agreementPrice = new Price(agreementCurrency, agreementNetTotal, agreementGross, sourceAgreement.Price.Type,
-                sourceAgreement.Price.Description);
+            var (roomContractSetGross, roomContractSetCurrency) = await priceProcessFunction(sourceRoomContractSet.Price.Gross, currency);
+            var (roomContractSetNetTotal, _) = await priceProcessFunction(sourceRoomContractSet.Price.NetTotal, currency);
+            var roomContractSetPrice = new Price(roomContractSetCurrency, roomContractSetNetTotal, roomContractSetGross, sourceRoomContractSet.Price.Type,
+                sourceRoomContractSet.Price.Description);
 
-            return BuildAgreement(sourceAgreement, agreementPrice, rooms);
+            return BuildRoomContractSet(sourceRoomContractSet, roomContractSetPrice, roomContracts);
 
 
             static DailyPrice BuildDailyPrice(in DailyPrice roomPrice, decimal roomNetTotal, decimal roomGross, Currencies roomCurrency)
                 => new DailyPrice(roomPrice.FromDate, roomPrice.ToDate, roomCurrency, roomNetTotal, roomGross, roomPrice.Type, roomPrice.Description);
 
 
-            static RoomDetails BuildRoomDetails(in RoomDetails room, List<DailyPrice> roomPrices)
-                => new RoomDetails(roomPrices, room.AdultsNumber, room.ChildrenNumber, room.ChildrenAges, room.Type, room.IsExtraBedNeeded);
+            static RoomContract BuildRoomContracts(in RoomContract room, List<DailyPrice> roomPrices)
+                => new RoomContract(room.TariffCode, 
+                    room.BoardBasisCode, 
+                    room.BoardBasis, 
+                    room.MealPlanCode, 
+                    room.MealPlan, 
+                    room.DeadlineDate,
+                    room.ContractTypeId,
+                    room.IsAvailableImmediately,
+                    room.IsDynamic,
+                    room.IsSpecial,
+                    room.ContractType,
+                    room.Remarks,
+                    roomPrices, 
+                    room.AdultsNumber, 
+                    room.ChildrenNumber, 
+                    room.ChildrenAges,
+                    room.Type,
+                    room.IsExtraBedNeeded);
 
-
-            static Agreement BuildAgreement(in Agreement agreement, in Price agreementPrice, List<RoomDetails> rooms)
-                => new Agreement(agreement.Id, agreement.TariffCode, agreement.BoardBasisCode, agreement.BoardBasis, agreement.MealPlanCode, agreement.MealPlan,
-                    agreement.DeadlineDate,
-                    agreement.ContractTypeId, agreement.IsAvailableImmediately, agreement.IsDynamic, agreement.IsSpecial, agreementPrice, rooms,
-                    agreement.ContractType, agreement.Remarks);
+            static RoomContractSet BuildRoomContractSet(in RoomContractSet roomContractSet, in Price roomContractSetPrice, List<RoomContract> rooms)
+                => new RoomContractSet(roomContractSet.Id, roomContractSetPrice, rooms);
         }
 
 
         public static Currencies? GetCurrency(this CombinedAvailabilityDetails availabilityDetails)
         {
-            var agreements = availabilityDetails.Results
+            var roomContractSets = availabilityDetails.Results
                 .SelectMany(r => r.Data.Agreements)
                 .ToList();
 
-            if (!agreements.Any())
+            if (!roomContractSets.Any())
                 return null;
             
-            return agreements
+            return roomContractSets
                 .Select(a => a.Price.Currency)
                 .First();
         }
@@ -144,7 +157,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         
         public static Currencies? GetCurrency(this SingleAccommodationAvailabilityDetailsWithDeadline? availabilityDetails)
         {
-            return availabilityDetails?.Agreement.Price.Currency;
+            return availabilityDetails?.RoomContractSet.Price.Currency;
         }
     }
 }

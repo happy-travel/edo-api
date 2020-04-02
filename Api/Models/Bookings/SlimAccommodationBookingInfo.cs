@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Booking;
@@ -15,7 +16,10 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         {
             var serviceDetails = JsonConvert.DeserializeObject<BookingAvailabilityInfo>(bookingInfo.ServiceDetails);
             var bookingDetails = JsonConvert.DeserializeObject<BookingDetails>(bookingInfo.BookingDetails);
-
+            
+            //TODO change with the contracts update up to 1.3.0 
+            var firstRoomContract = serviceDetails.Agreement.RoomContracts.First();
+            
             Id = bookingInfo.Id;
             ReferenceCode = bookingDetails.ReferenceCode;
             AccommodationName = serviceDetails.AccommodationName;
@@ -23,15 +27,15 @@ namespace HappyTravel.Edo.Api.Models.Bookings
             LocalityName = serviceDetails.CityName;
             Deadline = bookingDetails.Deadline;
             DeadlineDetails = serviceDetails.DeadlineDetails;
-            BoardBasisCode = serviceDetails.Agreement.BoardBasisCode;
-            BoardBasis = serviceDetails.Agreement.BoardBasis;
+            BoardBasisCode = firstRoomContract.BoardBasisCode;
+            BoardBasis = firstRoomContract.BoardBasis;
             Price = serviceDetails.Agreement.Price;
             CheckInDate = bookingDetails.CheckInDate;
             CheckOutDate = bookingDetails.CheckOutDate;
             Status = bookingDetails.Status;
-            MealPlan = serviceDetails.Agreement.MealPlan;
-            MealPlanCode = serviceDetails.Agreement.MealPlanCode;
-            ContractType = serviceDetails.Agreement.ContractType;
+            MealPlan = firstRoomContract.MealPlan;
+            MealPlanCode = firstRoomContract.MealPlanCode;
+            ContractType = firstRoomContract.ContractType;
             PaymentStatus = bookingInfo.PaymentStatus;
         }
 

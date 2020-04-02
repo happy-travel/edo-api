@@ -76,7 +76,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 if (availabilityInfo.CheckInDate <= date)
                     return true;
                 
-                return availabilityInfo.Agreement.DeadlineDate != null && availabilityInfo.Agreement.DeadlineDate.Value.Date < date;
+                return availabilityInfo.Agreement.RoomContracts.All(rc=> rc.DeadlineDate != null) && availabilityInfo.Agreement.RoomContracts.All(rc => rc.DeadlineDate.Value.Date < date);
             }
         }
 

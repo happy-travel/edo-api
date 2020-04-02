@@ -238,7 +238,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
           
             async Task SaveSupplierOrder()
             {
-                var supplierPrice = bookingResponse.Agreement.Price.NetTotal;
+                var supplierPrice = bookingResponse.RoomContractSet.Price.NetTotal;
                 await _supplierOrderService.Add(bookingResponse.ReferenceCode, ServiceTypes.HTL, supplierPrice);
             }
             
@@ -306,6 +306,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
                 var responseResult = await this.ProcessResponse(
                     new BookingDetails(bookingDetails.ReferenceCode,
+                        bookingDetails.AgentReference,
                         BookingStatusCodes.Cancelled,
                         bookingDetails.AccommodationId,
                         bookingDetails.BookingCode,
@@ -317,7 +318,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                         bookingDetails.TariffCode,
                         bookingDetails.RoomDetails,
                         bookingDetails.LocationDescription,
-                        bookingDetails.Agreement), 
+                        bookingDetails.RoomContractSet), 
                     b);
 
                 return responseResult.IsFailure 
@@ -351,7 +352,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             return new BookingAvailabilityInfo(
                 response.AccommodationDetails.Id,
                 response.AccommodationDetails.Name,
-                response.Agreement,
+                response.RoomContractSet,
                 response.AccommodationDetails.Location.LocalityCode,
                 response.AccommodationDetails.Location.Locality,
                 response.AccommodationDetails.Location.CountryCode,
