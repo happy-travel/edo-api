@@ -42,7 +42,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
 
 
-        public async ValueTask<Result<CombinedAvailabilityDetails, ProblemDetails>> GetAvailable(AvailabilityRequest request,
+        public async Task<Result<CombinedAvailabilityDetails, ProblemDetails>> GetAvailable(AvailabilityRequest request,
             string languageCode)
         {
             var (_, isFailure, location, error) = await _locationService.Get(request.Location, languageCode);

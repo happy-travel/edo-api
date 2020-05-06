@@ -46,10 +46,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
             async Task<List<(DataProviders ProviderKey, Result<AvailabilityDetails, ProblemDetails> Result)>> GetResultsFromConnectors()
             {
-                var providers = dataProviders != null && dataProviders.Any()
-                    ? _dataProviderFactory.Get(dataProviders)
-                    // TODO: remove this after filling database with locations,which always have dataProviders
-                    : _dataProviderFactory.GetAll();
+                var providers = _dataProviderFactory.GetAll();
 
                 var getAvailabilityTasks = providers.Select(async providerInfo =>
                 {

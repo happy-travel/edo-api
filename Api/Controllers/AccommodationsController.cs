@@ -79,6 +79,21 @@ namespace HappyTravel.Edo.Api.Controllers
 
             return Ok(response);
         }
+        
+        
+        [HttpPost("availabilities/accommodations/async")]
+        [ProducesResponseType(typeof(CombinedAvailabilityDetails), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
+        [MinCounterpartyState(CounterpartyStates.ReadOnly)]
+        [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationAvailabilitySearch)]
+        public async Task<IActionResult> StartAvailabilitySearch([FromBody] AvailabilityRequest request)
+        {
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(request, LanguageCode);
+            if (isFailure)
+                return BadRequest(error);
+
+            return Ok(response);
+        }
 
 
         /// <summary>
