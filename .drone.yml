@@ -28,7 +28,7 @@ steps:
   image: appleboy/drone-discord
   settings:
     avatar_url: https://www.pngitem.com/pimgs/m/86-868269_drone-logo-png-transparent-drone-ci-logo-png.png
-    message: "{{#success build.status}} ✔ Build #{{build.number}}\n`{{ build.event }}` of `{{repo.name}}` succeeded.\n Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n{{ build.link }} {{else}} ✘ Build #{{build.number}}\n`{{ build.event }}` of `{{repo.name}}` failed.\n Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n{{ build.link }} {{/success}}"
+    message: "{{#success build.status}} ☑ Build #{{build.number}}\n`{{ build.event }}` of `{{repo.name}}` succeeded.\n Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n{{ build.link }} {{else}} ☒ Build #{{build.number}}\n`{{ build.event }}` of `{{repo.name}}` failed.\n Commit by {{commit.author}} on `{{commit.branch}}`:\n``` {{commit.message}} ```\n{{ build.link }} {{/success}}"
     webhook_id:
       from_secret: DISCORD_WEBHOOK_PR_ID
     webhook_token:
