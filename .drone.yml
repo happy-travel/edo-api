@@ -117,3 +117,4 @@ steps:
       from_secret: DISCORD_WEBHOOK_TOKEN
   when:
     status: [success, failure]
+    
