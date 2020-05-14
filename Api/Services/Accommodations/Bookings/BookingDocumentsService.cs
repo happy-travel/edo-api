@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Agents;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Api.Models.Mailing;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Data.Booking;
@@ -31,14 +32,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task<Result<BookingVoucherData>> GenerateVoucher(int bookingId, string languageCode)
+        public async Task<Result<BookingVoucherData>> GenerateVoucher(int bookingId, RequestMetadata requestMetadata)
         {
             var (_, isBookingFailure, booking, bookingError) = await _bookingRecordsManager.Get(bookingId);
             if (isBookingFailure)
                 return Result.Fail<BookingVoucherData>(bookingError);
 
             var (_, isAccommodationFailure, accommodationDetails, accommodationError) = await _accommodationService.Get(booking.DataProvider, 
-                booking.AccommodationId, languageCode);
+                booking.AccommodationId, requestMetadata);
                 
             if(isAccommodationFailure)
                 return Result.Fail<BookingVoucherData>(accommodationError.Detail);

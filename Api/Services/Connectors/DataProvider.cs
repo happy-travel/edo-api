@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -20,94 +21,94 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
         
         
-        public Task<Result<AvailabilityDetails, ProblemDetails>> GetAvailability(AvailabilityRequest request, string languageCode)
+        public Task<Result<AvailabilityDetails, ProblemDetails>> GetAvailability(AvailabilityRequest request, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Post<AvailabilityRequest, AvailabilityDetails>(
-                    new Uri(_baseUrl + "accommodations/availabilities", UriKind.Absolute), request, languageCode);
+                    new Uri(_baseUrl + "accommodations/availabilities", UriKind.Absolute), request, requestMetadata);
             });
         }
 
 
         public Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailability(string availabilityId,
-            string accommodationId, string languageCode)
+            string accommodationId, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Post<SingleAccommodationAvailabilityDetails>(
-                    new Uri(_baseUrl + "accommodations/" + accommodationId + "/availabilities/" + availabilityId, UriKind.Absolute), languageCode);
+                    new Uri(_baseUrl + "accommodations/" + accommodationId + "/availabilities/" + availabilityId, UriKind.Absolute), requestMetadata);
             });
         }
         
         
-        public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> GetExactAvailability(string availabilityId, Guid roomContractSetId, string languageCode)
+        public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> GetExactAvailability(string availabilityId, Guid roomContractSetId, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Post<SingleAccommodationAvailabilityDetailsWithDeadline?>(
-                    new Uri($"{_baseUrl}accommodations/availabilities/{availabilityId}/room-contract-sets/{roomContractSetId}", UriKind.Absolute), languageCode);
+                    new Uri($"{_baseUrl}accommodations/availabilities/{availabilityId}/room-contract-sets/{roomContractSetId}", UriKind.Absolute), requestMetadata);
             });
         }
 
 
-        public Task<Result<DeadlineDetails, ProblemDetails>> GetDeadline(string availabilityId, Guid roomContractSetId, string languageCode)
+        public Task<Result<DeadlineDetails, ProblemDetails>> GetDeadline(string availabilityId, Guid roomContractSetId, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 var uri = new Uri($"{_baseUrl}accommodations/availabilities/{availabilityId}/room-contract-sets/{roomContractSetId}/deadline", UriKind.Absolute);
-                return _dataProviderClient.Get<DeadlineDetails>(uri, languageCode);
+                return _dataProviderClient.Get<DeadlineDetails>(uri, requestMetadata);
             });
         }
 
 
-        public Task<Result<AccommodationDetails, ProblemDetails>> GetAccommodation(string accommodationId, string languageCode)
+        public Task<Result<AccommodationDetails, ProblemDetails>> GetAccommodation(string accommodationId, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Get<AccommodationDetails>(
-                    new Uri($"{_baseUrl}accommodations/{accommodationId}", UriKind.Absolute), languageCode);
+                    new Uri($"{_baseUrl}accommodations/{accommodationId}", UriKind.Absolute), requestMetadata);
             });
         }
 
 
-        public Task<Result<BookingDetails, ProblemDetails>> Book(BookingRequest request, string languageCode)
+        public Task<Result<BookingDetails, ProblemDetails>> Book(BookingRequest request, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Post<BookingRequest, BookingDetails>(
                     new Uri(_baseUrl + "accommodations/bookings", UriKind.Absolute),
-                    request, languageCode);
+                    request, requestMetadata);
             });
         }
 
 
-        public Task<Result<VoidObject, ProblemDetails>> CancelBooking(string referenceCode)
+        public Task<Result<VoidObject, ProblemDetails>> CancelBooking(string referenceCode, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Post(new Uri(_baseUrl + "accommodations/bookings/" + referenceCode + "/cancel",
-                    UriKind.Absolute));
+                    UriKind.Absolute), requestMetadata);
             });
         }
 
 
-        public Task<Result<BookingDetails, ProblemDetails>> GetBookingDetails(string referenceCode, string languageCode)
+        public Task<Result<BookingDetails, ProblemDetails>> GetBookingDetails(string referenceCode, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
                 return _dataProviderClient.Get<BookingDetails>(
                     new Uri(_baseUrl + "accommodations/bookings/" + referenceCode,
-                        UriKind.Absolute), languageCode);
+                        UriKind.Absolute), requestMetadata);
             });
         }
 
 
-        public Task<Result<BookingDetails, ProblemDetails>> ProcessAsyncResponse(Stream stream)
+        public Task<Result<BookingDetails, ProblemDetails>> ProcessAsyncResponse(Stream stream, RequestMetadata requestMetadata)
         {
             return ExecuteWithLogging(() =>
             {
-                return _dataProviderClient.Post<BookingDetails>(new Uri(_baseUrl + "bookings/response", UriKind.Absolute), stream);
+                return _dataProviderClient.Post<BookingDetails>(new Uri(_baseUrl + "bookings/response", UriKind.Absolute), stream, requestMetadata);
             });
         }
         

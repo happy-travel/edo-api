@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Models.Accommodations;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        public async Task<Result<CombinedAvailabilityDetails>> GetAvailability(List<DataProviders> dataProviders, AvailabilityRequest availabilityRequest, string languageCode)
+        public async Task<Result<CombinedAvailabilityDetails>> GetAvailability(List<DataProviders> dataProviders, AvailabilityRequest availabilityRequest, RequestMetadata requestMetadata)
         {
             var results = await GetResultsFromConnectors();
 
@@ -53,7 +54,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
                 var getAvailabilityTasks = providers.Select(async providerInfo =>
                 {
-                    var result = await providerInfo.Provider.GetAvailability(availabilityRequest, languageCode);
+                    var result = await providerInfo.Provider.GetAvailability(availabilityRequest, requestMetadata);
                     return (providerInfo.Key, result);
                 }).ToList();
 
@@ -67,55 +68,55 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
 
         public Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId,
-            string availabilityId, string languageCode)
+            string availabilityId, RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.GetAvailability(availabilityId, accommodationId, languageCode);
+            return provider.GetAvailability(availabilityId, accommodationId, requestMetadata);
         }
 
 
         public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> GetExactAvailability(DataProviders dataProvider,
-            string availabilityId, Guid roomContractSetId, string languageCode)
+            string availabilityId, Guid roomContractSetId, RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.GetExactAvailability(availabilityId, roomContractSetId, languageCode);
+            return provider.GetExactAvailability(availabilityId, roomContractSetId, requestMetadata);
         }
 
 
-        public Task<Result<AccommodationDetails, ProblemDetails>> GetAccommodation(DataProviders dataProvider, string id, string languageCode)
+        public Task<Result<AccommodationDetails, ProblemDetails>> GetAccommodation(DataProviders dataProvider, string id, RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.GetAccommodation(id, languageCode);
+            return provider.GetAccommodation(id, requestMetadata);
         }
 
 
-        public Task<Result<BookingDetails, ProblemDetails>> Book(DataProviders dataProvider, BookingRequest request, string languageCode)
+        public Task<Result<BookingDetails, ProblemDetails>> Book(DataProviders dataProvider, BookingRequest request, RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.Book(request, languageCode);
+            return provider.Book(request, requestMetadata);
         }
 
 
-        public Task<Result<VoidObject, ProblemDetails>> CancelBooking(DataProviders dataProvider, string referenceCode)
+        public Task<Result<VoidObject, ProblemDetails>> CancelBooking(DataProviders dataProvider, string referenceCode, RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.CancelBooking(referenceCode);
+            return provider.CancelBooking(referenceCode, requestMetadata);
         }
 
 
         public Task<Result<DeadlineDetails, ProblemDetails>> GetDeadline(DataProviders dataProvider, string availabilityId,
-            Guid roomContractSetId, string languageCode)
+            Guid roomContractSetId, RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.GetDeadline(availabilityId, roomContractSetId, languageCode);
+            return provider.GetDeadline(availabilityId, roomContractSetId, requestMetadata);
         }
         
         
         public Task<Result<BookingDetails, ProblemDetails>> GetBookingDetails(DataProviders dataProvider, string referenceCode,
-            string languageCode)
+            RequestMetadata requestMetadata)
         {
             var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.GetBookingDetails(referenceCode, languageCode);
+            return provider.GetBookingDetails(referenceCode, requestMetadata);
         }
 
 

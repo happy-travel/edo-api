@@ -5,8 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.Edo.Api.Infrastructure.Http.Extensions;
-using Microsoft.AspNetCore.Http;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -15,44 +14,43 @@ namespace HappyTravel.Edo.Api.Infrastructure.DataProviders
 {
     public class DataProviderClient : IDataProviderClient
     {
-        public DataProviderClient(IHttpClientFactory clientFactory, ILogger<DataProviderClient> logger, IHttpContextAccessor httpContextAccessor)
+        public DataProviderClient(IHttpClientFactory clientFactory, ILogger<DataProviderClient> logger)
         {
             _clientFactory = clientFactory;
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
             _serializer = new JsonSerializer();
         }
 
 
-        public Task<Result<T, ProblemDetails>> Get<T>(Uri url, string languageCode = LocalizationHelper.DefaultLanguageCode,
+        public Task<Result<T, ProblemDetails>> Get<T>(Uri url, RequestMetadata requestMetadata,
             CancellationToken cancellationToken = default)
-            => Send<T>(new HttpRequestMessage(HttpMethod.Get, url), languageCode, cancellationToken);
+            => Send<T>(new HttpRequestMessage(HttpMethod.Get, url), requestMetadata, cancellationToken);
 
 
-        public Task<Result<TOut, ProblemDetails>> Post<T, TOut>(Uri url, T requestContent, string languageCode = LocalizationHelper.DefaultLanguageCode,
+        public Task<Result<TOut, ProblemDetails>> Post<T, TOut>(Uri url, T requestContent, RequestMetadata requestMetadata, 
             CancellationToken cancellationToken = default)
             => Send<TOut>(new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = BuildContent(requestContent)
-            }, languageCode, cancellationToken);
+            }, requestMetadata, cancellationToken);
 
 
-        public Task<Result<TOut, ProblemDetails>> Post<TOut>(Uri url, string languageCode = LocalizationHelper.DefaultLanguageCode,
+        public Task<Result<TOut, ProblemDetails>> Post<TOut>(Uri url, RequestMetadata requestMetadata, 
             CancellationToken cancellationToken = default)
-            => Send<TOut>(new HttpRequestMessage(HttpMethod.Post, url), languageCode, cancellationToken);
+            => Send<TOut>(new HttpRequestMessage(HttpMethod.Post, url), requestMetadata, cancellationToken);
         
 
-        public Task<Result<VoidObject, ProblemDetails>> Post(Uri uri, string languageCode = LocalizationHelper.DefaultLanguageCode,
+        public Task<Result<VoidObject, ProblemDetails>> Post(Uri uri, RequestMetadata requestMetadata, 
             CancellationToken cancellationToken = default)
-            => Post<VoidObject, VoidObject>(uri, VoidObject.Instance, languageCode, cancellationToken);
+            => Post<VoidObject, VoidObject>(uri, VoidObject.Instance, requestMetadata, cancellationToken);
 
 
-        public Task<Result<TOut, ProblemDetails>> Post<TOut>(Uri url, Stream stream, string languageCode = LocalizationHelper.DefaultLanguageCode,
+        public Task<Result<TOut, ProblemDetails>> Post<TOut>(Uri url, Stream stream, RequestMetadata requestMetadata, 
             CancellationToken cancellationToken = default)
             => Send<TOut>(new HttpRequestMessage(HttpMethod.Post, url)
             {
                 Content = new StreamContent(stream)
-            }, languageCode, cancellationToken);
+            }, requestMetadata, cancellationToken);
         
       
         private static StringContent BuildContent<T>(T requestContent)
@@ -62,15 +60,14 @@ namespace HappyTravel.Edo.Api.Infrastructure.DataProviders
         
             
         
-        public async Task<Result<TResponse, ProblemDetails>> Send<TResponse>(HttpRequestMessage request, string languageCode, CancellationToken cancellationToken)
+        public async Task<Result<TResponse, ProblemDetails>> Send<TResponse>(HttpRequestMessage request, RequestMetadata requestMetadata, CancellationToken cancellationToken)
         {
             try
             {
                 using var client = _clientFactory.CreateClient();
                 
-                client.DefaultRequestHeaders.Add("Accept-Language", languageCode);
-                var requestId = _httpContextAccessor.HttpContext.Request.GetRequestId();
-                client.DefaultRequestHeaders.Add(Constants.Common.RequestIdHeader, requestId);
+                client.DefaultRequestHeaders.Add("Accept-Language", requestMetadata.LanguageCode);
+                client.DefaultRequestHeaders.Add(Constants.Common.RequestIdHeader, requestMetadata.RequestId);
 
                 using var response = await client.SendAsync(request, cancellationToken);
                 await using var stream = await response.Content.ReadAsStreamAsync();
@@ -98,7 +95,6 @@ namespace HappyTravel.Edo.Api.Infrastructure.DataProviders
         }
 
 
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _clientFactory;
         private readonly JsonSerializer _serializer;
         private readonly ILogger<DataProviderClient> _logger;

@@ -28,12 +28,14 @@ namespace HappyTravel.Edo.Api.Controllers
             IAvailabilityService availabilityService,
             IBookingService bookingService,
             IBookingRecordsManager bookingRecordsManager,
+            RequestMetadataProvider requestMetadataProvider,
             IAgentContext agentContext)
         {
             _service = service;
             _availabilityService = availabilityService;
             _bookingService = bookingService;
             _bookingRecordsManager = bookingRecordsManager;
+            _requestMetadataProvider = requestMetadataProvider;
             _agentContext = agentContext;
         }
 
@@ -53,7 +55,7 @@ namespace HappyTravel.Edo.Api.Controllers
             if (string.IsNullOrWhiteSpace(accommodationId))
                 return BadRequest(ProblemDetailsBuilder.Build("No accommodation IDs was provided."));
 
-            var (_, isFailure, response, error) = await _service.Get(source, accommodationId, LanguageCode);
+            var (_, isFailure, response, error) = await _service.Get(source, accommodationId, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -77,7 +79,7 @@ namespace HappyTravel.Edo.Api.Controllers
         public async Task<IActionResult> GetAvailability([FromBody] AvailabilityRequest request)
         {
             var agent = await _agentContext.GetAgent();
-            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(request, agent, LanguageCode);
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(request, agent, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -102,7 +104,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationAvailabilitySearch)]
         public async Task<IActionResult> GetAvailabilityForAccommodation([FromRoute] DataProviders source, [FromRoute] string accommodationId, [FromRoute]  string availabilityId)
         {
-            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(source, accommodationId, availabilityId, LanguageCode);
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(source, accommodationId, availabilityId, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -124,7 +126,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationAvailabilitySearch)]
         public async Task<IActionResult> GetExactAvailability([FromRoute] DataProviders source, [FromRoute] string availabilityId, [FromRoute] Guid roomContractSetId)
         {
-            var (_, isFailure, availabilityInfo, error) = await _availabilityService.GetExactAvailability(source, availabilityId, roomContractSetId, LanguageCode);
+            var (_, isFailure, availabilityInfo, error) = await _availabilityService.GetExactAvailability(source, availabilityId, roomContractSetId, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -146,7 +148,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationAvailabilitySearch)]
         public async Task<IActionResult> GetDeadline([FromRoute] DataProviders source, [FromRoute] string availabilityId, [FromRoute] Guid roomContractSetId)
         {
-            var (_, isFailure, deadline, error) = await _availabilityService.GetDeadlineDetails(source, availabilityId, roomContractSetId, LanguageCode);
+            var (_, isFailure, deadline, error) = await _availabilityService.GetDeadlineDetails(source, availabilityId, roomContractSetId, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -167,7 +169,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationBooking)]
         public async Task<IActionResult> RegisterBooking([FromBody] AccommodationBookingRequest request)
         {
-            var (_, isFailure, refCode, error) = await _bookingService.Register(request, LanguageCode);
+            var (_, isFailure, refCode, error) = await _bookingService.Register(request, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -188,7 +190,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationBooking)]
         public async Task<IActionResult> FinalizeBooking([FromRoute] string referenceCode)
         {
-            var (_, isFailure, bookingDetails, error) = await _bookingService.Finalize(referenceCode, LanguageCode);
+            var (_, isFailure, bookingDetails, error) = await _bookingService.Finalize(referenceCode, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -208,7 +210,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationBooking)]
         public async Task<IActionResult> RefreshStatus([FromRoute] int bookingId)
         {
-            var (_, isFailure, bookingDetails, error) = await _bookingService.RefreshStatus(bookingId);
+            var (_, isFailure, bookingDetails, error) = await _bookingService.RefreshStatus(bookingId, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -228,7 +230,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [InCounterpartyPermissions(InCounterpartyPermissions.AccommodationBooking)]
         public async Task<IActionResult> CancelBooking(int bookingId)
         {
-            var (_, isFailure, error) = await _bookingService.Cancel(bookingId);
+            var (_, isFailure, error) = await _bookingService.Cancel(bookingId, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
 
@@ -296,6 +298,7 @@ namespace HappyTravel.Edo.Api.Controllers
         private readonly IAvailabilityService _availabilityService;
         private readonly IBookingService _bookingService;
         private readonly IBookingRecordsManager _bookingRecordsManager;
+        private readonly RequestMetadataProvider _requestMetadataProvider;
         private readonly IAgentContext _agentContext;
     }
 }

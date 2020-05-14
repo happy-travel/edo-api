@@ -18,10 +18,12 @@ namespace HappyTravel.Edo.Api.Controllers
     public class BookingSupportingDocumentsController : BaseController
     {
         public BookingSupportingDocumentsController(IBookingMailingService bookingMailingService,
-            IBookingDocumentsService bookingDocumentsService)
+            IBookingDocumentsService bookingDocumentsService,
+            RequestMetadataProvider requestMetadataProvider)
         {
             _bookingMailingService = bookingMailingService;
             _bookingDocumentsService = bookingDocumentsService;
+            _requestMetadataProvider = requestMetadataProvider;
         }
 
 
@@ -36,7 +38,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> SendBookingVoucher([Required] int bookingId, [Required][FromBody] SendBookingDocumentRequest sendMailRequest)
         {
-            var (_, isFailure, error) = await _bookingMailingService.SendVoucher(bookingId, sendMailRequest.Email, LanguageCode);
+            var (_, isFailure, error) = await _bookingMailingService.SendVoucher(bookingId, sendMailRequest.Email, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
 
@@ -74,7 +76,7 @@ namespace HappyTravel.Edo.Api.Controllers
         [AgentRequired]
         public async Task<IActionResult> GetBookingVoucher([Required] int bookingId)
         {
-            var result = await _bookingDocumentsService.GenerateVoucher(bookingId, LanguageCode);
+            var result = await _bookingDocumentsService.GenerateVoucher(bookingId, _requestMetadataProvider.Get());
             return OkOrBadRequest(result);
         }
 
@@ -96,6 +98,7 @@ namespace HappyTravel.Edo.Api.Controllers
 
 
         private readonly IBookingDocumentsService _bookingDocumentsService;
+        private readonly RequestMetadataProvider _requestMetadataProvider;
         private readonly IBookingMailingService _bookingMailingService;
     }
 }

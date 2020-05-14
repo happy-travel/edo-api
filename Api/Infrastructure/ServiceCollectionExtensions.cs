@@ -448,6 +448,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
 
             services.AddNameNormalizationServices();
             services.AddScoped<ILocationNormalizer, LocationNormalizer>();
+
+            services.AddScoped<RequestMetadataProvider>();
             
             return services;
         }

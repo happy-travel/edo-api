@@ -8,11 +8,13 @@ using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
 using HappyTravel.Edo.Api.Infrastructure.Options;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Api.Services.Accommodations;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Enums;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -26,6 +28,7 @@ namespace HappyTravel.Edo.Api.Services.ProviderResponses
             IAgentContext agentContext,
             IBookingRecordsManager bookingRecordsManager,
             IBookingService bookingService,
+            IHttpContextAccessor httpContextAccessor,
             IOptions<DataProviderOptions> dataProviderOptions,
             ILogger<NetstormingResponseService> logger)
         {
@@ -39,9 +42,9 @@ namespace HappyTravel.Edo.Api.Services.ProviderResponses
         }
 
 
-        public async Task<Result> ProcessBookingDetailsResponse(byte[] xmlRequestData)
+        public async Task<Result> ProcessBookingDetailsResponse(byte[] xmlRequestData, RequestMetadata requestMetadata)
         {
-            var (_, isGetBookingDetailsFailure, bookingDetails , bookingDetailsError) = await GetBookingDetailsFromConnector(xmlRequestData);
+            var (_, isGetBookingDetailsFailure, bookingDetails , bookingDetailsError) = await GetBookingDetailsFromConnector(xmlRequestData, requestMetadata);
             if (isGetBookingDetailsFailure)
             {
                 _logger.UnableToGetBookingDetailsFromNetstormingXml("Failed to get booking details from the Netstorming xml:" + 
@@ -67,12 +70,12 @@ namespace HappyTravel.Edo.Api.Services.ProviderResponses
             
             _logger.UnableToGetBookingDetailsFromNetstormingXml($"Set {nameof(booking.AgentId)} to '{booking.AgentId}'");
             
-            await _bookingService.ProcessResponse(bookingDetails, booking);
+            await _bookingService.ProcessResponse(bookingDetails, booking, requestMetadata);
             return Result.Ok();
         }
         
 
-        private async Task<Result<BookingDetails>> GetBookingDetailsFromConnector(byte[] xmlData)
+        private async Task<Result<BookingDetails>> GetBookingDetailsFromConnector(byte[] xmlData, RequestMetadata requestMetadata)
         {
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post,
                     new Uri($"{_dataProviderOptions.Netstorming}" + "bookings/response"))
@@ -80,7 +83,7 @@ namespace HappyTravel.Edo.Api.Services.ProviderResponses
                 Content = new ByteArrayContent(xmlData)
             };
 
-            var (_, isFailure, bookingDetails, error) = await _dataProviderClient.Send<BookingDetails>(httpRequestMessage);
+            var (_, isFailure, bookingDetails, error) = await _dataProviderClient.Send<BookingDetails>(httpRequestMessage, requestMetadata);
             return isFailure 
                 ? Result.Fail<BookingDetails>(error.Detail) 
                 : Result.Ok(bookingDetails);

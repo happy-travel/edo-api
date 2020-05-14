@@ -58,6 +58,7 @@ namespace HappyTravel.Edo.Api.Services.CurrencyConversion
             
             ValueTask<Currencies> GetTargetCurrency(AgentInfo agentInfo)
             {
+                return new ValueTask<Currencies>(Currencies.USD);
                 var key = _memoryFlow.BuildKey(nameof(CurrencyConverterService), "TARGET_CURRENCY", agentInfo.AgentId.ToString());
                 return _memoryFlow.GetOrSetAsync(key, async () =>
                 {

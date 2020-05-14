@@ -5,6 +5,7 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Agents;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Connectors;
@@ -43,9 +44,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
         public async ValueTask<Result<CombinedAvailabilityDetails, ProblemDetails>> GetAvailable(AvailabilityRequest request, AgentInfo agent,
-            string languageCode)
+            RequestMetadata requestMetadata)
         {
-            var (_, isFailure, location, error) = await _locationService.Get(request.Location, languageCode);
+            var (_, isFailure, location, error) = await _locationService.Get(request.Location, requestMetadata.LanguageCode);
             if (isFailure)
                 return Result.Fail<CombinedAvailabilityDetails, ProblemDetails>(error);
 
@@ -68,7 +69,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                     new Location(location.Name, location.Locality, location.Country, location.Coordinates, location.Distance, location.Source, location.Type),
                     request.PropertyType, request.Ratings);
 
-                return _providerRouter.GetAvailability(location.DataProviders, contract, languageCode)
+                return _providerRouter.GetAvailability(location.DataProviders, contract, requestMetadata)
                     .ToResultWithProblemDetails();
             }
 
@@ -87,7 +88,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
         public async Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetAvailable(DataProviders dataProvider,
             string accommodationId, string availabilityId,
-            string languageCode)
+            RequestMetadata requestMetadata)
         {
             var agent = await _agentContext.GetAgent();
 
@@ -98,7 +99,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ExecuteRequest()
-                => _providerRouter.GetAvailable(dataProvider, accommodationId, availabilityId, languageCode);
+                => _providerRouter.GetAvailable(dataProvider, accommodationId, availabilityId, requestMetadata);
 
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ConvertCurrencies(SingleAccommodationAvailabilityDetails availabilityDetails)
@@ -115,7 +116,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
         public async Task<Result<ProviderData<SingleAccommodationAvailabilityDetailsWithDeadline?>, ProblemDetails>> GetExactAvailability(
-            DataProviders dataProvider, string availabilityId, Guid roomContractSetId, string languageCode)
+            DataProviders dataProvider, string availabilityId, Guid roomContractSetId, RequestMetadata requestMetadata)
         {
             var agent = await _agentContext.GetAgent();
 
@@ -127,7 +128,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
             Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> ExecuteRequest()
-                => _providerRouter.GetExactAvailability(dataProvider, availabilityId, roomContractSetId, languageCode);
+                => _providerRouter.GetExactAvailability(dataProvider, availabilityId, roomContractSetId, requestMetadata);
 
 
             Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> ConvertCurrencies(SingleAccommodationAvailabilityDetailsWithDeadline? availabilityDetails) => this.ConvertCurrencies(agent,
@@ -158,14 +159,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
         public Task<Result<ProviderData<DeadlineDetails>, ProblemDetails>> GetDeadlineDetails(
-            DataProviders dataProvider, string availabilityId, Guid roomContractSetId, string languageCode)
+            DataProviders dataProvider, string availabilityId, Guid roomContractSetId, RequestMetadata requestMetadata)
         {
             return GetDeadline()
                 .OnSuccess(AddProviderData);
 
             Task<Result<DeadlineDetails, ProblemDetails>> GetDeadline() => _providerRouter.GetDeadline(dataProvider,
                 availabilityId,
-                roomContractSetId, languageCode);
+                roomContractSetId, requestMetadata);
 
             ProviderData<DeadlineDetails> AddProviderData(DeadlineDetails deadlineDetails)
                 => ProviderData.Create(dataProvider, deadlineDetails);

@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Http;
 using HappyTravel.Edo.Api.Services.ProviderResponses;
 using HappyTravel.Edo.Common.Enums;
@@ -14,10 +15,13 @@ namespace HappyTravel.Edo.Api.Controllers
     [Produces("application/json")]
     public class BookingResponseController : BaseController
     {
-        public BookingResponseController(INetstormingResponseService netstormingResponseService, IBookingWebhookResponseService bookingWebhookResponseService)
+        public BookingResponseController(INetstormingResponseService netstormingResponseService, 
+            IBookingWebhookResponseService bookingWebhookResponseService,
+            RequestMetadataProvider requestMetadataProvider)
         {
             _netstormingResponseService = netstormingResponseService;
             _bookingWebhookResponseService = bookingWebhookResponseService;
+            _requestMetadataProvider = requestMetadataProvider;
         }
         
         
@@ -39,7 +43,7 @@ namespace HappyTravel.Edo.Api.Controllers
                     Status = (int) HttpStatusCode.BadRequest
                 });
             
-            var (_, isFailure, error) = await _netstormingResponseService.ProcessBookingDetailsResponse(xmlRequestData);
+            var (_, isFailure, error) = await _netstormingResponseService.ProcessBookingDetailsResponse(xmlRequestData, _requestMetadataProvider.Get());
             if (isFailure)
                 return BadRequest(error);
             
@@ -53,12 +57,13 @@ namespace HappyTravel.Edo.Api.Controllers
         [HttpPost("bookings/accommodations/responses/etg")]
         public async Task<IActionResult> HandleEtgBookingResponse()
         {
-            var (_, isFailure, error) = await _bookingWebhookResponseService.ProcessBookingData(HttpContext.Request.Body, DataProviders.Etg);
+            var (_, isFailure, error) = await _bookingWebhookResponseService.ProcessBookingData(HttpContext.Request.Body, DataProviders.Etg, _requestMetadataProvider.Get());
             return Ok(isFailure ? error : "ok");
         }
 
 
         private readonly IBookingWebhookResponseService _bookingWebhookResponseService;
+        private readonly RequestMetadataProvider _requestMetadataProvider;
         private readonly INetstormingResponseService _netstormingResponseService;
     }
 }

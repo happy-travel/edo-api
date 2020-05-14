@@ -5,6 +5,7 @@ using CSharpFunctionalExtensions;
 using FluentValidation;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Options;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.MailSender;
 using HappyTravel.MailSender.Formatters;
@@ -25,9 +26,9 @@ namespace HappyTravel.Edo.Api.Services.Mailing
         }
 
 
-        public Task<Result> SendVoucher(int bookingId, string email, string languageCode)
+        public Task<Result> SendVoucher(int bookingId, string email, RequestMetadata requestMetadata)
         {
-            return _bookingDocumentsService.GenerateVoucher(bookingId, languageCode)
+            return _bookingDocumentsService.GenerateVoucher(bookingId, requestMetadata)
                 .OnSuccess(voucher =>
                 {
                     var voucherData = new

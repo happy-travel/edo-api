@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Connectors;
@@ -24,13 +25,13 @@ namespace HappyTravel.Edo.Api.Services.ProviderResponses
         }
         
         
-        public async Task<Result> ProcessBookingData(Stream stream, DataProviders dataProvider)
+        public async Task<Result> ProcessBookingData(Stream stream, DataProviders dataProvider, RequestMetadata requestMetadata)
         {
             if (!AsyncDataProviders.Contains(dataProvider))
                 return Result.Fail($"{nameof(dataProvider)} '{dataProvider}' isn't asynchronous." +
                     $"Asynchronous data providers: {string.Join(", ", AsyncDataProviders)}");
             
-            var (_, isGettingBookingDetailsFailure, bookingDetails, gettingBookingDetailsError) = await _dataProviderFactory.Get(dataProvider).ProcessAsyncResponse(stream);
+            var (_, isGettingBookingDetailsFailure, bookingDetails, gettingBookingDetailsError) = await _dataProviderFactory.Get(dataProvider).ProcessAsyncResponse(stream, requestMetadata);
             if (isGettingBookingDetailsFailure)
                 return Result.Fail(gettingBookingDetailsError.Detail);
             
@@ -41,7 +42,7 @@ namespace HappyTravel.Edo.Api.Services.ProviderResponses
             
             await _agentContext.SetAgentInfo(booking.AgentId);
             
-            await _bookingService.ProcessResponse(bookingDetails, booking);
+            await _bookingService.ProcessResponse(bookingDetails, booking, requestMetadata);
             return Result.Ok();
         }
 

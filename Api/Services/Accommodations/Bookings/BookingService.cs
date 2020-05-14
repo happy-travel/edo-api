@@ -8,6 +8,7 @@ using HappyTravel.Edo.Api.Infrastructure.DataProviders;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Bookings;
+using HappyTravel.Edo.Api.Models.Infrastructure;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.Connectors;
@@ -56,7 +57,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
         
-        public async Task<Result<string, ProblemDetails>> Register(AccommodationBookingRequest bookingRequest, string languageCode)
+        public async Task<Result<string, ProblemDetails>> Register(AccommodationBookingRequest bookingRequest, RequestMetadata requestMetadata)
         {
             var (_, isCachedAvailabilityFailure, responseWithMarkup, cachedAvailabilityError) = await _availabilityResultsCache.Get(bookingRequest.DataProvider, bookingRequest.AvailabilityId);
             if (isCachedAvailabilityFailure)
@@ -64,12 +65,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             
             var bookingAvailability = ExtractBookingAvailabilityInfo(responseWithMarkup.Data);
             
-            var referenceCode = await _bookingRecordsManager.Register(bookingRequest, bookingAvailability, languageCode);
+            var referenceCode = await _bookingRecordsManager.Register(bookingRequest, bookingAvailability, requestMetadata.LanguageCode);
             return Result.Ok<string, ProblemDetails>(referenceCode);
         }
         
         
-        public async Task<Result<BookingDetails, ProblemDetails>> Finalize(string referenceCode, string languageCode)
+        public async Task<Result<BookingDetails, ProblemDetails>> Finalize(string referenceCode, RequestMetadata requestMetadata)
         {
             var (_, isFailure, booking, error) = await _bookingRecordsManager.GetAgentsBooking(referenceCode);
             if (isFailure)
@@ -82,7 +83,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
             return await SendBookingRequest()
-                .OnSuccess(details => ProcessResponse(details, booking))
+                .OnSuccess(details => ProcessResponse(details, booking, requestMetadata))
                 .OnFailure(VoidMoney);
 
          
@@ -109,7 +110,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                         features,
                         bookingRequest.RejectIfUnavailable);
 
-                    var bookingResult = await _providerRouter.Book(booking.DataProvider, innerRequest, languageCode);
+                    var bookingResult = await _providerRouter.Book(booking.DataProvider, innerRequest, requestMetadata);
                     if(bookingResult.IsFailure)
                         _logger.LogBookingFinalizationFailed($"The booking finalization with the reference code: '{referenceCode}' has been failed");
 
@@ -119,7 +120,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 {
                     var errorMessage = $"Failed to update booking data (refcode '{referenceCode}') after the request to the connector";
 
-                    var (_, isCancellationFailed, cancellationError) = await _providerRouter.CancelBooking(booking.DataProvider, booking.ReferenceCode);
+                    var (_, isCancellationFailed, cancellationError) = await _providerRouter.CancelBooking(booking.DataProvider, booking.ReferenceCode, requestMetadata);
                     if (isCancellationFailed)
                         errorMessage += Environment.NewLine + $"Booking cancellation has failed: {cancellationError}";
 
@@ -135,7 +136,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         
-        public async Task ProcessResponse(BookingDetails bookingResponse, Booking booking)
+        public async Task ProcessResponse(BookingDetails bookingResponse, Booking booking, RequestMetadata requestMetadata)
         {
             if (bookingResponse.Status == booking.Status)
                 return;
@@ -150,7 +151,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                     await ConfirmBooking();
                     break;
                 case BookingStatusCodes.Cancelled:
-                    await CancelBooking(booking);
+                    await CancelBooking(booking, requestMetadata);
                     break;
                 default: 
                     await UpdateBookingDetails();
@@ -192,7 +193,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             */
         }
         
-        private async Task CancelBooking(Booking booking)
+        private async Task CancelBooking(Booking booking, RequestMetadata requestMetadata)
         {
             await _bookingRecordsManager.ConfirmBookingCancellation(booking);
             await NotifyAgent();
@@ -220,7 +221,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
       
-        public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId)
+        public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, RequestMetadata requestMetadata)
         {
             UserInfo userInfo;
             var userInfoResult  = await _serviceAccountContext.GetUserInfo();
@@ -241,18 +242,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             if (isGetBookingFailure)
                 return ProblemDetailsBuilder.Fail<VoidObject>(getBookingError);
 
-            return await ProcessBookingCancellation(booking);
+            return await ProcessBookingCancellation(booking, requestMetadata);
         }
         
         
-        public async Task<Result<BookingDetails, ProblemDetails>> RefreshStatus(int bookingId)
+        public async Task<Result<BookingDetails, ProblemDetails>> RefreshStatus(int bookingId, RequestMetadata requestMetadata)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.Get(bookingId);
             if (isGetBookingFailure)
                 return ProblemDetailsBuilder.Fail<BookingDetails>(getBookingError);
 
             var refCode = booking.ReferenceCode;
-            var (_, isGetDetailsFailure, newDetails, getDetailsError) = await _providerRouter.GetBookingDetails(booking.DataProvider, refCode, booking.LanguageCode);
+            var (_, isGetDetailsFailure, newDetails, getDetailsError) = await _providerRouter.GetBookingDetails(booking.DataProvider, refCode, requestMetadata);
             if(isGetDetailsFailure)
                 return Result.Fail<BookingDetails, ProblemDetails>(getDetailsError);
             
@@ -261,7 +262,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        private async Task<Result<VoidObject, ProblemDetails>> ProcessBookingCancellation(Booking booking)
+        private async Task<Result<VoidObject, ProblemDetails>> ProcessBookingCancellation(Booking booking, RequestMetadata requestMetadata)
         {
             if (booking.Status == BookingStatusCodes.Cancelled)
                 return Result.Ok<VoidObject, ProblemDetails>(VoidObject.Instance);
@@ -280,7 +281,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
             async Task<Result<Booking, ProblemDetails>> SendCancellationRequest()
             {
-                var (_, isCancelFailure, _, cancelError) = await _providerRouter.CancelBooking(booking.DataProvider, booking.ReferenceCode);
+                var (_, isCancelFailure, _, cancelError) = await _providerRouter.CancelBooking(booking.DataProvider, booking.ReferenceCode, requestMetadata);
                 return isCancelFailure
                     ? Result.Fail<Booking, ProblemDetails>(cancelError)
                     : Result.Ok<Booking, ProblemDetails>(booking);
