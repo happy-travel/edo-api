@@ -90,7 +90,7 @@ namespace HappyTravel.Edo.Api.Controllers
         /// <returns>Search state</returns>
         [HttpGet("availabilities/accommodations/searches/{searchId}/state")]
         [ProducesResponseType(typeof(AvailabilitySearchState), (int) HttpStatusCode.OK)]
-        [RequestRateLimit(milliseconds: 1000)]
+        [RequestRateLimit(seconds: 1)]
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationAvailabilitySearch)]
         public async Task<IActionResult> GetAvailabilitySearchState([FromRoute] Guid searchId)
