@@ -20,8 +20,8 @@ namespace HappyTravel.Edo.Api.Filters
         {
             var flow = context.HttpContext.RequestServices.GetRequiredService<IMemoryFlow>();
             
-            var key = flow.BuildKey(context.HttpContext.Request.Path.Value, 
-                context.HttpContext.Connection.RemoteIpAddress.ToString());
+            var key = flow.BuildKey(context.HttpContext.Connection.RemoteIpAddress.ToString(),
+                context.HttpContext.Request.Path.Value);
             
             if (flow.TryGetValue<bool>(key, out _))
             {
