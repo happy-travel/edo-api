@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using HappyTravel.Edo.Api.Filters;
 using HappyTravel.Edo.Api.Filters.Authorization.CounterpartyStatesFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.AgentExistingFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters;
@@ -89,6 +90,7 @@ namespace HappyTravel.Edo.Api.Controllers
         /// <returns>Search state</returns>
         [HttpGet("availabilities/accommodations/searches/{searchId}/state")]
         [ProducesResponseType(typeof(AvailabilitySearchState), (int) HttpStatusCode.OK)]
+        [RequestRateLimit(milliseconds: 1000)]
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationAvailabilitySearch)]
         public async Task<IActionResult> GetAvailabilitySearchState([FromRoute] Guid searchId)
