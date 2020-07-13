@@ -36,7 +36,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -79,7 +79,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -124,7 +124,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsBalancePositive, "Could not charge money, insufficient balance");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -170,7 +170,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsAuthorizedSufficient, "Could not capture money, insufficient authorized balance");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -205,7 +205,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsAuthorizedSufficient, "Could not void money, insufficient authorized balance");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -248,10 +248,10 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsAmountCurrencyMatch, "Currency of specified amount mismatch");
 
             await using var payerAccountLock = await GetEntityLock(result, r => r.Value.payerAccount);
-            InsureLocked(result, payerAccountLock);
+            result = EnsureLocked(result, payerAccountLock);
 
             await using var recipientAccountLock = await GetEntityLock(result, r => r.Value.recipientAccount);
-            InsureLocked(result, recipientAccountLock);
+            result = EnsureLocked(result, recipientAccountLock);
 
             return await result
                 .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance")
@@ -377,7 +377,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 : default;
 
 
-        private Result<TResult> InsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
+        private static Result<TResult> EnsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
             result.IsSuccess
                 ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
                 : result;

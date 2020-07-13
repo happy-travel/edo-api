@@ -46,7 +46,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
             var result = Result.Success();
 
             await using var paymentLinkLock = await GetPaymentLinkLock(result, code);
-            result = InsureLocked(result, paymentLinkLock);
+            result = EnsureLocked(result, paymentLinkLock);
 
             return await result
                 .Bind(GetLink)
@@ -176,7 +176,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
                 : default;
 
 
-        private Result InsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
+        private static Result EnsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
             result.IsSuccess
                 ? result.Ensure(() => entityLock.Acquired, entityLock.Error)
                 : result;

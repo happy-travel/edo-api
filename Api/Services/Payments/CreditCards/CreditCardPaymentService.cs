@@ -231,7 +231,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 .Ensure(() => isParseSuccess, parseError);
 
             await using var paymentLock = await GetPaymentLock(result, paymentResponse.ReferenceCode);
-            result = InsureLocked(result, paymentLock);
+            result = EnsureLocked(result, paymentLock);
 
             return await result
                 .Bind(ProcessPaymentResponse)
@@ -401,7 +401,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 : default;
 
 
-        private Result InsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
+        private static Result EnsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
             result.IsSuccess
                 ? result.Ensure(() => entityLock.Acquired, entityLock.Error)
                 : result;

@@ -133,7 +133,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Bind(GetAccount);
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Ok(account)
@@ -185,7 +185,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 : default;
 
 
-        private Result<TResult> InsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
+        private static Result<TResult> EnsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
             result.IsSuccess
                 ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
                 : result;

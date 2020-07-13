@@ -48,7 +48,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsAmountPositive, "Payment amount must be a positive number");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -89,7 +89,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsAmountPositive, "Payment amount must be a positive number");
 
             await using var accountLock = await GetEntityLock(result, r => r.Value);
-            InsureLocked(result, accountLock);
+            result = EnsureLocked(result, accountLock);
 
             return await result
                 .BindWithTransaction(_context, account => Result.Success(account)
@@ -128,14 +128,14 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 .Ensure(IsAmountPositive, "Payment amount must be a positive number");
 
             await using var counterpartyAccountLock = await GetEntityLock(result, r => r.Value);
-            result = InsureLocked(result, counterpartyAccountLock);
+            result = EnsureLocked(result, counterpartyAccountLock);
 
             var result2 = await result
                 .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance")
                 .Bind(GetDefaultAgencyAccount);
 
             await using var agencyAccountLock = await GetEntityLock(result2, r => r.Value.paymentAccount);
-            result2 = InsureLocked(result2, agencyAccountLock);
+            result2 = EnsureLocked(result2, agencyAccountLock);
 
             return await result2
                 .BindWithTransaction(_context, accounts => Result.Success(accounts)
@@ -230,7 +230,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 : default;
 
 
-        private Result<TResult> InsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
+        private static Result<TResult> EnsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
             result.IsSuccess 
                 ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
                 : result;
