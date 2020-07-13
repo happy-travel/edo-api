@@ -12,6 +12,7 @@ using HappyTravel.Edo.Api.Infrastructure.Environments;
 using HappyTravel.Edo.Data;
 using HappyTravel.StdOutLogger.Extensions;
 using HappyTravel.VaultClient;
+using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -113,7 +114,7 @@ namespace HappyTravel.Edo.Api
                 });
             });
             services.AddSwaggerGenNewtonsoftSupport();
-
+            
             services.AddMvcCore(options =>
                 {
                     options.Conventions.Insert(0, new LocalizationConvention());
@@ -123,11 +124,14 @@ namespace HappyTravel.Edo.Api
                 })
                 .AddAuthorization()
                 .AddControllersAsServices()
+                .AddMvcOptions(m => m.EnableEndpointRouting = true)
                 .AddFormatterMappings()
                 .AddNewtonsoftJson(options => options.SerializerSettings.Converters.Add(new StringEnumConverter()))
                 .AddApiExplorer()
                 .AddCacheTagHelper()
                 .AddDataAnnotations();
+            
+            services.AddOData();
         }
 
 
@@ -169,6 +173,8 @@ namespace HappyTravel.Edo.Api
                 .UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
+                    endpoints.EnableDependencyInjection();
+                    endpoints.Filter().OrderBy().Expand().Select().MaxTop(500);
                 });
         }
 

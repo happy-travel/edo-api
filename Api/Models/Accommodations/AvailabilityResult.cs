@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using Newtonsoft.Json;
 
@@ -11,7 +12,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         {
             AvailabilityId = availabilityId;
             AccommodationDetails = accommodationDetails;
-            RoomContractSets = roomContractSets ?? new List<RoomContractSet>(0);
+            RoomContractSets = roomContractSets ?? new List<RoomContractSet>();
         }
 
 

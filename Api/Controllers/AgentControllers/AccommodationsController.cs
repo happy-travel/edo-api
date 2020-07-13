@@ -15,6 +15,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
+using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
 using AvailabilityRequest = HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest;
 
@@ -102,19 +103,17 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// Gets result of previous started availability search.
         /// </summary>
         /// <param name="searchId">Search id</param>
-        /// <param name="skip">Offset</param>
-        /// <param name="top">Results number</param>
         /// <returns>Availability results</returns>
         [HttpGet("availabilities/accommodations/searches/{searchId}")]
-        [ProducesResponseType(typeof(CombinedAvailabilityDetails), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(IEnumerable<ProviderData<AvailabilityResult>>), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationAvailabilitySearch)]
-        public async Task<IActionResult> GetAvailabilitySearchResult([FromRoute] Guid searchId, [FromQuery] int skip = 0, [FromQuery] int top = 10)
+        [EnableQuery]
+        public async Task<IEnumerable<ProviderData<AvailabilityResult>>> GetAvailabilitySearchResult([FromRoute] Guid searchId)
         {
             // TODO: Add validation and fool check for skip and top parameters
-            var result = await _availabilityStorage.GetResult(searchId, skip, top);
-            return Ok(result);
+            return await _availabilityStorage.GetResult(searchId);
         }
 
 

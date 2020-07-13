@@ -40,7 +40,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             => SaveObject(searchId, dataProvider, searchState);
 
 
-        public async Task<CombinedAvailabilityDetails> GetResult(Guid searchId, int skip, int top)
+        public async Task<IEnumerable<ProviderData<AvailabilityResult>>> GetResult(Guid searchId)
         {
             var key = _memoryFlow.BuildKey(nameof(AvailabilityStorage), searchId.ToString());
             if (!_memoryFlow.TryGetValue(key, out List<(DataProviders DataProvider, AvailabilityWithTimestamp Result)> providerSearchResults))
@@ -53,19 +53,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                     _memoryFlow.Set(key, providerSearchResults, CacheExpirationTime);
             }
 
-            return CombineAvailabilities(providerSearchResults, skip, top);
+            return CombineAvailabilities(providerSearchResults);
 
 
-            static CombinedAvailabilityDetails CombineAvailabilities(List<(DataProviders ProviderKey, AvailabilityWithTimestamp Availability)> availabilities,
-                int skip, int top)
+            static IEnumerable<ProviderData<AvailabilityResult>> CombineAvailabilities(List<(DataProviders ProviderKey, AvailabilityWithTimestamp Availability)> availabilities)
             {
                 if (availabilities == null || !availabilities.Any())
-                    return CombinedAvailabilityDetails.Empty;
+                    return Enumerable.Empty<ProviderData<AvailabilityResult>>();
 
-                var firstResult = availabilities.First().Availability.Details;
-
-                var results = availabilities
-                    .OrderBy(r=> r.Availability.TimeStamp)
+                return availabilities
+                    .OrderBy(r => r.Availability.TimeStamp)
                     .SelectMany(providerResults =>
                     {
                         var (providerKey, providerAvailability) = providerResults;
@@ -83,13 +80,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                             .ToList();
 
                         return availabilityResults;
-                    })
-                    .Skip(skip)
-                    .Take(top)
-                    .ToList();
-
-                var processed = availabilities.Sum(a => a.Availability.Details.NumberOfProcessedAccommodations);
-                return new CombinedAvailabilityDetails(firstResult.NumberOfNights, firstResult.CheckInDate, firstResult.CheckOutDate, processed, results);
+                    });
             }
         }
 
