@@ -1,7 +1,7 @@
 using FloxDc.CacheFlow;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Converters;
-using HappyTravel.Edo.UnitTests.Mocks;
+using HappyTravel.Edo.UnitTests.Stubs;
 using HappyTravel.Edo.UnitTests.Utility;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

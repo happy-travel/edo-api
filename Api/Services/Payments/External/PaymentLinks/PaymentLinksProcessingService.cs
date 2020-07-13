@@ -41,25 +41,21 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
         }
 
 
-        public Task<Result<PaymentResponse>> ProcessResponse(string code, JObject response)
+        public async Task<Result<PaymentResponse>> ProcessResponse(string code, JObject response)
         {
-            return LockLink()
-                .Bind(GetLink)
-                .Bind(ProcessResponse)
-                .Finally(UnlockLink);
+            var result = Result.Success();
 
-            Task<Result> LockLink() => _locker.Acquire<PaymentLink>(code, nameof(PaymentLinksProcessingService));
+            await using var paymentLinkLock = await GetPaymentLinkLock(result, code);
+            result = InsureLocked(result, paymentLinkLock);
+
+            return await result
+                .Bind(GetLink)
+                .Bind(ProcessResponse);
+
 
             Task<Result<PaymentLink>> GetLink() => this.GetLink(code);
 
             Task<Result<PaymentResponse>> ProcessResponse(PaymentLink link) => this.ProcessResponse(link.ToLinkData(), code, response);
-
-
-            async Task<Result<PaymentResponse>> UnlockLink(Result<PaymentResponse> paymentResponse)
-            {
-                await _locker.Release<PaymentLink>(code);
-                return paymentResponse;
-            }
         }
 
 
@@ -172,6 +168,18 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
 
 
         private Task<Result<PaymentLink>> GetLink(string code) => _storage.Get(code);
+
+
+        private async Task<EntityLock<PaymentLink>> GetPaymentLinkLock(Result result, string code) =>
+            result.IsSuccess
+                ? await _locker.CreateLock<PaymentLink>(code, nameof(IPaymentLinksProcessingService))
+                : default;
+
+
+        private Result InsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
+            result.IsSuccess
+                ? result.Ensure(() => entityLock.Acquired, entityLock.Error)
+                : result;
 
         private readonly IPaymentLinksStorage _storage;
         private readonly IEntityLocker _locker;

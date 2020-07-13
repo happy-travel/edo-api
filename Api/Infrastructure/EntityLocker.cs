@@ -18,7 +18,17 @@ namespace HappyTravel.Edo.Api.Infrastructure
         }
 
 
-        public async Task<Result> Acquire<TEntity>(string entityId, string locker)
+        public Task Release<TEntity>(string entityId) => _context.RemoveEntityLock(GetEntityDescriptor<TEntity>(entityId));
+
+
+        public async Task<EntityLock<TEntity>> CreateLock<TEntity>(string entityId, string locker)
+        {
+            var (isSuccess, _, error) = await Acquire<TEntity>(entityId, locker);
+            return new EntityLock<TEntity>(isSuccess, entityId, error, this);
+        }
+
+
+        private async Task<Result> Acquire<TEntity>(string entityId, string locker)
         {
             var entityDescriptor = GetEntityDescriptor<TEntity>(entityId);
             var token = Guid.NewGuid().ToString();
@@ -46,9 +56,6 @@ namespace HappyTravel.Edo.Api.Infrastructure
                 => TimeSpan.FromMilliseconds(_random.Next(MinRetryPeriodMilliseconds,
                     MaxRetryPeriodMilliseconds));
         }
-
-
-        public Task Release<TEntity>(string entityId) => _context.RemoveEntityLock(GetEntityDescriptor<TEntity>(entityId));
 
 
         private static string GetEntityDescriptor<TEntity>(string id) => $"{typeof(TEntity).Name}_{id}";

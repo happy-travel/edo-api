@@ -2,14 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Payments;
-using HappyTravel.Edo.UnitTests.Mocks;
+using HappyTravel.Edo.UnitTests.Stubs;
 using HappyTravel.Edo.UnitTests.Utility;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
@@ -23,16 +22,14 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.Accounts.Counterpart
     {
         public TransferMoneyTests(Mock<EdoContext> edoContextMock)
         {
-            var entityLockerMock = new Mock<IEntityLocker>();
-
-            entityLockerMock.Setup(l => l.Acquire<It.IsAnyType>(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(Result.Ok()));
+            var entityLocker = new EntityLockerStub();
 
             _edoContextMock = edoContextMock;
             _mockedEdoContext = edoContextMock.Object;
 
-            _counterpartyAccountService = new CounterpartyAccountService(_mockedEdoContext, entityLockerMock.Object, Mock.Of<IAccountBalanceAuditService>());
+            _counterpartyAccountService = new CounterpartyAccountService(_mockedEdoContext, entityLocker, Mock.Of<IAccountBalanceAuditService>());
 
-            var strategy = new ExecutionStrategyMock();
+            var strategy = new ExecutionStrategyStub();
 
             var dbFacade = new Mock<DatabaseFacade>(_mockedEdoContext);
             dbFacade.Setup(d => d.CreateExecutionStrategy()).Returns(strategy);

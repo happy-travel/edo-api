@@ -1,11 +1,11 @@
 using System;
 using HappyTravel.Edo.Api.Infrastructure;
 
-namespace HappyTravel.Edo.UnitTests.Mocks
+namespace HappyTravel.Edo.UnitTests.Stubs
 {
-    public class DateTimeProviderMock : IDateTimeProvider
+    public class DateTimeProviderStub : IDateTimeProvider
     {
-        public DateTimeProviderMock(DateTime dateTime)
+        public DateTimeProviderStub(DateTime dateTime)
         {
             _dateTime = dateTime;
         }

@@ -9,6 +9,7 @@ using HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks;
 using HappyTravel.Edo.Api.Services.Payments.Payfort;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.PaymentLinks;
+using HappyTravel.Edo.UnitTests.Stubs;
 using HappyTravel.Money.Enums;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,9 +22,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
     {
         static PaymentProcess()
         {
-            EntityLockerMock = new Mock<IEntityLocker>();
-            EntityLockerMock.Setup(l => l.Acquire<It.IsAnyType>(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(Task.FromResult(Result.Ok()));
+            EntityLocker = new EntityLockerStub();
         }
 
 
@@ -37,7 +36,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
                 SignatureServiceStub,
                 EmptyPayfortOptions,
                 Mock.Of<IPaymentLinkNotificationService>(),
-                EntityLockerMock.Object);
+                EntityLocker);
 
             var (_, isFailure, response, _) = await processingService.Pay(AnyString,
                 AnyString, "::1",
@@ -85,7 +84,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
                     SignatureServiceStub,
                     EmptyPayfortOptions,
                     Mock.Of<IPaymentLinkNotificationService>(),
-                    EntityLockerMock.Object);
+                    EntityLocker);
 
                 return paymentLinksProcessingService;
             }
@@ -118,7 +117,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
                     SignatureServiceStub,
                     EmptyPayfortOptions,
                     notificationServiceMock.Object,
-                    EntityLockerMock.Object);
+                    EntityLocker);
                 return paymentLinksProcessingService;
             }
         }
@@ -150,7 +149,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
                     SignatureServiceStub,
                     EmptyPayfortOptions,
                     Mock.Of<IPaymentLinkNotificationService>(),
-                    EntityLockerMock.Object);
+                    EntityLocker);
                 return paymentLinksProcessingService;
             }
         }
@@ -183,7 +182,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
 
         private static readonly IPayfortSignatureService SignatureServiceStub = Mock.Of<IPayfortSignatureService>();
         private static readonly IOptions<PayfortOptions> EmptyPayfortOptions = Options.Create(new PayfortOptions());
-        private static readonly Mock<IEntityLocker> EntityLockerMock;
+        private static readonly IEntityLocker EntityLocker;
 
         public static object[][] CreditCardPaymentResults =
         {

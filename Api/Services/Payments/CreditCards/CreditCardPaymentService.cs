@@ -225,16 +225,18 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
         
         public async Task<Result<PaymentResponse>> ProcessPaymentResponse(JObject rawResponse, IPaymentsService paymentsService)
         {
-            var (_, isParseFailure, paymentResponse, parseError) = _responseParser.ParsePaymentResponse(rawResponse);
-            if (isParseFailure)
-                return Result.Failure<PaymentResponse>(parseError);
-            
-            return await LockPayment()
-                .Bind(ProcessPaymentResponse)
-                .Map(StorePaymentResults)
-                .Finally(UnlockPayment);
+            var (isParseSuccess, _, paymentResponse, parseError) = _responseParser.ParsePaymentResponse(rawResponse);
 
-            Task<Result> LockPayment() => _locker.Acquire<Payment>(paymentResponse.ReferenceCode, nameof(CreditCardPaymentProcessingService));
+            var result = Result.Success()
+                .Ensure(() => isParseSuccess, parseError);
+
+            await using var paymentLock = await GetPaymentLock(result, paymentResponse.ReferenceCode);
+            result = InsureLocked(result, paymentLock);
+
+            return await result
+                .Bind(ProcessPaymentResponse)
+                .Map(StorePaymentResults);
+
             
             async Task<Result<(CreditCardPaymentResult, Payment)>> ProcessPaymentResponse()
             {
@@ -301,13 +303,6 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                     return Result.Failure<Payment>($"Invalid payment amount, expected: '{payment.Amount}', actual: '{paymentResponse.Amount}'");
                 
                 return Result.Ok(payment);
-            }
-
-
-            async Task<Result<PaymentResponse>> UnlockPayment(Result<PaymentResponse> result)
-            {
-                await _locker.Release<Payment>(paymentResponse.ReferenceCode);
-                return result;
             }
         }
         
@@ -398,7 +393,19 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 await paymentsService.ProcessPaymentChanges(payment);
             }
         }
-        
+
+
+        private async Task<EntityLock<Payment>> GetPaymentLock(Result result, string referenceCode) =>
+            result.IsSuccess
+                ? await _locker.CreateLock<Payment>(referenceCode, nameof(ICreditCardPaymentProcessingService))
+                : default;
+
+
+        private Result InsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
+            result.IsSuccess
+                ? result.Ensure(() => entityLock.Acquired, entityLock.Error)
+                : result;
+
 
         private readonly IPayfortResponseParser _responseParser;
         private readonly EdoContext _context;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using FloxDc.CacheFlow;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace HappyTravel.Edo.UnitTests.Mocks
+namespace HappyTravel.Edo.UnitTests.Stubs
 {
     public class FakeMemoryFlow : IMemoryFlow
     {

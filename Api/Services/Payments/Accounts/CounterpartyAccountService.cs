@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -39,17 +40,20 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, UserInfo user)
+        public async Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, UserInfo user)
         {
-            return GetCounterpartyAccount(counterpartyAccountId)
+            var result = await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
-                .Ensure(IsAmountPositive, "Payment amount must be a positive number")
-                .Bind(LockCounterpartyAccount)
-                .BindWithTransaction(_context, account => Result.Ok(account)
+                .Ensure(IsAmountPositive, "Payment amount must be a positive number");
+
+            await using var accountLock = await GetEntityLock(result, r => r.Value);
+            result = InsureLocked(result, accountLock);
+
+            return await result
+                .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(AddMoneyToCounterparty)
-                    .Map(WriteAuditLog))
-                .Finally(result => UnlockCounterpartyAccount(result, counterpartyAccountId));
+                    .Map(WriteAuditLog));
 
             bool IsReasonProvided(CounterpartyAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
@@ -65,7 +69,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
             }
 
 
-            async Task<CounterpartyAccount> WriteAuditLog(CounterpartyAccount account)
+            async Task WriteAuditLog(CounterpartyAccount account)
             {
                 var eventData = new CounterpartyAccountBalanceLogEventData(paymentData.Reason, account.Balance);
                 await _auditService.Write(AccountEventType.CounterpartyAdd,
@@ -74,22 +78,23 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                     user,
                     eventData,
                     null);
-
-                return account;
             }
         }
 
 
-        public Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, UserInfo user)
+        public async Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, UserInfo user)
         {
-            return GetCounterpartyAccount(counterpartyAccountId)
+            var result = await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, data), "Account and payment currency mismatch")
-                .Ensure(IsAmountPositive, "Payment amount must be a positive number")
-                .Bind(LockCounterpartyAccount)
-                .BindWithTransaction(_context, account => Result.Ok(account)
+                .Ensure(IsAmountPositive, "Payment amount must be a positive number");
+
+            await using var accountLock = await GetEntityLock(result, r => r.Value);
+            InsureLocked(result, accountLock);
+
+            return await result
+                .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(SubtractMoney)
-                    .Map(WriteAuditLog))
-                .Finally(result => UnlockCounterpartyAccount(result, counterpartyAccountId));
+                    .Map(WriteAuditLog));
 
             bool IsAmountPositive(CounterpartyAccount account) => data.Amount.IsGreaterThan(decimal.Zero);
 
@@ -103,7 +108,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
             }
 
 
-            async Task<CounterpartyAccount> WriteAuditLog(CounterpartyAccount account)
+            async Task WriteAuditLog(CounterpartyAccount account)
             {
                 var eventData = new CounterpartyAccountBalanceLogEventData(null, account.Balance);
                 await _auditService.Write(AccountEventType.CounterpartySubtract,
@@ -112,32 +117,38 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                     user,
                     eventData,
                     null);
-
-                return account;
             }
         }
 
 
-        public Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, UserInfo user)
+        public async Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, UserInfo user)
         {
-            return GetCounterpartyAccount(counterpartyAccountId)
+            var result = await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, amount), "Account and payment currency mismatch")
-                .Ensure(IsAmountPositive, "Payment amount must be a positive number")
-                .Bind(LockCounterpartyAccount)
+                .Ensure(IsAmountPositive, "Payment amount must be a positive number");
+
+            await using var counterpartyAccountLock = await GetEntityLock(result, r => r.Value);
+            result = InsureLocked(result, counterpartyAccountLock);
+
+            var result2 = await result
                 .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance")
-                .Bind(GetDefaultAgencyAccount)
-                .Bind(LockPaymentAccount)
-                .BindWithTransaction(_context, accounts => Result.Ok(accounts)
+                .Bind(GetDefaultAgencyAccount);
+
+            await using var agencyAccountLock = await GetEntityLock(result2, r => r.Value.paymentAccount);
+            result2 = InsureLocked(result2, agencyAccountLock);
+
+            return await result2
+                .BindWithTransaction(_context, accounts => Result.Success(accounts)
                     .Map(TransferMoney)
-                    .Map(WriteAuditLog))
-                .Finally(UnlockAccounts);
+                    .Map(WriteAuditLog));
 
             bool IsAmountPositive(CounterpartyAccount account) => amount.Amount.IsGreaterThan(decimal.Zero);
 
             bool IsBalanceSufficient(CounterpartyAccount account) => account.Balance.IsGreaterOrEqualThan(amount.Amount);
 
 
-            async Task<Result<(CounterpartyAccount, PaymentAccount)>> GetDefaultAgencyAccount(CounterpartyAccount counterpartyAccount)
+            async Task<Result<(CounterpartyAccount counterpartyAccount, PaymentAccount paymentAccount)>> GetDefaultAgencyAccount(
+                CounterpartyAccount counterpartyAccount)
             {
                 var defaultAgency = await _context.Agencies
                     .Where(a => a.CounterpartyId == counterpartyAccount.CounterpartyId && a.ParentId == null)
@@ -157,16 +168,6 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
             }
 
 
-            async Task<Result<(CounterpartyAccount, PaymentAccount)>> LockPaymentAccount((CounterpartyAccount, PaymentAccount) accounts)
-            {
-                var (counterpartyAccount, paymentAccount) = accounts;
-                var (isSuccess, _, _, error) = await this.LockPaymentAccount(paymentAccount);
-                return isSuccess
-                    ? Result.Ok<(CounterpartyAccount, PaymentAccount)>((counterpartyAccount, paymentAccount))
-                    : Result.Failure<(CounterpartyAccount, PaymentAccount)>(error);
-            }
-
-
             async Task<(CounterpartyAccount, PaymentAccount)> TransferMoney((CounterpartyAccount, PaymentAccount) accounts)
             {
                 var (counterpartyAccount, paymentAccount) = accounts;
@@ -183,7 +184,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
             }
 
 
-            async Task<(CounterpartyAccount, PaymentAccount)> WriteAuditLog((CounterpartyAccount, PaymentAccount) accounts)
+            async Task WriteAuditLog((CounterpartyAccount, PaymentAccount) accounts)
             {
                 var (counterpartyAccount, paymentAccount) = accounts;
 
@@ -203,24 +204,6 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                     user,
                     agencyEventData,
                     null);
-
-                return (counterpartyAccount, paymentAccount);
-            }
-
-
-            async Task<Result> UnlockAccounts(Result<(CounterpartyAccount, PaymentAccount)> result)
-            {
-                var (isSuccess, _, (counterpartyAccount, paymentAccount), error) = result;
-
-                var newResult = isSuccess ? Result.Ok() : Result.Failure(error);
-
-                if (counterpartyAccount != default)
-                    await UnlockCounterpartyAccount(Result.Ok(counterpartyAccount), counterpartyAccount.Id);
-
-                if (paymentAccount != default)
-                    await UnlockPaymentAccount(Result.Ok(paymentAccount), paymentAccount.Id);
-
-                return newResult;
             }
         }
 
@@ -240,36 +223,17 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         private bool AreCurrenciesMatch(CounterpartyAccount account, PaymentCancellationData data) => account.Currency == data.Currency;
 
 
-        private async Task<Result<CounterpartyAccount>> LockCounterpartyAccount(CounterpartyAccount account)
-        {
-            var (isSuccess, _, error) = await _locker.Acquire<CounterpartyAccount>(account.Id.ToString(), nameof(IAccountPaymentProcessingService));
-            return isSuccess
-                ? Result.Ok(account)
-                : Result.Failure<CounterpartyAccount>(error);
-        }
+        private async Task<EntityLock<TEntity>> GetEntityLock<TResult, TEntity>(Result<TResult> result, Func<Result<TResult>, TEntity> entityGetter)
+            where TEntity : IEntity =>
+            result.IsSuccess
+                ? await _locker.CreateLock<TEntity>(entityGetter(result).Id.ToString(), nameof(ICounterpartyAccountService))
+                : default;
 
 
-        private async Task<Result> UnlockCounterpartyAccount(Result<CounterpartyAccount> result, int accountId)
-        {
-            await _locker.Release<CounterpartyAccount>(accountId.ToString());
-            return result;
-        }
-
-
-        private async Task<Result<PaymentAccount>> LockPaymentAccount(PaymentAccount account)
-        {
-            var (isSuccess, _, error) = await _locker.Acquire<PaymentAccount>(account.Id.ToString(), nameof(IAccountPaymentProcessingService));
-            return isSuccess
-                ? Result.Ok(account)
-                : Result.Failure<PaymentAccount>(error);
-        }
-
-
-        private async Task<Result> UnlockPaymentAccount(Result<PaymentAccount> result, int accountId)
-        {
-            await _locker.Release<PaymentAccount>(accountId.ToString());
-            return result;
-        }
+        private Result<TResult> InsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
+            result.IsSuccess 
+                ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
+                : result;
 
 
         private readonly IAccountBalanceAuditService _auditService;

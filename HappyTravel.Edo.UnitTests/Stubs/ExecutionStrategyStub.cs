@@ -7,9 +7,9 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Moq;
 
-namespace HappyTravel.Edo.UnitTests.Mocks
+namespace HappyTravel.Edo.UnitTests.Stubs
 {
-    class ExecutionStrategyMock : IExecutionStrategy
+    class ExecutionStrategyStub : IExecutionStrategy
     {
         public TResult Execute<TState, TResult>(
             TState state, Func<DbContext, TState, TResult> operation,

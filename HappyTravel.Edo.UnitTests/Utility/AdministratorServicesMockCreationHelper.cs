@@ -9,7 +9,7 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Payments;
-using HappyTravel.Edo.UnitTests.Mocks;
+using HappyTravel.Edo.UnitTests.Stubs;
 using HappyTravel.Money.Enums;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Moq;
@@ -21,7 +21,7 @@ namespace HappyTravel.Edo.UnitTests.Utility
         public Mock<EdoContext> GetContextMock()
         {
             var edoContextMock = MockEdoContextFactory.Create();
-            var strategy = new ExecutionStrategyMock();
+            var strategy = new ExecutionStrategyStub();
             var dbFacade = new Mock<DatabaseFacade>(edoContextMock.Object);
 
             dbFacade.Setup(d => d.CreateExecutionStrategy()).Returns(strategy);
