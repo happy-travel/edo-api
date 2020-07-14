@@ -41,16 +41,28 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
         }
 
 
-        public async Task<Result<PaymentResponse>> ProcessResponse(string code, JObject response)
+        public Task<Result<PaymentResponse>> ProcessResponse(string code, JObject response)
         {
-            var result = Result.Success();
+            EntityLock<PaymentLink> paymentLinkLock = default;
 
-            await using var paymentLinkLock = await GetPaymentLinkLock(result, code);
-            result = EnsureLocked(result, paymentLinkLock);
-
-            return await result
+            return LockLink()
                 .Bind(GetLink)
-                .Bind(ProcessResponse);
+                .Bind(ProcessResponse)
+                .Finally(ReleaseLink);
+
+
+            async Task<Result> LockLink()
+            {
+                paymentLinkLock = await _locker.CreateLock<PaymentLink>(code, nameof(IPaymentLinksProcessingService));
+                return Result.Success().Ensure(() => paymentLinkLock.Acquired, paymentLinkLock.Error);
+            }
+
+
+            async Task<Result<TResult>> ReleaseLink<TResult>(Result<TResult> result)
+            {
+                await paymentLinkLock.DisposeAsync();
+                return result;
+            }
 
 
             Task<Result<PaymentLink>> GetLink() => this.GetLink(code);
@@ -169,17 +181,6 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
 
         private Task<Result<PaymentLink>> GetLink(string code) => _storage.Get(code);
 
-
-        private async Task<EntityLock<PaymentLink>> GetPaymentLinkLock(Result result, string code) =>
-            result.IsSuccess
-                ? await _locker.CreateLock<PaymentLink>(code, nameof(IPaymentLinksProcessingService))
-                : default;
-
-
-        private static Result EnsureLocked<TEntity>(Result result, EntityLock<TEntity> entityLock) =>
-            result.IsSuccess
-                ? result.Ensure(() => entityLock.Acquired, entityLock.Error)
-                : result;
 
         private readonly IPaymentLinksStorage _storage;
         private readonly IEntityLocker _locker;

@@ -40,24 +40,38 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, UserInfo user)
+        public Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, UserInfo user)
         {
-            var result = await GetCounterpartyAccount(counterpartyAccountId)
+            EntityLock<CounterpartyAccount> accountLock = default;
+
+            return GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
-                .Ensure(IsAmountPositive, "Payment amount must be a positive number");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(IsAmountPositive, "Payment amount must be a positive number")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(AddMoneyToCounterparty)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
+
 
             bool IsReasonProvided(CounterpartyAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
             bool IsAmountPositive(CounterpartyAccount account) => paymentData.Amount.IsGreaterThan(decimal.Zero);
+
+
+            async Task<Result<CounterpartyAccount>> LockAccount(CounterpartyAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<CounterpartyAccount> AddMoneyToCounterparty(CounterpartyAccount account)
@@ -82,21 +96,35 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, UserInfo user)
+        public Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, UserInfo user)
         {
-            var result = await GetCounterpartyAccount(counterpartyAccountId)
+            EntityLock<CounterpartyAccount> accountLock = default;
+
+            return GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, data), "Account and payment currency mismatch")
-                .Ensure(IsAmountPositive, "Payment amount must be a positive number");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(IsAmountPositive, "Payment amount must be a positive number")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(SubtractMoney)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
+
 
             bool IsAmountPositive(CounterpartyAccount account) => data.Amount.IsGreaterThan(decimal.Zero);
+
+
+            async Task<Result<CounterpartyAccount>> LockAccount(CounterpartyAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<CounterpartyAccount> SubtractMoney(CounterpartyAccount account)
@@ -121,26 +149,47 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, UserInfo user)
+        public Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, UserInfo user)
         {
-            var result = await GetCounterpartyAccount(counterpartyAccountId)
+            EntityLock<CounterpartyAccount> counterpartyAccountLock = default;
+            EntityLock<PaymentAccount> paymentAccountLock = default;
+
+            return GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, amount), "Account and payment currency mismatch")
-                .Ensure(IsAmountPositive, "Payment amount must be a positive number");
-
-            await using var counterpartyAccountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, counterpartyAccountLock);
-
-            var result2 = await result
+                .Ensure(IsAmountPositive, "Payment amount must be a positive number")
+                .Bind(LockCounterpartyAccount)
                 .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance")
-                .Bind(GetDefaultAgencyAccount);
-
-            await using var agencyAccountLock = await GetEntityLock(result2, r => r.Value.paymentAccount);
-            result2 = EnsureLocked(result2, agencyAccountLock);
-
-            return await result2
+                .Bind(GetDefaultAgencyAccount)
+                .Bind(LockAgencyAccount)
                 .BindWithTransaction(_context, accounts => Result.Success(accounts)
                     .Map(TransferMoney)
-                    .Map(WriteAuditLog));
+                    .Tap(WriteAuditLog))
+                .Finally(ReleaseAccounts);
+
+
+            async Task<Result<CounterpartyAccount>> LockCounterpartyAccount(CounterpartyAccount account)
+            {
+                counterpartyAccountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => counterpartyAccountLock.Acquired, counterpartyAccountLock.Error);
+            }
+
+
+            async Task<Result<(CounterpartyAccount, PaymentAccount)>> LockAgencyAccount(
+                (CounterpartyAccount counterpartyAccount, PaymentAccount paymentAccount) accounts)
+            {
+                paymentAccountLock = await CreateEntityLock(accounts.paymentAccount);
+                return Result.Success(accounts).Ensure(_ => paymentAccountLock.Acquired, paymentAccountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccounts<TResult>(Result<TResult> result)
+            {
+                await counterpartyAccountLock.DisposeAsync();
+                await paymentAccountLock.DisposeAsync();
+
+                return result;
+            }
+
 
             bool IsAmountPositive(CounterpartyAccount account) => amount.Amount.IsGreaterThan(decimal.Zero);
 
@@ -223,17 +272,8 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         private bool AreCurrenciesMatch(CounterpartyAccount account, PaymentCancellationData data) => account.Currency == data.Currency;
 
 
-        private async Task<EntityLock<TEntity>> GetEntityLock<TResult, TEntity>(Result<TResult> result, Func<Result<TResult>, TEntity> entityGetter)
-            where TEntity : IEntity =>
-            result.IsSuccess
-                ? await _locker.CreateLock<TEntity>(entityGetter(result).Id.ToString(), nameof(ICounterpartyAccountService))
-                : default;
-
-
-        private static Result<TResult> EnsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
-            result.IsSuccess 
-                ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
-                : result;
+        private Task<EntityLock<TEntity>> CreateEntityLock<TEntity>(TEntity entity) where TEntity : IEntity =>
+            _locker.CreateLock<TEntity>(entity.Id.ToString(), nameof(ICounterpartyAccountService));
 
 
         private readonly IAccountBalanceAuditService _auditService;

@@ -126,19 +126,18 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> ChangeCreditLimit(int accountId, decimal creditLimit)
+        public Task<Result> ChangeCreditLimit(int accountId, decimal creditLimit)
         {
-            var result = await Result.Success()
+            EntityLock<PaymentAccount> accountLock = default;
+
+            return Result.Success()
                 .Ensure(CreditLimitIsValid, "Credit limit should be greater than zero")
-                .Bind(GetAccount);
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Bind(GetAccount)
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Ok(account)
                     .Bind(UpdateCreditLimit)
-                    .Bind(WriteAuditLog));
+                    .Bind(WriteAuditLog))
+                .Finally(ReleaseAccount);
 
 
             async Task<Result<PaymentAccount>> GetAccount()
@@ -147,6 +146,20 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 return account == default
                     ? Result.Failure<PaymentAccount>("Could not find payment account")
                     : Result.Ok(account);
+            }
+
+
+            async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount(Result result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
             }
 
 
@@ -178,17 +191,8 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        private async Task<EntityLock<TEntity>> GetEntityLock<TResult, TEntity>(Result<TResult> result, Func<Result<TResult>, TEntity> entityGetter)
-            where TEntity : IEntity =>
-            result.IsSuccess
-                ? await _locker.CreateLock<TEntity>(entityGetter(result).Id.ToString(), nameof(IAccountManagementService))
-                : default;
-
-
-        private static Result<TResult> EnsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
-            result.IsSuccess
-                ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
-                : result;
+        private Task<EntityLock<TEntity>> CreateEntityLock<TEntity>(TEntity entity) where TEntity : IEntity =>
+            _locker.CreateLock<TEntity>(entity.Id.ToString(), nameof(IAccountManagementService));
 
 
         private readonly IAdministratorContext _administratorContext;

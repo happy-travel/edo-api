@@ -29,22 +29,35 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> AddMoney(int accountId, PaymentData paymentData, UserInfo user)
+        public Task<Result> AddMoney(int accountId, PaymentData paymentData, UserInfo user)
         {
-            var result = await GetAccount(accountId)
+            EntityLock<PaymentAccount> accountLock = default;
+
+            return GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
-                .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(AddMoney)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
 
 
             bool IsReasonProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
+
+
+            async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<PaymentAccount> AddMoney(PaymentAccount account)
@@ -71,25 +84,38 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> ChargeMoney(int accountId, PaymentData paymentData, UserInfo user)
+        public Task<Result> ChargeMoney(int accountId, PaymentData paymentData, UserInfo user)
         {
-            var result = await GetAccount(accountId)
+            EntityLock<PaymentAccount> accountLock = default;
+
+            return GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
-                .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(ChargeMoney)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
 
 
             bool IsReasonProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
             bool IsBalanceSufficient(PaymentAccount account) => this.IsBalanceSufficient(account, paymentData.Amount);
+
+
+            async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<PaymentAccount> ChargeMoney(PaymentAccount account)
@@ -116,25 +142,38 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> AuthorizeMoney(int accountId, AuthorizedMoneyData paymentData, UserInfo user)
+        public Task<Result> AuthorizeMoney(int accountId, AuthorizedMoneyData paymentData, UserInfo user)
         {
-            var result = await GetAccount(accountId)
+            EntityLock<PaymentAccount> accountLock = default;
+
+            return GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
-                .Ensure(IsBalancePositive, "Could not charge money, insufficient balance");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(IsBalancePositive, "Could not charge money, insufficient balance")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(AuthorizeMoney)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
 
 
             bool IsReasonProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
             bool IsBalancePositive(PaymentAccount account) => (account.Balance + account.CreditLimit).IsGreaterThan(decimal.Zero);
+
+
+            async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<PaymentAccount> AuthorizeMoney(PaymentAccount account)
@@ -162,25 +201,38 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> CaptureMoney(int accountId, AuthorizedMoneyData paymentData, UserInfo user)
+        public Task<Result> CaptureMoney(int accountId, AuthorizedMoneyData paymentData, UserInfo user)
         {
-            var result = await GetAccount(accountId)
+            EntityLock<PaymentAccount> accountLock = default;
+
+            return GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
-                .Ensure(IsAuthorizedSufficient, "Could not capture money, insufficient authorized balance");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(IsAuthorizedSufficient, "Could not capture money, insufficient authorized balance")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(CaptureMoney)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
 
 
             bool IsReasonProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
             bool IsAuthorizedSufficient(PaymentAccount account) => this.IsAuthorizedSufficient(account, paymentData.Amount);
+
+
+            async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<PaymentAccount> CaptureMoney(PaymentAccount account)
@@ -197,25 +249,38 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> VoidMoney(int accountId, AuthorizedMoneyData paymentData, UserInfo user)
+        public Task<Result> VoidMoney(int accountId, AuthorizedMoneyData paymentData, UserInfo user)
         {
-            var result = await GetAccount(accountId)
+            EntityLock<PaymentAccount> accountLock = default;
+
+            return GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
-                .Ensure(IsAuthorizedSufficient, "Could not void money, insufficient authorized balance");
-
-            await using var accountLock = await GetEntityLock(result, r => r.Value);
-            result = EnsureLocked(result, accountLock);
-
-            return await result
+                .Ensure(IsAuthorizedSufficient, "Could not void money, insufficient authorized balance")
+                .Bind(LockAccount)
                 .BindWithTransaction(_context, account => Result.Success(account)
                     .Map(VoidMoney)
-                    .Map(WriteAuditLog));
+                    .Map(WriteAuditLog))
+                .Finally(ReleaseAccount);
 
 
             bool IsReasonProvided(PaymentAccount account) => !string.IsNullOrEmpty(paymentData.Reason);
 
             bool IsAuthorizedSufficient(PaymentAccount account) => this.IsAuthorizedSufficient(account, paymentData.Amount);
+
+
+            async Task<Result<PaymentAccount>> LockAccount(PaymentAccount account)
+            {
+                accountLock = await CreateEntityLock(account);
+                return Result.Success(account).Ensure(_ => accountLock.Acquired, accountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccount<TResult>(Result<TResult> result)
+            {
+                await accountLock.DisposeAsync();
+                return result;
+            }
 
 
             async Task<PaymentAccount> VoidMoney(PaymentAccount account)
@@ -234,30 +299,27 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
 
 
-        public async Task<Result> TransferToChildAgency(int payerAccountId, int recipientAccountId, MoneyAmount amount, AgentContext agent)
+        public Task<Result> TransferToChildAgency(int payerAccountId, int recipientAccountId, MoneyAmount amount, AgentContext agent)
         {
+            EntityLock<PaymentAccount> payerAccountLock = default;
+            EntityLock<PaymentAccount> recipientAccountLock = default;
             var user = agent.ToUserInfo();
 
-            var result = await Result.Success()
+            return Result.Success()
                 .Ensure(IsAmountPositive, "Payment amount must be a positive number")
                 .Bind(GetPayerAccount)
                 .Ensure(IsAgentUsingHisAgencyAccount, "You can only transfer money from an agency you are currently using")
                 .Bind(GetRecipientAccount)
                 .Ensure(IsRecipientAgencyChildOfPayerAgency, "Transfers are only possible to accounts of child agencies")
                 .Ensure(AreAccountsCurrenciesMatch, "Currencies of specified accounts mismatch")
-                .Ensure(IsAmountCurrencyMatch, "Currency of specified amount mismatch");
-
-            await using var payerAccountLock = await GetEntityLock(result, r => r.Value.payerAccount);
-            result = EnsureLocked(result, payerAccountLock);
-
-            await using var recipientAccountLock = await GetEntityLock(result, r => r.Value.recipientAccount);
-            result = EnsureLocked(result, recipientAccountLock);
-
-            return await result
+                .Ensure(IsAmountCurrencyMatch, "Currency of specified amount mismatch")
+                .Bind(LockPayerAccount)
                 .Ensure(IsBalanceSufficient, "Could not charge money, insufficient balance")
+                .Bind(LockRecipientAccount)
                 .BindWithTransaction(_context, accounts => Result.Success(accounts)
                     .Map(TransferMoney)
-                    .Tap(WriteAuditLog));
+                    .Tap(WriteAuditLog))
+                .Finally(ReleaseAccounts);
 
 
             async Task<Result<PaymentAccount>> GetPayerAccount()
@@ -297,6 +359,29 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
             bool IsAmountCurrencyMatch((PaymentAccount payerAccount, PaymentAccount recipientAccount) accounts) =>
                 accounts.payerAccount.Currency == amount.Currency;
+
+
+            async Task<Result<(PaymentAccount, PaymentAccount)>> LockPayerAccount((PaymentAccount payerAccount, PaymentAccount recipientAccount) accounts)
+            {
+                payerAccountLock = await CreateEntityLock(accounts.payerAccount);
+                return Result.Success(accounts).Ensure(_ => payerAccountLock.Acquired, payerAccountLock.Error);
+            }
+
+
+            async Task<Result<(PaymentAccount, PaymentAccount)>> LockRecipientAccount((PaymentAccount payerAccount, PaymentAccount recipientAccount) accounts)
+            {
+                recipientAccountLock = await CreateEntityLock(accounts.payerAccount);
+                return Result.Success(accounts).Ensure(_ => recipientAccountLock.Acquired, recipientAccountLock.Error);
+            }
+
+
+            async Task<Result> ReleaseAccounts<TResult>(Result<TResult> result)
+            {
+                await payerAccountLock.DisposeAsync();
+                await recipientAccountLock.DisposeAsync();
+
+                return result;
+            }
 
 
             bool IsBalanceSufficient((PaymentAccount payerAccount, PaymentAccount recipientAccount) accounts) =>
@@ -370,17 +455,8 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        private async Task<EntityLock<TEntity>> GetEntityLock<TResult, TEntity>(Result<TResult> result, Func<Result<TResult>, TEntity> entityGetter)
-            where TEntity : IEntity =>
-            result.IsSuccess
-                ? await _locker.CreateLock<TEntity>(entityGetter(result).Id.ToString(), nameof(IAccountPaymentProcessingService))
-                : default;
-
-
-        private static Result<TResult> EnsureLocked<TResult, TEntity>(Result<TResult> result, EntityLock<TEntity> entityLock) =>
-            result.IsSuccess
-                ? result.Ensure(_ => entityLock.Acquired, entityLock.Error)
-                : result;
+        private Task<EntityLock<TEntity>> CreateEntityLock<TEntity>(TEntity entity) where TEntity : IEntity =>
+            _locker.CreateLock<TEntity>(entity.Id.ToString(), nameof(IAccountPaymentProcessingService));
 
 
         private readonly IAccountBalanceAuditService _auditService;
