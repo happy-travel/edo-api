@@ -16,10 +16,10 @@ namespace HappyTravel.Edo.Api.Infrastructure
         }
 
 
-        public ValueTask DisposeAsync() =>
-            Acquired
-                ? new ValueTask(_entityLocker.Release<TEntity>(_entityId))
-                : new ValueTask(Task.CompletedTask);
+        public async ValueTask DisposeAsync() =>
+            await (Acquired
+                ? _entityLocker.Release<TEntity>(_entityId)
+                : Task.CompletedTask);
 
 
         public bool Acquired { get; }
