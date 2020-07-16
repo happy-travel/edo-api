@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
@@ -18,7 +20,10 @@ namespace HappyTravel.Edo.Api.Infrastructure
         }
 
 
-        public async Task<Result> Acquire<TEntity>(string entityId, string locker)
+        public Task Release<TEntity>(string entityId) => _context.RemoveEntityLock(GetEntityDescriptor<TEntity>(entityId));
+
+
+        private async Task<Result> Acquire<TEntity>(string entityId, string locker)
         {
             var entityDescriptor = GetEntityDescriptor<TEntity>(entityId);
             var token = Guid.NewGuid().ToString();
@@ -48,7 +53,22 @@ namespace HappyTravel.Edo.Api.Infrastructure
         }
 
 
-        public Task Release<TEntity>(string entityId) => _context.RemoveEntityLock(GetEntityDescriptor<TEntity>(entityId));
+        public Task ReleaseLocks(IList<IEntityLock> locksHolder) => Task.WhenAll(locksHolder.Select(l => l.Release(this)));
+
+
+        public async Task<Result> AddLock<TEntity>(IList<IEntityLock> locksHolder, string entityId, string locker)
+        {
+            var (_, isFailure, error) = await Acquire<TEntity>(entityId, locker);
+            if (isFailure)
+                return Result.Failure(error);
+
+            locksHolder.Add(new EntityLock<TEntity>(entityId));
+            return Result.Success();
+        }
+
+
+        public Task<Result> AddEntityLock<TEntity>(IList<IEntityLock> locksHolder, TEntity entity, string locker) where TEntity : IEntity =>
+            AddLock<TEntity>(locksHolder, entity.Id.ToString(), locker);
 
 
         private static string GetEntityDescriptor<TEntity>(string id) => $"{typeof(TEntity).Name}_{id}";
