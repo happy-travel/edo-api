@@ -63,6 +63,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                     provider.Key,
                     provider.Provider));
             }
+            
+            Task.Run(() => SaveRequest(searchId, request));
 
 
             IReadOnlyCollection<(DataProviders Key, IDataProvider Provider)> GetProviders(in Location location)
@@ -164,6 +166,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
                 return storage.SetState(searchId, providerKey, state);
             }
+        }
+        
+        
+        private Task SaveRequest(Guid searchId, in AvailabilityRequest request)
+        {
+            // This task usually finishes later than outer scope of this service is disposed.
+            // Creating new scope helps to avoid early dependencies disposal
+            // https://docs.microsoft.com/ru-ru/aspnet/core/performance/performance-best-practices?view=aspnetcore-3.1#do-not-capture-services-injected-into-the-controllers-on-background-threads
+            using var serviceScope = _serviceScopeFactory.CreateScope();
+            var storage = serviceScope.ServiceProvider.GetRequiredService<IAvailabilityStorage>();
+
+            return storage.SaveRequest(searchId, request);
         }
 
 

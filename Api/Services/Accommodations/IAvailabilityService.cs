@@ -10,7 +10,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
 {
     public interface IAvailabilityService
     {
-        Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId, string availabilityId, string languageCode);
+        Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetAvailable(DataProviders dataProvider, Guid searchId, string accommodationId, string languageCode);
         
         Task<Result<ProviderData<SingleAccommodationAvailabilityDetailsWithDeadline?>, ProblemDetails>> GetExactAvailability(DataProviders dataProvider, string availabilityId, Guid roomContractSetId,
             string languageCode);

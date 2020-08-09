@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Services.Agents;
@@ -16,29 +18,58 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         public AvailabilityService(IAgentContextService agentContextService,
             IPriceProcessor priceProcessor,
             IAvailabilityResultsCache availabilityResultsCache,
+            IAvailabilityStorage availabilityStorage,
             IProviderRouter providerRouter)
         {
             _agentContextService = agentContextService;
             _priceProcessor = priceProcessor;
             _availabilityResultsCache = availabilityResultsCache;
+            _availabilityStorage = availabilityStorage;
             _providerRouter = providerRouter;
         }
 
 
-        public async Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetAvailable(DataProviders dataProvider,
-            string accommodationId, string availabilityId,
+        public async Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetAvailable(DataProviders dataProvider, Guid searchId,
+            string accommodationId,
             string languageCode)
         {
             var agent = await _agentContextService.GetAgent();
 
-            return await ExecuteRequest()
+            return await GetFromCache()
                 .Bind(ConvertCurrencies)
                 .Map(ApplyMarkups)
                 .Map(AddProviderData);
 
 
-            Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ExecuteRequest()
-                => _providerRouter.GetAvailable(dataProvider, accommodationId, availabilityId, languageCode);
+            async Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetFromCache()
+            {
+                // TODO: Rewrite this method when output model will be changed:
+                // 1. Remove getting accommodation
+                // 2. Remove getting request data
+                // 3. Get result from availability storage directly
+                var (_, isGetRequestFailure, request, getRequestError) = await _availabilityStorage.GetRequest(searchId);
+                if (isGetRequestFailure)
+                    return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>(getRequestError);
+                
+                var availability = (await _availabilityStorage.GetResult(searchId, agent))
+                    .SingleOrDefault(r => r.Source == dataProvider && r.Data.AccommodationDetails.Id == accommodationId);
+
+                if (availability.Equals(default))
+                    return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>("Could not find availability result");
+                
+                var (_, isGetAccommodationFailure, accommodationDetails, getAccommodationError) = await _providerRouter
+                    .GetAccommodation(dataProvider, accommodationId, languageCode);
+
+                if (isGetAccommodationFailure)
+                    return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>($"Could not accommodation: {getAccommodationError.Detail}");
+
+                return new SingleAccommodationAvailabilityDetails(availability.Data.AvailabilityId,
+                    request.CheckInDate,
+                    request.CheckOutDate,
+                    (request.CheckOutDate - request.CheckInDate).Days,
+                    accommodationDetails,
+                    availability.Data.RoomContractSets);
+            }
 
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ConvertCurrencies(SingleAccommodationAvailabilityDetails availabilityDetails)
@@ -113,6 +144,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
         private readonly IAvailabilityResultsCache _availabilityResultsCache;
+        private readonly IAvailabilityStorage _availabilityStorage;
         private readonly IAgentContextService _agentContextService;
         private readonly IProviderRouter _providerRouter;
         private readonly IPriceProcessor _priceProcessor;

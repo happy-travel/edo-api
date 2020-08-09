@@ -17,14 +17,6 @@ namespace HappyTravel.Edo.Api.Services.Connectors
         }
 
 
-        public Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId,
-            string availabilityId, string languageCode)
-        {
-            var provider = _dataProviderFactory.Get(dataProvider);
-            return provider.GetAvailability(availabilityId, accommodationId, languageCode);
-        }
-
-
         public Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> GetExactAvailability(DataProviders dataProvider,
             string availabilityId, Guid roomContractSetId, string languageCode)
         {

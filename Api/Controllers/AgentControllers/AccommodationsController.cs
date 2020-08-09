@@ -120,7 +120,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// <summary>
         ///     Returns available room contract sets for given accommodation and accommodation id.
         /// </summary>
-        /// <param name="availabilityId">Availability id from 1-st step results.</param>
+        /// <param name="searchId">Search id from 1-st step results.</param>
         /// <param name="source">Availability source from 1-st step results.</param>
         /// <param name="accommodationId"></param>
         /// <returns></returns>
@@ -132,9 +132,9 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationAvailabilitySearch)]
-        public async Task<IActionResult> GetAvailabilityForAccommodation([FromRoute] DataProviders source, [FromRoute] string accommodationId, [FromRoute]  string availabilityId)
+        public async Task<IActionResult> GetAvailabilityForAccommodation([FromRoute] DataProviders source, [FromRoute] string accommodationId, [FromRoute]  Guid searchId)
         {
-            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(source, accommodationId, availabilityId, LanguageCode);
+            var (_, isFailure, response, error) = await _availabilityService.GetAvailable(source, searchId, accommodationId, LanguageCode);
             if (isFailure)
                 return BadRequest(error);
 

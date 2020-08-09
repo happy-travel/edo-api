@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
@@ -15,6 +16,7 @@ using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using AvailabilityRequest = HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 {
@@ -37,12 +39,25 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         public Task SaveResult(Guid searchId, DataProviders dataProvider, AvailabilityDetails details)
         {
             var timeStamp = _dateTimeProvider.UtcNow().Ticks;
-            return SaveObject(searchId, dataProvider, new AvailabilityWithTimestamp(details, timeStamp));
+            return SaveObject(searchId, new AvailabilityWithTimestamp(details, timeStamp), dataProvider);
+        }
+
+
+        public Task SaveRequest(Guid searchId, AvailabilityRequest request) => SaveObject(searchId, request);
+
+        
+        public async Task<Result<AvailabilityRequest>> GetRequest(Guid searchId)
+        {
+            var key = BuildKey<AvailabilityRequest>(searchId);
+            var request = await _distributedFlow.GetAsync<AvailabilityRequest>(key);
+            return request.Equals(default)
+                ? Result.Failure<AvailabilityRequest>("Could not find request")
+                : request;
         }
 
 
         public Task SetState(Guid searchId, DataProviders dataProvider, AvailabilitySearchState searchState)
-            => SaveObject(searchId, dataProvider, searchState);
+            => SaveObject(searchId, searchState, dataProvider);
 
 
         public async Task<IEnumerable<ProviderData<AvailabilityResult>>> GetResult(Guid searchId, AgentContext agent)
@@ -158,18 +173,18 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         }
 
 
-        private Task SaveObject<TObjectType>(Guid searchId, DataProviders dataProvider, TObjectType @object)
+        private Task SaveObject<TObjectType>(Guid searchId, TObjectType @object, DataProviders? dataProvider = null)
         {
             var key = BuildKey<TObjectType>(searchId, dataProvider);
             return _distributedFlow.SetAsync(key, @object, CacheExpirationTime);
         }
 
 
-        private string BuildKey<TObjectType>(Guid searchId, DataProviders dataProvider)
+        private string BuildKey<TObjectType>(Guid searchId, DataProviders? dataProvider = null)
             => _distributedFlow.BuildKey(nameof(AvailabilityStorage),
                 searchId.ToString(),
                 typeof(TObjectType).Name,
-                dataProvider.ToString());
+                dataProvider?.ToString() ?? string.Empty);
 
 
         private static readonly TimeSpan CacheExpirationTime = TimeSpan.FromMinutes(15);

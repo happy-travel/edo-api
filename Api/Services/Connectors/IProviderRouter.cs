@@ -10,10 +10,6 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 {
     public interface IProviderRouter
     {
-        Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> GetAvailable(DataProviders dataProvider, string accommodationId,
-            string availabilityId, string languageCode);
-
-
         Task<Result<SingleAccommodationAvailabilityDetailsWithDeadline?, ProblemDetails>> GetExactAvailability(DataProviders dataProvider, string availabilityId,
             Guid roomContractSetId, string languageCode);
 

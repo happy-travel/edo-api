@@ -199,11 +199,11 @@
             <param name="searchId">Search id</param>
             <returns>Availability results</returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetAvailabilityForAccommodation(HappyTravel.Edo.Common.Enums.DataProviders,System.String,System.String)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetAvailabilityForAccommodation(HappyTravel.Edo.Common.Enums.DataProviders,System.String,System.Guid)">
             <summary>
                 Returns available room contract sets for given accommodation and accommodation id.
             </summary>
-            <param name="availabilityId">Availability id from 1-st step results.</param>
+            <param name="searchId">Search id from 1-st step results.</param>
             <param name="source">Availability source from 1-st step results.</param>
             <param name="accommodationId"></param>
             <returns></returns>
@@ -720,6 +720,26 @@
                 Prevents authorization policies execution for not authenticated clients
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AccommodationDuplicateReportInfo.Id">
+            <summary>
+            Report id
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AccommodationDuplicateReportInfo.Created">
+            <summary>
+            Created date
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AccommodationDuplicateReportInfo.State">
+            <summary>
+            Report approval state
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AccommodationDuplicateReportInfo.Accommodations">
+            <summary>
+            Reported accommodations
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AvailabilityResult.AvailabilityId">
             <summary>
             Id of availability search
@@ -768,6 +788,31 @@
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.ReportAccommodationDuplicateRequest.Duplicates">
             <summary>
             Reported duplicates.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.SlimAccommodationDuplicateReportInfo.Id">
+            <summary>
+            Report id
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.SlimAccommodationDuplicateReportInfo.Created">
+            <summary>
+            Created date
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.SlimAccommodationDuplicateReportInfo.State">
+            <summary>
+            Report approval state
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.SlimAccommodationDuplicateReportInfo.AgentName">
+            <summary>
+            Reporter agent name
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.SlimAccommodationDuplicateReportInfo.Accommodations">
+            <summary>
+            Reported accommodation ids
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Agencies.AgencyInfo.Name">
