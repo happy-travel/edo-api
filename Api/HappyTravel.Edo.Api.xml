@@ -1821,12 +1821,37 @@
             Search task state
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.AvailabilitySearchState.ProviderStates">
+            <summary>
+            Provider search states
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.AvailabilitySearchState.ResultCount">
             <summary>
             Result count
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.AvailabilitySearchState.Error">
+            <summary>
+            Error message. Filled only for failed tasks
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.ProviderAvailabilitySearchState.Id">
+            <summary>
+            Search id
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.ProviderAvailabilitySearchState.TaskState">
+            <summary>
+            Search task state
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.ProviderAvailabilitySearchState.ResultCount">
+            <summary>
+            Result count
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.ProviderAvailabilitySearchState.Error">
             <summary>
             Error message. Filled only for failed tasks
             </summary>
