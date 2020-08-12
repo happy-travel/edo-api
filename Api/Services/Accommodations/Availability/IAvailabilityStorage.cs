@@ -17,7 +17,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         
         Task<Result<HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest>> GetRequest(Guid searchId);
 
-        Task SetState(Guid searchId, DataProviders dataProvider, AvailabilitySearchState searchState);
+        Task SetState(Guid searchId, DataProviders dataProvider, ProviderAvailabilitySearchState searchState);
 
         Task<IEnumerable<ProviderData<AvailabilityResult>>> GetResult(Guid searchId, AgentContext agent);
 

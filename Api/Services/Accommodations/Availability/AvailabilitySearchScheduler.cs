@@ -125,7 +125,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             async Task<Result<AvailabilityDetails, ProblemDetails>> GetAvailability(EdoContracts.Accommodations.AvailabilityRequest request,
                 string languageCode)
             {
-                var saveToStorageTask = storage.SetState(searchId, providerKey, AvailabilitySearchState.Pending(searchId));
+                var saveToStorageTask = storage.SetState(searchId, providerKey, ProviderAvailabilitySearchState.Pending(searchId));
                 var getAvailabilityTask = dataProvider.GetAvailability(request, languageCode);
                 await Task.WhenAll(saveToStorageTask, getAvailabilityTask);
 
@@ -151,8 +151,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             Task SaveState(Result<AvailabilityDetails, ProblemDetails> result)
             {
                 var state = result.IsSuccess
-                    ? AvailabilitySearchState.Completed(searchId, result.Value.Results.Count)
-                    : AvailabilitySearchState.Failed(searchId, result.Error.Detail);
+                    ? ProviderAvailabilitySearchState.Completed(searchId, result.Value.Results.Count)
+                    : ProviderAvailabilitySearchState.Failed(searchId, result.Error.Detail);
 
                 if (state.TaskState == AvailabilitySearchTaskState.Completed)
                 {
