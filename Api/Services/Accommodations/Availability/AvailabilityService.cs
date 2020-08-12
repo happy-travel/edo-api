@@ -61,7 +61,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                     .GetAccommodation(dataProvider, accommodationId, languageCode);
 
                 if (isGetAccommodationFailure)
-                    return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>($"Could not accommodation: {getAccommodationError.Detail}");
+                    return ProblemDetailsBuilder.Fail<SingleAccommodationAvailabilityDetails>($"Could not find accommodation: {getAccommodationError.Detail}");
 
                 return new SingleAccommodationAvailabilityDetails(availability.Data.AvailabilityId,
                     request.CheckInDate,
