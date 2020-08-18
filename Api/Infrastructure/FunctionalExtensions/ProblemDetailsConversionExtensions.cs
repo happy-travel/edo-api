@@ -14,5 +14,15 @@ namespace HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions
                 ? Result.Ok<T, ProblemDetails>(result)
                 : ProblemDetailsBuilder.Fail<T>(error);
         }
+        
+        
+        public static Result<T, ProblemDetails> ToResultWithProblemDetails<T>(this Result<T> result)
+        {
+            var (isSuccess, _, value, error) = result;
+
+            return isSuccess
+                ? Result.Ok<T, ProblemDetails>(value)
+                : ProblemDetailsBuilder.Fail<T>(error);
+        }
     }
 }

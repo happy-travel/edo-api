@@ -9,13 +9,13 @@ using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
 using AvailabilityRequest = HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest;
 
-namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1
+namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch
 {
-    public interface IFirstStepAvailabilitySearchService
+    public interface IWideAvailabilitySearchService
     {
         Task<Result<Guid>> StartSearch(AvailabilityRequest request, AgentContext agent, string languageCode);
 
-        Task<AvailabilitySearchState> GetState(Guid searchId);
+        Task<WideAvailabilitySearchState> GetState(Guid searchId);
 
         Task<IEnumerable<AvailabilityResult>> GetResult(Guid searchId, AgentContext agent);
 

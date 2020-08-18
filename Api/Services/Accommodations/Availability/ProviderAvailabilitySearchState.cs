@@ -1,6 +1,6 @@
 using System;
 using HappyTravel.Edo.Api.Models.Availabilities;
-using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1;
+using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch;
 using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
@@ -57,11 +57,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             => new ProviderAvailabilitySearchState(id, taskState, resultCount, error);
 
 
-        public bool Equals(AvailabilitySearchState other)
+        public bool Equals(WideAvailabilitySearchState other)
             => Id.Equals(other.Id) && TaskState == other.TaskState && ResultCount == other.ResultCount && Error == other.Error;
 
 
-        public override bool Equals(object obj) => obj is AvailabilitySearchState other && Equals(other);
+        public override bool Equals(object obj) => obj is WideAvailabilitySearchState other && Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Id, (int) TaskState, ResultCount, Error);
     }

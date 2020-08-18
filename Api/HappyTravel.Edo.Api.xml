@@ -178,14 +178,6 @@
             <param name="request">Duplicate accommodation info</param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.Get(HappyTravel.Edo.Common.Enums.DataProviders,System.String)">
-            <summary>
-                Returns the full set of accommodation details.
-            </summary>
-            <param name="source">Accommodation source from search results.</param>
-            <param name="accommodationId">Accommodation ID, obtained from an availability query.</param>
-            <returns></returns>
-        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.StartAvailabilitySearch(HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest)">
             <summary>
                 Starts availability search and returns an identifier to fetch results later
@@ -207,24 +199,45 @@
             <param name="searchId">Search id</param>
             <returns>Availability results</returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetAvailabilityForAccommodation(HappyTravel.Edo.Common.Enums.DataProviders,System.String,System.String)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetSearchStateForAccommodationAvailability(System.Guid,System.Guid)">
             <summary>
-                Returns available room contract sets for given accommodation and accommodation id.
+            Returns available room contract sets for given accommodation and accommodation id.
             </summary>
-            <param name="availabilityId">Availability id from 1-st step results.</param>
-            <param name="source">Availability source from 1-st step results.</param>
-            <param name="accommodationId"></param>
+            <param name="searchId">Availability search id from the first step</param>
+            <param name="resultId">Selected result id from the first step</param>
+            <returns></returns>
+            <remarks>
+                This is the method to get "2nd step" for availability search state.
+            </remarks>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetAvailabilityForAccommodation(System.Guid,System.Guid)">
+            <summary>
+            Returns available room contract sets for given accommodation and accommodation id.
+            </summary>
+            <param name="searchId">Availability search id from the first step</param>
+            <param name="resultId">Selected result id from the first step</param>
             <returns></returns>
             <remarks>
                 This is the "2nd step" for availability search. Returns richer accommodation details with room contract sets.
             </remarks>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetExactAvailability(HappyTravel.Edo.Common.Enums.DataProviders,System.String,System.Guid)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetAccommodation(System.Guid,System.Guid)">
+            <summary>
+             Returns the full set of accommodation details for given availability search result
+            </summary>
+            <param name="searchId">Availability search id from the first step</param>
+            <param name="resultId">Selected result id from the first step</param>
+            <returns></returns>
+            <remarks>
+                This is accommodation details for "2nd step" for availability search.
+            </remarks>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationsController.GetExactAvailability(System.Guid,System.Guid,System.Guid)">
             <summary>
                 The last 3rd search step before the booking request. Uses the exact search.
             </summary>
-            <param name="source">Availability source from 1-st step results.</param>
-            <param name="availabilityId">Availability id from the previous step</param>
+            <param name="searchId">Availability search id from the first step</param>
+            <param name="resultId">Selected result id from the first step</param>
             <param name="roomContractSetId">Room contract set id from the previous step</param>
             <returns></returns>
         </member>
@@ -1268,11 +1281,6 @@
                 The result of a prediction query.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.AvailabilityId">
-            <summary>
-                Availability ID obtained from an <see cref="T:HappyTravel.EdoContracts.Accommodations.AvailabilityDetails" />.
-            </summary>
-        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.Nationality">
             <summary>
                 The nationality of a main passenger.
@@ -1317,11 +1325,6 @@
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.PaymentMethod">
             <summary>
                 Payment method for a booking.
-            </summary>
-        </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.DataProvider">
-            <summary>
-                Accommodation source from search results
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.BookingRoomDetails.IsExtraBedNeeded">
@@ -1834,27 +1837,22 @@
             Error message. Filled only for failed tasks
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1.AvailabilitySearchState.Id">
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch.WideAvailabilitySearchState.Id">
             <summary>
             Search id
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1.AvailabilitySearchState.TaskState">
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch.WideAvailabilitySearchState.TaskState">
             <summary>
             Search task state
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1.AvailabilitySearchState.ProviderStates">
-            <summary>
-            Provider search states
-            </summary>
-        </member>
-        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1.AvailabilitySearchState.ResultCount">
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch.WideAvailabilitySearchState.ResultCount">
             <summary>
             Result count
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1.AvailabilitySearchState.Error">
+        <member name="P:HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch.WideAvailabilitySearchState.Error">
             <summary>
             Error message. Filled only for failed tasks
             </summary>
