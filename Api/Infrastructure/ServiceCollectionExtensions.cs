@@ -20,9 +20,9 @@ using HappyTravel.Edo.Api.Services.Accommodations;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.AdministratorServices;
-using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1;
-using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step2;
-using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step3;
+using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEvaluation;
+using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection;
+using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch;
 using HappyTravel.Edo.Api.Services.Accommodations.Mappings;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.CodeProcessors;
@@ -396,7 +396,6 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddScoped<IAgentContextInternal, HttpBasedAgentContextService>();
             services.AddHttpContextAccessor();
             services.AddSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
-            services.AddSingleton<IAvailabilityResultsCache, AvailabilityResultsCache>();
             services.AddTransient<IBookingRecordsManager, BookingRecordsManager>();
             services.AddTransient<ITagProcessor, TagProcessor>();
 
@@ -450,12 +449,11 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<IBookingDocumentsService, BookingDocumentsService>();
             services.AddTransient<IBookingAuditLogService, BookingAuditLogService>();
             services.AddTransient<IDataProviderFactory, DataProviderFactory>();
-            services.AddTransient<IFirstStepAvailabilitySearchService, FirstStepAvailabilitySearchService>();
-            services.AddTransient<ISecondStepAvailabilitySearchService, SecondStepAvailabilitySearchService>();
-            services.AddTransient<IThirdStepAvailabilitySearchService, ThirdStepAvailabilitySearchService>();
+            services.AddTransient<IWideAvailabilitySearchService, WideAvailabilitySearchService>();
+            services.AddTransient<IRoomSelectionService, RoomSelectionService>();
+            services.AddTransient<IBookingEvaluationService, BookingEvaluationService>();
             services.AddTransient<IBookingService, BookingService>();
             services.AddTransient<IBookingsProcessingService, BookingsProcessingService>();
-            services.AddTransient<IProviderRouter, ProviderRouter>();
 
             services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
             services.AddTransient<IAuthorizationHandler, InAgencyPermissionAuthorizationHandler>();
@@ -485,8 +483,12 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddNameNormalizationServices();
             services.AddScoped<ILocationNormalizer, LocationNormalizer>();
 
-            services.AddTransient<IAvailabilitySearchScheduler, AvailabilitySearchScheduler>();
-            services.AddTransient<IAvailabilityStorage, AvailabilityStorage>();
+            services.AddTransient<IMultiProviderAvailabilityStorage, MultiProviderAvailabilityStorage>();
+            services.AddTransient<IWideAvailabilityStorage, WideAvailabilityStorage>();
+            services.AddTransient<IRoomSelectionStorage, RoomSelectionStorage>();
+            
+            services.AddTransient<IBookingEvaluationStorage, BookingEvaluationStorage>();
+            
             services.AddTransient<IPriceProcessor, PriceProcessor>();
 
             services.AddTransient<IInvoiceService, InvoiceService>();

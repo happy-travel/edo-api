@@ -12,7 +12,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.A
 {
     public class ErrorAggregation
     {
-        // TODO Rewrite tests during NIJO-787
+        // TODO Rewrite tests during NIJO-814
         // [Fact]
         // public async Task Search_state_should_contain_all_errors()
         // {

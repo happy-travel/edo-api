@@ -3,7 +3,7 @@ using System.Linq;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Common.Enums;
 
-namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1
+namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch
 {
     public static class AvailabilityResultsFilterExtensions
     {
