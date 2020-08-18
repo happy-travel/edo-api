@@ -15,7 +15,7 @@ namespace HappyTravel.Edo.UnitTests.Utility
 {
     internal static class AvailabilityStorageUtils
     {
-        public static IAvailabilityStorage CreateEmptyStorage<TObject>(IOptions<DataProviderOptions> providerOptions)
+        public static IMultiProviderAvailabilityStorage CreateEmptyStorage<TObject>(IOptions<DataProviderOptions> providerOptions)
         {
             var memoryFlow = new MemoryFlow(new DiagnosticListener("test"), new MemoryCache(Options.Create(new MemoryCacheOptions())));
             var distributedFlowMock = new Mock<IDistributedFlow>();
@@ -40,7 +40,7 @@ namespace HappyTravel.Edo.UnitTests.Utility
                 });
                     
             
-            return new AvailabilityStorage(distributedFlowMock.Object,
+            return new MultiProviderAvailabilityStorage(distributedFlowMock.Object,
                 memoryFlow);
         }
     }

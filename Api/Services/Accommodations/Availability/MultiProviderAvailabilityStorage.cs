@@ -8,21 +8,28 @@ using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 {
-    public class AvailabilityStorage : IAvailabilityStorage
+    public class MultiProviderAvailabilityStorage : IMultiProviderAvailabilityStorage
     {
-        public AvailabilityStorage(IDistributedFlow distributedFlow, IMemoryFlow memoryFlow)
+        public MultiProviderAvailabilityStorage(IDistributedFlow distributedFlow, IMemoryFlow memoryFlow)
         {
             _distributedFlow = distributedFlow;
             _memoryFlow = memoryFlow;
         }
 
 
-        public Task<(DataProviders DataProvider, TObject Result)[]> GetProviderResults<TObject>(Guid searchId, List<DataProviders> dataProviders, bool isCachingEnabled = false)
+        public async Task<(DataProviders DataProvider, TObject Result)> GetProviderResult<TObject>(string keyPrefix, DataProviders dataProvider, bool isCachingEnabled = false)
+        {
+            return (await GetProviderResults<TObject>(keyPrefix, new List<DataProviders> {dataProvider}, isCachingEnabled))
+                .SingleOrDefault();
+        }
+
+
+        public Task<(DataProviders DataProvider, TObject Result)[]> GetProviderResults<TObject>(string keyPrefix, List<DataProviders> dataProviders, bool isCachingEnabled = false)
         {
             var providerTasks = dataProviders
                 .Select(async p =>
                 {
-                    var key = BuildKey<TObject>(searchId, p);
+                    var key = BuildKey<TObject>(keyPrefix, p);
                     return (
                         ProviderKey: p,
                         Object: await Get(key, isCachingEnabled)
@@ -50,16 +57,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         }
 
 
-        public Task SaveObject<TObjectType>(Guid searchId, TObjectType @object, DataProviders? dataProvider = null)
+        public Task SaveObject<TObjectType>(string keyPrefix, TObjectType @object, DataProviders? dataProvider = null)
         {
-            var key = BuildKey<TObjectType>(searchId, dataProvider);
+            var key = BuildKey<TObjectType>(keyPrefix, dataProvider);
             return _distributedFlow.SetAsync(key, @object, CacheExpirationTime);
         }
 
 
-        private string BuildKey<TObjectType>(Guid searchId, DataProviders? dataProvider = null)
-            => _distributedFlow.BuildKey(nameof(AvailabilityStorage),
-                searchId.ToString(),
+        private string BuildKey<TObjectType>(string keyPrefix, DataProviders? dataProvider = null)
+            => _distributedFlow.BuildKey(nameof(MultiProviderAvailabilityStorage),
+                keyPrefix,
                 typeof(TObjectType).Name,
                 dataProvider?.ToString() ?? string.Empty);
 

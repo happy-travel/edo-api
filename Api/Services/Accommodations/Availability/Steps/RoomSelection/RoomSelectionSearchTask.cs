@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Accommodations;
@@ -7,30 +8,50 @@ using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step2
+namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection
 {
-    public class SecondStepAvailabilitySearchService : ISecondStepAvailabilitySearchService
+    public class RoomSelectionSearchTask
     {
-        public SecondStepAvailabilitySearchService(IProviderRouter providerRouter,
-            IPriceProcessor priceProcessor)
+        private RoomSelectionSearchTask(IPriceProcessor priceProcessor,
+            IDataProviderFactory dataProviderFactory,
+            IRoomSelectionStorage roomSelectionStorage)
         {
-            _providerRouter = providerRouter;
             _priceProcessor = priceProcessor;
+            _dataProviderFactory = dataProviderFactory;
+            _roomSelectionStorage = roomSelectionStorage;
+        }
+
+
+        public static RoomSelectionSearchTask Create(IServiceProvider serviceProvider)
+        {
+            return new RoomSelectionSearchTask(
+                serviceProvider.GetRequiredService<IPriceProcessor>(),
+                serviceProvider.GetRequiredService<IDataProviderFactory>(),
+                serviceProvider.GetRequiredService<IRoomSelectionStorage>()
+            );
         }
         
-        public async Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetAvailable(DataProviders dataProvider,
+        
+        public async Task<Result<ProviderData<SingleAccommodationAvailabilityDetails>, ProblemDetails>> GetProviderAvailability(Guid searchId,
+            Guid resultId,
+            DataProviders dataProvider,
             string accommodationId, string availabilityId, AgentContext agent,
             string languageCode)
         {
             return await ExecuteRequest()
                 .Bind(ConvertCurrencies)
                 .Map(ApplyMarkups)
-                .Map(AddProviderData);
+                .Map(AddProviderData)
+                .Tap(SaveToCache);
+
+
+            Task SaveToCache(ProviderData<SingleAccommodationAvailabilityDetails> details) => _roomSelectionStorage.SaveResult(searchId, resultId, details.Data, details.Source);
 
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ExecuteRequest()
-                => _providerRouter.GetAvailable(dataProvider, accommodationId, availabilityId, languageCode);
+                => _dataProviderFactory.Get(dataProvider).GetAvailability(availabilityId, accommodationId, languageCode);
 
 
             Task<Result<SingleAccommodationAvailabilityDetails, ProblemDetails>> ConvertCurrencies(SingleAccommodationAvailabilityDetails availabilityDetails)
@@ -45,7 +66,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step2
                 => ProviderData.Create(dataProvider, availabilityDetails.Data);
         }
         
-        private readonly IProviderRouter _providerRouter;
+        
         private readonly IPriceProcessor _priceProcessor;
+        private readonly IDataProviderFactory _dataProviderFactory;
+        private readonly IRoomSelectionStorage _roomSelectionStorage;
     }
 }

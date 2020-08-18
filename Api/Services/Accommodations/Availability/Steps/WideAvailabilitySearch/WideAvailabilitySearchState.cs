@@ -5,16 +5,15 @@ using HappyTravel.Edo.Api.Models.Availabilities;
 using HappyTravel.Edo.Common.Enums;
 using Newtonsoft.Json;
 
-namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1
+namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch
 {
-    public readonly struct AvailabilitySearchState
+    public readonly struct WideAvailabilitySearchState
     {
         [JsonConstructor]
-        private AvailabilitySearchState(Guid id, AvailabilitySearchTaskState taskState, Dictionary<DataProviders, ProviderAvailabilitySearchState> providerStates, int resultCount = 0, string error = null)
+        private WideAvailabilitySearchState(Guid id, AvailabilitySearchTaskState taskState, int resultCount = 0, string error = null)
         {
             Id = id;
             TaskState = taskState;
-            ProviderStates = providerStates;
             ResultCount = resultCount;
             Error = error;
         }
@@ -30,10 +29,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1
         /// </summary>
         public AvailabilitySearchTaskState TaskState { get; }
 
-        /// <summary>
-        /// Provider search states
-        /// </summary>
-        public Dictionary<DataProviders, ProviderAvailabilitySearchState> ProviderStates { get; }
 
         /// <summary>
         /// Result count
@@ -46,13 +41,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1
         public string Error { get; }
 
 
-        public static AvailabilitySearchState FromProviderStates(Guid searchId, Dictionary<DataProviders, ProviderAvailabilitySearchState> providerSearchStates)
+        public static WideAvailabilitySearchState FromProviderStates(Guid searchId, IEnumerable<(DataProviders, ProviderAvailabilitySearchState)> searchStates)
         {
-            var overallState = CalculateOverallState(providerSearchStates);
-            var totalResultsCount = GetResultsCount(providerSearchStates);
-            var errors = GetErrors(providerSearchStates);
+            var statesDictionary = searchStates
+                .ToDictionary(s => s.Item1, s => s.Item2);
             
-            return new AvailabilitySearchState(searchId, overallState, providerSearchStates, totalResultsCount, errors);
+            var overallState = CalculateOverallState(statesDictionary);
+            var totalResultsCount = GetResultsCount(statesDictionary);
+            var errors = GetErrors(statesDictionary);
+            
+            return new WideAvailabilitySearchState(searchId, overallState, totalResultsCount, errors);
 
 
             static AvailabilitySearchTaskState CalculateOverallState(Dictionary<DataProviders, ProviderAvailabilitySearchState> providerSearchStates)
@@ -92,11 +90,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Step1
         }
 
 
-        public bool Equals(AvailabilitySearchState other)
+        public bool Equals(WideAvailabilitySearchState other)
             => Id.Equals(other.Id) && TaskState == other.TaskState && ResultCount == other.ResultCount && Error == other.Error;
 
 
-        public override bool Equals(object obj) => obj is AvailabilitySearchState other && Equals(other);
+        public override bool Equals(object obj) => obj is WideAvailabilitySearchState other && Equals(other);
 
         public override int GetHashCode() => HashCode.Combine(Id, (int) TaskState, ResultCount, Error);
     }
