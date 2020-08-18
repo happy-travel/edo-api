@@ -7,9 +7,9 @@ using HappyTravel.EdoContracts.Accommodations;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection
 {
-    public class RoomSelectionResultsStorage : IRoomSelectionResultsStorage
+    public class RoomSelectionStorage : IRoomSelectionStorage
     {
-        public RoomSelectionResultsStorage(IAvailabilityStorage storage)
+        public RoomSelectionStorage(IMultiProviderAvailabilityStorage storage)
         {
             _storage = storage;
         }
@@ -21,15 +21,17 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
             return _storage.SaveObject(keyPrefix, details, dataProvider);
         }
         
-        public Task<(DataProviders DataProvider, SingleAccommodationAvailabilityDetails Result)[]> GetResult(Guid searchId, Guid resultId, List<DataProviders> dataProviders)
+        public async Task<(DataProviders DataProvider, SingleAccommodationAvailabilityDetails Result)[]> GetResult(Guid searchId, Guid resultId, List<DataProviders> dataProviders)
         {
             var keyPrefix = CreateKeyPrefix(searchId, resultId);
-            return _storage.GetProviderResults<SingleAccommodationAvailabilityDetails>(keyPrefix, dataProviders);
+            return (await _storage.GetProviderResults<SingleAccommodationAvailabilityDetails>(keyPrefix, dataProviders))
+                .Where(t => !string.IsNullOrWhiteSpace(t.Result.AvailabilityId))
+                .ToArray();
         }
 
 
         private string CreateKeyPrefix(Guid searchId, Guid resultId) => $"{searchId}::{resultId}";
         
-        private readonly IAvailabilityStorage _storage;
+        private readonly IMultiProviderAvailabilityStorage _storage;
     }
 }

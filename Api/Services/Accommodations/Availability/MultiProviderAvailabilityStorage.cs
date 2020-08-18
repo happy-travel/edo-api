@@ -8,9 +8,9 @@ using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 {
-    public class AvailabilityStorage : IAvailabilityStorage
+    public class MultiProviderAvailabilityStorage : IMultiProviderAvailabilityStorage
     {
-        public AvailabilityStorage(IDistributedFlow distributedFlow, IMemoryFlow memoryFlow)
+        public MultiProviderAvailabilityStorage(IDistributedFlow distributedFlow, IMemoryFlow memoryFlow)
         {
             _distributedFlow = distributedFlow;
             _memoryFlow = memoryFlow;
@@ -65,7 +65,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
 
         private string BuildKey<TObjectType>(string keyPrefix, DataProviders? dataProvider = null)
-            => _distributedFlow.BuildKey(nameof(AvailabilityStorage),
+            => _distributedFlow.BuildKey(nameof(MultiProviderAvailabilityStorage),
                 keyPrefix,
                 typeof(TObjectType).Name,
                 dataProvider?.ToString() ?? string.Empty);

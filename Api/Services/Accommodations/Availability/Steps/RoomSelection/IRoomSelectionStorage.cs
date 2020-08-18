@@ -6,7 +6,7 @@ using HappyTravel.EdoContracts.Accommodations;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection
 {
-    public interface IRoomSelectionResultsStorage
+    public interface IRoomSelectionStorage
     {
         Task SaveResult(Guid searchId, Guid resultId, SingleAccommodationAvailabilityDetails details, DataProviders dataProvider);
 

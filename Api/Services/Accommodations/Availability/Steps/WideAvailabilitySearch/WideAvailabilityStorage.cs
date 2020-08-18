@@ -7,18 +7,18 @@ using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch
 {
-    public class WideAvailabilityResultsStorage : IWideAvailabilityResultsStorage
+    public class WideAvailabilityStorage : IWideAvailabilityStorage
     {
-        public WideAvailabilityResultsStorage(IAvailabilityStorage availabilityStorage)
+        public WideAvailabilityStorage(IMultiProviderAvailabilityStorage multiProviderAvailabilityStorage)
         {
-            _availabilityStorage = availabilityStorage;
+            _multiProviderAvailabilityStorage = multiProviderAvailabilityStorage;
         }
 
 
         public async Task<(DataProviders ProviderKey, AccommodationAvailabilityResult[] AccommodationAvailabilities)[]> GetResults(Guid searchId, List<DataProviders> dataProviders)
         {
-            return  (await _availabilityStorage.GetProviderResults<AccommodationAvailabilityResult[]>(searchId.ToString(), dataProviders, true))
-                .Where(t => !t.Result.Equals(default))
+            return  (await _multiProviderAvailabilityStorage.GetProviderResults<AccommodationAvailabilityResult[]>(searchId.ToString(), dataProviders, true))
+                .Where(t => t.Result != default)
                 .ToArray();
         }
 
@@ -26,21 +26,21 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         public Task<(DataProviders ProviderKey, ProviderAvailabilitySearchState States)[]> GetStates(Guid searchId,
             List<DataProviders> dataProviders)
         {
-            return _availabilityStorage.GetProviderResults<ProviderAvailabilitySearchState>(searchId.ToString(), dataProviders, false);
+            return _multiProviderAvailabilityStorage.GetProviderResults<ProviderAvailabilitySearchState>(searchId.ToString(), dataProviders, false);
         }
 
 
         public Task SaveState(Guid searchId, ProviderAvailabilitySearchState state, DataProviders dataProviders)
         {
-            return _availabilityStorage.SaveObject(searchId.ToString(), state, dataProviders);
+            return _multiProviderAvailabilityStorage.SaveObject(searchId.ToString(), state, dataProviders);
         }
 
 
         public Task SaveResults(Guid searchId, DataProviders dataProvider, AccommodationAvailabilityResult[] results)
         {
-            return _availabilityStorage.SaveObject(searchId.ToString(), results, dataProvider);
+            return _multiProviderAvailabilityStorage.SaveObject(searchId.ToString(), results, dataProvider);
         }
         
-        private readonly IAvailabilityStorage _availabilityStorage;
+        private readonly IMultiProviderAvailabilityStorage _multiProviderAvailabilityStorage;
     }
 }

@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using HappyTravel.Edo.Api.Models.Accommodations;
-using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.General.Enums;
 using Newtonsoft.Json;
 
@@ -12,36 +10,40 @@ namespace HappyTravel.Edo.Api.Models.Bookings
     public readonly struct AccommodationBookingRequest
     {
         [JsonConstructor]
-        public AccommodationBookingRequest(string accommodationId, string availabilityId, DateTime checkInDate, DateTime checkOutDate,
-            string itineraryNumber, string nationality, PaymentMethods paymentMethod, string residency, string tariffCode,
-            List<BookingRoomDetails> roomDetails, List<AccommodationFeature> features, Guid roomContractSetId,
+        public AccommodationBookingRequest(string itineraryNumber, string nationality, PaymentMethods paymentMethod, string residency, 
+            List<BookingRoomDetails> roomDetails, List<AccommodationFeature> features,
+            Guid searchId,
+            Guid resultId,
+            Guid roomContractSetId,
             string mainPassengerName,
-            string mainPassengerFirstName,
-            DataProviders dataProvider,
-            string countryCode = default,
-            bool rejectIfUnavailable = true)
+            bool rejectIfUnavailable = true,
+            string availabilityId = null)
         {
-            AvailabilityId = availabilityId;
             ItineraryNumber = itineraryNumber;
             Nationality = nationality;
             RejectIfUnavailable = rejectIfUnavailable;
+            AvailabilityId = availabilityId;
             Residency = residency;
+            SearchId = searchId;
+            ResultId = resultId;
             RoomContractSetId = roomContractSetId;
             MainPassengerName = mainPassengerName;
             PaymentMethod = paymentMethod;
 
             RoomDetails = roomDetails ?? new List<BookingRoomDetails>(0);
             Features = features ?? new List<AccommodationFeature>(0);
-
-            DataProvider = dataProvider;
         }
 
 
-        /// <summary>
-        ///     Availability ID obtained from an <see cref="AvailabilityDetails" />.
-        /// </summary>
-        [Required]
-        public string AvailabilityId { get; }
+        public AccommodationBookingRequest(AccommodationBookingRequest request, string availabilityId) :
+            this(request.ItineraryNumber, request.Nationality, request.PaymentMethod,
+                request.Residency, request.RoomDetails, request.Features, request.SearchId, request.ResultId, request.RoomContractSetId,
+                request.MainPassengerName,
+                request.RejectIfUnavailable, availabilityId)
+        {
+            
+        }
+
 
         /// <summary>
         ///     The nationality of a main passenger.
@@ -55,11 +57,16 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         /// </summary>
         public bool RejectIfUnavailable { get; }
 
+        public string AvailabilityId { get; }
+
         /// <summary>
         ///     The residency of a main passenger.
         /// </summary>
         [Required]
         public string Residency { get; }
+
+        public Guid SearchId { get; }
+        public Guid ResultId { get; }
 
         /// <summary>
         ///     Room details from an availability response.
@@ -93,11 +100,5 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         /// </summary>
         [Required]
         public PaymentMethods PaymentMethod { get; }
-
-        /// <summary>
-        ///     Accommodation source from search results
-        /// </summary>
-        [Required]
-        public DataProviders DataProvider { get; }
     }
 }

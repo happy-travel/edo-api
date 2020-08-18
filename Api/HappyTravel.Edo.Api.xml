@@ -1281,11 +1281,6 @@
                 The result of a prediction query.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.AvailabilityId">
-            <summary>
-                Availability ID obtained from an <see cref="T:HappyTravel.EdoContracts.Accommodations.AvailabilityDetails" />.
-            </summary>
-        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.Nationality">
             <summary>
                 The nationality of a main passenger.
@@ -1330,11 +1325,6 @@
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.PaymentMethod">
             <summary>
                 Payment method for a booking.
-            </summary>
-        </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest.DataProvider">
-            <summary>
-                Accommodation source from search results
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Bookings.BookingRoomDetails.IsExtraBedNeeded">

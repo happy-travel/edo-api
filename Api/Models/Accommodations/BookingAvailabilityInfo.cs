@@ -1,4 +1,5 @@
 using System;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.Geography;
@@ -23,7 +24,8 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             GeoPoint coordinates,
             DateTime checkInDate,
             DateTime checkOutDate,
-            int numberOfNights)
+            int numberOfNights,
+            DataProviders dataProvider)
         {
             AccommodationId = accommodationId;
             AccommodationName = accommodationName;
@@ -39,6 +41,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             CheckInDate = checkInDate;
             CheckOutDate = checkOutDate;
             NumberOfNights = numberOfNights;
+            DataProvider = dataProvider;
         }
 
 
@@ -56,6 +59,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         public DateTime CheckInDate { get; }
         public DateTime CheckOutDate { get; }
         public int NumberOfNights { get; }
+        public DataProviders DataProvider { get; }
 
 
         public bool Equals(BookingAvailabilityInfo other)

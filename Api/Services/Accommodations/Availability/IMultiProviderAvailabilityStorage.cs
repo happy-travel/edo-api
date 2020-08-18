@@ -5,7 +5,7 @@ using HappyTravel.Edo.Common.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 {
-    public interface IAvailabilityStorage
+    public interface IMultiProviderAvailabilityStorage
     {
         Task<(DataProviders DataProvider, TObject Result)> GetProviderResult<TObject>(string keyPrefix, DataProviders dataProvider, bool isCachingEnabled = false);
         

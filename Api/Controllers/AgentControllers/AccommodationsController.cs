@@ -171,7 +171,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// <param name="resultId">Selected result id from the first step</param>
         /// <param name="roomContractSetId">Room contract set id from the previous step</param>
         /// <returns></returns>
-        [HttpPost("{source}/accommodations/availabilities/{availabilityId}/results/{resultId}/room-contract-sets/{roomContractSetId}")]
+        [HttpPost("accommodations/availabilities/searches/{searchId}/results/{resultId}/room-contract-sets/{roomContractSetId}")]
         [ProducesResponseType(typeof(SingleAccommodationAvailabilityDetailsWithDeadline), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]

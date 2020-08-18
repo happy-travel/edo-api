@@ -396,7 +396,6 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddScoped<IAgentContextInternal, HttpBasedAgentContextService>();
             services.AddHttpContextAccessor();
             services.AddSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
-            services.AddSingleton<IAvailabilityResultsCache, AvailabilityResultsCache>();
             services.AddTransient<IBookingRecordsManager, BookingRecordsManager>();
             services.AddTransient<ITagProcessor, TagProcessor>();
 
@@ -455,7 +454,6 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<IBookingEvaluationService, BookingEvaluationService>();
             services.AddTransient<IBookingService, BookingService>();
             services.AddTransient<IBookingsProcessingService, BookingsProcessingService>();
-            services.AddTransient<IProviderRouter, ProviderRouter>();
 
             services.AddSingleton<IAuthorizationPolicyProvider, CustomAuthorizationPolicyProvider>();
             services.AddTransient<IAuthorizationHandler, InAgencyPermissionAuthorizationHandler>();
@@ -485,9 +483,11 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddNameNormalizationServices();
             services.AddScoped<ILocationNormalizer, LocationNormalizer>();
 
-            services.AddTransient<IAvailabilityStorage, AvailabilityStorage>();
-            services.AddTransient<IWideAvailabilityResultsStorage, WideAvailabilityResultsStorage>();
-            services.AddTransient<IRoomSelectionResultsStorage, RoomSelectionResultsStorage>();
+            services.AddTransient<IMultiProviderAvailabilityStorage, MultiProviderAvailabilityStorage>();
+            services.AddTransient<IWideAvailabilityStorage, WideAvailabilityStorage>();
+            services.AddTransient<IRoomSelectionStorage, RoomSelectionStorage>();
+            
+            services.AddTransient<IBookingEvaluationStorage, BookingEvaluationStorage>();
             
             services.AddTransient<IPriceProcessor, PriceProcessor>();
 

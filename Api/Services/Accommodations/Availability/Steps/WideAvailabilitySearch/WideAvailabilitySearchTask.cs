@@ -22,14 +22,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 {
     public class WideAvailabilitySearchTask
     {
-        private WideAvailabilitySearchTask(IWideAvailabilityResultsStorage resultsStorage,
+        private WideAvailabilitySearchTask(IWideAvailabilityStorage storage,
             IPriceProcessor priceProcessor,
             IAccommodationDuplicatesService duplicatesService,
             IDataProviderFactory dataProviderFactory,
             IDateTimeProvider dateTimeProvider,
             ILogger<WideAvailabilitySearchTask> logger)
         {
-            _resultsStorage = resultsStorage;
+            _storage = storage;
             _priceProcessor = priceProcessor;
             _duplicatesService = duplicatesService;
             _dataProviderFactory = dataProviderFactory;
@@ -41,7 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         public static WideAvailabilitySearchTask Create(IServiceProvider serviceProvider)
         {
             return new WideAvailabilitySearchTask(
-                serviceProvider.GetRequiredService<IWideAvailabilityResultsStorage>(),
+                serviceProvider.GetRequiredService<IWideAvailabilityStorage>(),
                 serviceProvider.GetRequiredService<IPriceProcessor>(),
                 serviceProvider.GetRequiredService<IAccommodationDuplicatesService>(),
                 serviceProvider.GetRequiredService<IDataProviderFactory>(),
@@ -77,7 +77,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             async Task<Result<AvailabilityDetails, ProblemDetails>> GetAvailability(AvailabilityRequest request,
                 string languageCode)
             {
-                var saveToStorageTask = _resultsStorage.SaveState(searchId, ProviderAvailabilitySearchState.Pending(searchId), provider);
+                var saveToStorageTask = _storage.SaveState(searchId, ProviderAvailabilitySearchState.Pending(searchId), provider);
                 var getAvailabilityTask = dataProvider.GetAvailability(request, languageCode);
                 await Task.WhenAll(saveToStorageTask, getAvailabilityTask);
 
@@ -131,7 +131,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             }
 
 
-            Task SaveResult(AccommodationAvailabilityResult[] results) => _resultsStorage.SaveResults(searchId, provider, results);
+            Task SaveResult(AccommodationAvailabilityResult[] results) => _storage.SaveResults(searchId, provider, results);
 
 
             Task SaveState(Result<AccommodationAvailabilityResult[], ProblemDetails> result)
@@ -151,7 +151,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                         $"Availability search with id '{searchId}' on provider '{provider}' finished with state '{state.TaskState}', error '{state.Error}'");
                 }
 
-                return _resultsStorage.SaveState(searchId, state, provider);
+                return _storage.SaveState(searchId, state, provider);
             }
         }
 
@@ -161,6 +161,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         private readonly IDataProviderFactory _dataProviderFactory;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ILogger<WideAvailabilitySearchTask> _logger;
-        private readonly IWideAvailabilityResultsStorage _resultsStorage;
+        private readonly IWideAvailabilityStorage _storage;
     }
 }

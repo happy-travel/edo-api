@@ -23,14 +23,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
 {
     public class RoomSelectionService : IRoomSelectionService
     {
-        public RoomSelectionService(IProviderRouter providerRouter,
-            IWideAvailabilityResultsStorage wideAvailabilityResultsStorage,
+        public RoomSelectionService(IDataProviderFactory dataProviderFactory,
+            IWideAvailabilityStorage wideAvailabilityStorage,
             IOptions<DataProviderOptions> providerOptions,
             IAccommodationDuplicatesService duplicatesService,
             IServiceScopeFactory serviceScopeFactory)
         {
-            _providerRouter = providerRouter;
-            _wideAvailabilityResultsStorage = wideAvailabilityResultsStorage;
+            _dataProviderFactory = dataProviderFactory;
+            _wideAvailabilityStorage = wideAvailabilityStorage;
             _duplicatesService = duplicatesService;
             _serviceScopeFactory = serviceScopeFactory;
             _providerOptions = providerOptions.Value;
@@ -50,7 +50,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
                 .Select(a => a.Key.DataProvider)
                 .ToList();
 
-            var results = await _wideAvailabilityResultsStorage.GetStates(searchId, dataProviders);
+            var results = await _wideAvailabilityStorage.GetStates(searchId, dataProviders);
             return WideAvailabilitySearchState.FromProviderStates(searchId, results).TaskState;
         }
         
@@ -58,7 +58,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
         public async Task<Result<AccommodationDetails, ProblemDetails>> GetAccommodation(Guid searchId, Guid resultId, string languageCode)
         {
             var selectedResult = await GetSelectedResult(searchId, resultId);
-            return await _providerRouter.GetAccommodation(selectedResult.DataProvider, selectedResult.Result.AccommodationDetails.Id, languageCode);
+            return await _dataProviderFactory.Get(selectedResult.DataProvider).GetAccommodation(selectedResult.Result.AccommodationDetails.Id, languageCode);
         }
 
 
@@ -96,6 +96,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
                 var selectedResult = results
                     .Single(r => r.Result.Id == resultId);
 
+                // If there is no duplicate, we'll execute request to a single provider only
+                if (string.IsNullOrWhiteSpace(selectedResult.Result.DuplicateReportId))
+                    return new List<(DataProviders Source, AccommodationAvailabilityResult Result)> {selectedResult};
+
                 return results
                     .Where(r => r.Result.DuplicateReportId == selectedResult.Result.DuplicateReportId)
                     .ToList();
@@ -105,7 +109,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
 
         private async Task<(DataProviders DataProvider, AccommodationAvailabilityResult Result)[]> GetWideAvailabilityResults(Guid searchId)
         {
-            return (await _wideAvailabilityResultsStorage.GetResults(searchId, _providerOptions.EnabledProviders))
+            return (await _wideAvailabilityStorage.GetResults(searchId, _providerOptions.EnabledProviders))
                 .SelectMany(r => r.AccommodationAvailabilities.Select(acr => (Source: r.ProviderKey, Result: acr)))
                 .ToArray();
         }
@@ -118,8 +122,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
         }
 
         
-        private readonly IProviderRouter _providerRouter;
-        private readonly IWideAvailabilityResultsStorage _wideAvailabilityResultsStorage;
+        private readonly IDataProviderFactory _dataProviderFactory;
+        private readonly IWideAvailabilityStorage _wideAvailabilityStorage;
         private readonly IAccommodationDuplicatesService _duplicatesService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly DataProviderOptions _providerOptions;

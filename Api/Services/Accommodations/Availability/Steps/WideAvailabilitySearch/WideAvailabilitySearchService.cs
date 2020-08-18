@@ -27,15 +27,15 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
     {
         public WideAvailabilitySearchService(IAccommodationDuplicatesService duplicatesService,
             ILocationService locationService,
-            IProviderRouter providerRouter,
-            IWideAvailabilityResultsStorage availabilityStorage,
+            IDataProviderFactory dataProviderFactory,
+            IWideAvailabilityStorage availabilityStorage,
             IServiceScopeFactory serviceScopeFactory,
             IOptions<DataProviderOptions> providerOptions,
             ILogger<WideAvailabilitySearchService> logger)
         {
             _duplicatesService = duplicatesService;
             _locationService = locationService;
-            _providerRouter = providerRouter;
+            _dataProviderFactory = dataProviderFactory;
             _availabilityStorage = availabilityStorage;
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
@@ -108,7 +108,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             return GetDeadline()
                 .Map(AddProviderData);
 
-            Task<Result<DeadlineDetails, ProblemDetails>> GetDeadline() => _providerRouter.GetDeadline(dataProvider,
+            Task<Result<DeadlineDetails, ProblemDetails>> GetDeadline() => _dataProviderFactory.Get(dataProvider).GetDeadline(
                 availabilityId,
                 roomContractSetId, languageCode);
 
@@ -159,8 +159,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         
         private readonly IAccommodationDuplicatesService _duplicatesService;
         private readonly ILocationService _locationService;
-        private readonly IProviderRouter _providerRouter;
-        private readonly IWideAvailabilityResultsStorage _availabilityStorage;
+        private readonly IDataProviderFactory _dataProviderFactory;
+        private readonly IWideAvailabilityStorage _availabilityStorage;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<WideAvailabilitySearchService> _logger;
         private readonly DataProviderOptions _providerOptions;
