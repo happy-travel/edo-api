@@ -21,7 +21,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 return Result.Failure("Invalid data providers");
 
             var doesRelationExist = await _context.AgentAgencyRelations
-                .AnyAsync(r => r.AgentId == agentId || r.AgencyId == agencyId);
+                .AnyAsync(r => r.AgentId == agentId && r.AgencyId == agencyId);
 
             if (!doesRelationExist)
                 return Result.Failure("Could not find specified agent in given agency");
