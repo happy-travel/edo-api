@@ -219,7 +219,7 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<int>("AgencyId")
                         .HasColumnType("integer");
 
-                    b.Property<AvailabilitySearchSettings>("AvailabilitySearchSettings")
+                    b.Property<AgentAvailabilitySearchSettings>("AvailabilitySearchSettings")
                         .HasColumnType("jsonb");
 
                     b.HasKey("AgentId", "AgencyId");

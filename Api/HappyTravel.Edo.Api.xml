@@ -58,11 +58,19 @@
             <param name="requireProviderConfirmation">If a provider returns an error after cancellation request, this is ignored as if it was a success</param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgentsController.SetSystemSettings(HappyTravel.Edo.Data.Agents.AvailabilitySearchSettings,System.Int32,System.Int32)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgentsController.SetSystemSettings(HappyTravel.Edo.Data.Agents.AgentAvailabilitySearchSettings,System.Int32,System.Int32)">
             <summary>
             Updates agent's availability search settings
             </summary>
             <param name="settings">Settings</param>
+            <param name="agentId">Agent Id</param>
+            <param name="agencyId">Agency Id</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgentsController.GetSystemSettings(System.Int32,System.Int32)">
+            <summary>
+            Gets agent's availability search settings
+            </summary>
             <param name="agentId">Agent Id</param>
             <param name="agencyId">Agency Id</param>
             <returns></returns>

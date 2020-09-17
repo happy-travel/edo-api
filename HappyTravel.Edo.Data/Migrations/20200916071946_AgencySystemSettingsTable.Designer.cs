@@ -15,8 +15,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HappyTravel.Edo.Data.Migrations
 {
     [DbContext(typeof(EdoContext))]
-    [Migration("20200902143136_AgentSystemSettingsTable")]
-    partial class AgentSystemSettingsTable
+    [Migration("20200916071946_AgencySystemSettingsTable")]
+    partial class AgencySystemSettingsTable
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -142,6 +142,21 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.ToTable("Agencies");
                 });
 
+            modelBuilder.Entity("HappyTravel.Edo.Data.Agents.AgencySystemSettings", b =>
+                {
+                    b.Property<int>("AgencyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<AgencyAvailabilitySearchSettings>("AvailabilitySearchSettings")
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("AgencyId");
+
+                    b.ToTable("AgencySystemSettings");
+                });
+
             modelBuilder.Entity("HappyTravel.Edo.Data.Agents.Agent", b =>
                 {
                     b.Property<int>("Id")
@@ -197,16 +212,16 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<int>("AgentId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
                     b.Property<int>("AgencyId")
                         .HasColumnType("integer");
 
                     b.Property<int>("InAgencyPermissions")
                         .HasColumnType("integer");
 
-                    b.HasKey("AgentId", "Type");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("AgentId", "AgencyId");
 
                     b.ToTable("AgentAgencyRelations");
                 });
@@ -920,9 +935,6 @@ namespace HappyTravel.Edo.Data.Migrations
 
                     b.Property<int>("AgencyId")
                         .HasColumnType("integer");
-
-                    b.Property<decimal>("AuthorizedBalance")
-                        .HasColumnType("numeric");
 
                     b.Property<decimal>("Balance")
                         .HasColumnType("numeric");

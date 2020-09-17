@@ -140,6 +140,21 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.ToTable("Agencies");
                 });
 
+            modelBuilder.Entity("HappyTravel.Edo.Data.Agents.AgencySystemSettings", b =>
+                {
+                    b.Property<int>("AgencyId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<AgencyAvailabilitySearchSettings>("AvailabilitySearchSettings")
+                        .HasColumnType("jsonb");
+
+                    b.HasKey("AgencyId");
+
+                    b.ToTable("AgencySystemSettings");
+                });
+
             modelBuilder.Entity("HappyTravel.Edo.Data.Agents.Agent", b =>
                 {
                     b.Property<int>("Id")
@@ -217,7 +232,7 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<int>("AgencyId")
                         .HasColumnType("integer");
 
-                    b.Property<AvailabilitySearchSettings>("AvailabilitySearchSettings")
+                    b.Property<AgentAvailabilitySearchSettings>("AvailabilitySearchSettings")
                         .HasColumnType("jsonb");
 
                     b.HasKey("AgentId", "AgencyId");

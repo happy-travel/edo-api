@@ -13,7 +13,7 @@ namespace HappyTravel.Edo.Data.Migrations
                 {
                     AgentId = table.Column<int>(nullable: false),
                     AgencyId = table.Column<int>(nullable: false),
-                    AvailabilitySearchSettings = table.Column<AvailabilitySearchSettings>(type: "jsonb", nullable: false)
+                    AvailabilitySearchSettings = table.Column<AgentAvailabilitySearchSettings>(type: "jsonb", nullable: false)
                 },
                 constraints: table =>
                 {

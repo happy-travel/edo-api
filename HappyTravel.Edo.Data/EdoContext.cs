@@ -80,6 +80,8 @@ namespace HappyTravel.Edo.Data
         public virtual DbSet<AccommodationDuplicateReport> AccommodationDuplicateReports { get; set; }
         
         public virtual DbSet<AgentSystemSettings> AgentSystemSettings { get; set; }
+        
+        public virtual DbSet<AgencySystemSettings> AgencySystemSettings { get; set; }
 
 
         [DbFunction("jsonb_to_string")]
@@ -231,6 +233,7 @@ namespace HappyTravel.Edo.Data
             BuildAccommodationDuplicates(builder);
             BuildAccommodationDuplicateReports(builder);
             BuildAgentSystemSettings(builder);
+            BuildAgencySystemSettings(builder);
         }
 
 
@@ -757,6 +760,15 @@ namespace HappyTravel.Edo.Data
             builder.Entity<AgentSystemSettings>(settings =>
             {
                 settings.HasKey(r => new { r.AgentId, r.AgencyId });
+                settings.Property(r => r.AvailabilitySearchSettings).HasColumnType("jsonb");
+            });
+        }
+        
+        private void BuildAgencySystemSettings(ModelBuilder builder)
+        {
+            builder.Entity<AgencySystemSettings>(settings =>
+            {
+                settings.HasKey(r => r.AgencyId);
                 settings.Property(r => r.AvailabilitySearchSettings).HasColumnType("jsonb");
             });
         }

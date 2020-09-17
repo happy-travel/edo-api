@@ -6,6 +6,8 @@ namespace HappyTravel.Edo.Api.AdministratorServices
 {
     public interface IAgentSystemSettingsManagementService
     {
-        Task<Result> SetAvailabilitySearchSettings(int agentId, int agencyId, AvailabilitySearchSettings settings);
+        Task<Result> SetAvailabilitySearchSettings(int agentId, int agencyId, AgentAvailabilitySearchSettings settings);
+
+        Task<Result<AgentAvailabilitySearchSettings>> GetAvailabilitySearchSettings(int agentId, int agencyId);
     }
 }
