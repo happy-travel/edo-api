@@ -14,6 +14,7 @@ using HappyTravel.Edo.Api.Services.Markups.Templates;
 using HappyTravel.Edo.Api.Services.PriceProcessing;
 using HappyTravel.Edo.Common.Enums.Markup;
 using HappyTravel.Edo.Data;
+using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Markup;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,26 +26,46 @@ namespace HappyTravel.Edo.Api.Services.Markups
             IDoubleFlow flow,
             IMarkupPolicyTemplateService templateService,
             ICurrencyRateService currencyRateService,
-            IAgentSettingsManager agentSettingsManager)
+            IAgentSettingsManager agentSettingsManager,
+            IAgencySystemSettingsService agencySystemSettingsService)
         {
             _context = context;
             _flow = flow;
             _templateService = templateService;
             _currencyRateService = currencyRateService;
             _agentSettingsManager = agentSettingsManager;
+            _agencySystemSettingsService = agencySystemSettingsService;
         }
 
 
         public async Task<Markup> Get(AgentContext agentContext, MarkupPolicyTarget policyTarget)
         {
-            var settings = await GetAgentSettings(agentContext);
-            var agentPolicies = await GetAgentPolicies(agentContext, settings, policyTarget);
+            var agencySettings = await GetAvailabilitySearchSettings(agentContext);
+            if (agencySettings.HasValue && agencySettings.Value.IsMarkupDisabled)
+                return Markup.Empty;
+            
+            var agentSettings = await GetAgentSettings(agentContext);
+            var agentPolicies = await GetAgentPolicies(agentContext, agentSettings, policyTarget);
             var markupFunction = CreateAggregatedMarkupFunction(agentPolicies);
             return new Markup
             {
                 Policies = agentPolicies,
                 Function = markupFunction
             };
+        }
+
+
+        private Task<Maybe<AgencyAvailabilitySearchSettings>> GetAvailabilitySearchSettings(AgentContext agentContext)
+        {
+            return _flow.GetOrSetAsync(
+                key: BuildKey(),
+                getValueFunction: async () => await _agencySystemSettingsService.GetAvailabilitySearchSettings(agentContext.AgencyId),
+                AgencySettingsCachingTime); 
+            
+            string BuildKey()
+                => _flow.BuildKey(nameof(MarkupService),
+                    nameof(GetAvailabilitySearchSettings),
+                    agentContext.AgencyId.ToString());
         }
 
 
@@ -164,9 +185,11 @@ namespace HappyTravel.Edo.Api.Services.Markups
         private static readonly TimeSpan MarkupPolicyFunctionCachingTime = TimeSpan.FromDays(1);
         private static readonly TimeSpan AgentPoliciesCachingTime = TimeSpan.FromMinutes(2);
         private static readonly TimeSpan AgentSettingsCachingTime = TimeSpan.FromMinutes(2);
+        private static readonly TimeSpan AgencySettingsCachingTime = TimeSpan.FromMinutes(2);
         private readonly EdoContext _context;
         private readonly ICurrencyRateService _currencyRateService;
         private readonly IAgentSettingsManager _agentSettingsManager;
+        private readonly IAgencySystemSettingsService _agencySystemSettingsService;
         private readonly IDoubleFlow _flow;
         private readonly IMarkupPolicyTemplateService _templateService;
     }
