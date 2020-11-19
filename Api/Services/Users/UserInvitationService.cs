@@ -5,7 +5,9 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
 using HappyTravel.Edo.Api.Infrastructure.Options;
+using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Mailing;
+using HappyTravel.Edo.Api.Models.Management;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
@@ -102,24 +104,54 @@ namespace HappyTravel.Edo.Api.Services.Users
                 .Ensure(InvitationIsActual, "Invitation expired")
                 .Map(GetInvitationData<TInvitationData>);
 
-            bool IsNotAccepted(UserInvitation invitation) => !invitation.IsAccepted;
+            bool IsNotAccepted(InvitationBase invitation) => !invitation.IsAccepted;
 
-            bool HasCorrectType(UserInvitation invitation) => invitation.InvitationType == invitationType;
+            bool HasCorrectType(InvitationBase invitation) => invitation.InvitationType == invitationType;
 
-            bool InvitationIsActual(UserInvitation invitation) => invitation.Created + _options.InvitationExpirationPeriod > _dateTimeProvider.UtcNow();
+            bool InvitationIsActual(InvitationBase invitation) => invitation.Created + _options.InvitationExpirationPeriod > _dateTimeProvider.UtcNow();
         }
 
 
-        private static TInvitationData GetInvitationData<TInvitationData>(UserInvitation invitation)
-            => JsonConvert.DeserializeObject<TInvitationData>(invitation.Data);
+        private static TInvitationData GetInvitationData<TInvitationData>(InvitationBase invitation)
+        {
+            return invitation.InvitationType switch
+            {
+                UserInvitationTypes.Agent => MapInvitationData<TInvitationData>((AgentInvitation) invitation),
+                UserInvitationTypes.Administrator =>MapInvitationData<TInvitationData>((AdminInvitation) invitation),
+                _ => throw new NotImplementedException($"{Formatters.EnumFormatters.FromDescription(invitation.InvitationType)} not supported")
+            };
+        }
 
 
-        private async Task<Maybe<UserInvitation>> GetInvitation(string code)
+        private static TInvitationData MapInvitationData<TInvitationData>(AdminInvitation invitation)
+        {
+            return (TInvitationData) Convert.ChangeType(new AdministratorInvitationInfo(
+                invitation.Email,
+                invitation.Data.LastName,
+                invitation.Data.FirstName,
+                invitation.Data.Position,
+                invitation.Data.Title),
+                typeof(TInvitationData));
+        }
+
+
+        private static TInvitationData MapInvitationData<TInvitationData>(AgentInvitation invitation)
+        {
+            var data = invitation.Data.RegistrationInfo;
+            var agentEditableInfo = new AgentEditableInfo(data.Title, data.FirstName, data.LastName, data.Position, invitation.Email);
+            return (TInvitationData) Convert.ChangeType(new AgentInvitationInfo(
+                agentEditableInfo,
+                invitation.Data.AgencyId,
+                invitation.Email), typeof(TInvitationData));
+        }
+
+
+        private async Task<Maybe<InvitationBase>> GetInvitation(string code)
         {
             var invitation = await _context.UserInvitations
                 .SingleOrDefaultAsync(c => c.CodeHash == HashGenerator.ComputeSha256(code));
 
-            return invitation ?? Maybe<UserInvitation>.None;
+            return invitation ?? Maybe<InvitationBase>.None;
         }
         
         
@@ -137,14 +169,51 @@ namespace HappyTravel.Edo.Api.Services.Users
         private Task SaveInvitationData<TInvitationData>(string addresseeEmail, TInvitationData invitationInfo, 
             UserInvitationTypes invitationType, string invitationCode)
         {
-            _context.UserInvitations.Add(new UserInvitation
+            switch (invitationInfo)
             {
-                CodeHash = HashGenerator.ComputeSha256(invitationCode),
-                Created = _dateTimeProvider.UtcNow(),
-                Data = JsonConvert.SerializeObject(invitationInfo),
-                Email = addresseeEmail,
-                InvitationType = invitationType
-            });
+                case AgentInvitationInfo info when invitationType == UserInvitationTypes.Agent:
+                {
+                    _context.AgentInvitations.Add(new AgentInvitation
+                    {
+                        CodeHash = HashGenerator.ComputeSha256(invitationCode),
+                        Created = _dateTimeProvider.UtcNow(),
+                        Data = new AgentInvitation.AgentInvitationData
+                        {
+                            AgencyId = info.AgencyId,
+                            Email = addresseeEmail,
+                            RegistrationInfo = new AgentInvitation.AgentRegistrationInfo
+                            {
+                                FirstName = info.RegistrationInfo.FirstName,
+                                LastName = info.RegistrationInfo.LastName,
+                                Title = info.RegistrationInfo.Title,
+                                Position = info.RegistrationInfo.Position
+                            }
+                        },
+                        Email = addresseeEmail,
+                        InvitationType = invitationType
+                    });
+                }
+                    break;
+
+                case AdministratorInvitationInfo info when invitationType == UserInvitationTypes.Administrator:
+                {
+                    _context.AdminInvitations.Add(new AdminInvitation
+                    {
+                        CodeHash = HashGenerator.ComputeSha256(invitationCode),
+                        Created = _dateTimeProvider.UtcNow(),
+                        Data = new AdminInvitation.AdminInvitationData
+                        {
+                            Title = info.Title,
+                            Email = addresseeEmail,
+                            FirstName = info.FirstName,
+                            LastName = info.LastName
+                        },
+                        Email = addresseeEmail,
+                        InvitationType = invitationType
+                    });
+                }
+                    break;
+            }
 
             return _context.SaveChangesAsync();
         }

@@ -195,7 +195,8 @@ namespace HappyTravel.Edo.Api.Services.Agents
                 AgentId = agent.Id,
                 Type = relationType,
                 InAgencyPermissions = permissions,
-                AgencyId = agencyId
+                AgencyId = agencyId,
+                IsActive = true
             });
 
             return _context.SaveChangesAsync();

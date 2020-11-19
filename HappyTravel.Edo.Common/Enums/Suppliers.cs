@@ -8,6 +8,7 @@
         Netstorming = 1,
         Illusions = 2,
         DirectContracts = 3,
-        Etg = 4
+        Etg = 4,
+        Rakuten = 5
     }
 }

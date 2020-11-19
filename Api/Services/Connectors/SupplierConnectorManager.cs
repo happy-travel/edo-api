@@ -39,7 +39,11 @@ namespace HappyTravel.Edo.Api.Services.Connectors
                 {
                     Suppliers.DirectContracts,
                     new SupplierConnector(connectorClient, _options.DirectContracts, serviceProvider.GetRequiredService<ILogger<SupplierConnector>>())
-                }
+                },
+                {
+                    Suppliers.Rakuten,
+                    new SupplierConnector(connectorClient, _options.Rakuten, serviceProvider.GetRequiredService<ILogger<SupplierConnector>>())
+                },
             };
         }
 

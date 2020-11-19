@@ -242,29 +242,25 @@ namespace HappyTravel.Edo.Api.Infrastructure
             var supplierOptions = vaultClient.Get(configuration["Suppliers:Options"]).GetAwaiter().GetResult();
             services.Configure<SupplierOptions>(options =>
             {
-                var netstormingEndpoint = environment.IsLocal()
-                    ? configuration["Suppliers:NetstormingConnector"]
+                options.Netstorming = environment.IsLocal()
+                    ? configuration["Suppliers:Netstorming"]
                     : supplierOptions["netstormingConnector"];
 
-                options.Netstorming = netstormingEndpoint;
-
-                var illusionsEndpoint = environment.IsLocal()
+                options.Illusions = environment.IsLocal()
                     ? configuration["Suppliers:Illusions"]
                     : supplierOptions["illusions"];
 
-                options.Illusions = illusionsEndpoint;
-
-                var etgEndpoint = environment.IsLocal()
+                options.Etg = environment.IsLocal()
                     ? configuration["Suppliers:Etg"]
                     : supplierOptions["etg"];
 
-                options.Etg = etgEndpoint;
-                
-                var directContractsEndpoint = environment.IsLocal()
+                options.DirectContracts = environment.IsLocal()
                     ? configuration["Suppliers:DirectContracts"]
                     : supplierOptions["directContracts"];
                 
-                options.DirectContracts = directContractsEndpoint;
+                options.Rakuten = environment.IsLocal()
+                    ? configuration["Suppliers:Rakuten"]
+                    : supplierOptions["rakuten"];
                 
                 var enabledConnectors = environment.IsLocal()
                     ? configuration["Suppliers:EnabledConnectors"]
