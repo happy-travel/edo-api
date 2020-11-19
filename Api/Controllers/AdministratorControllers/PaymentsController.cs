@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.AdministratorServices;
 using HappyTravel.Edo.Api.Models.Users;
+using HappyTravel.Edo.Data.Booking;
 
 namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
 {
@@ -22,12 +23,14 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
     public class PaymentsController : BaseController
     {
         public PaymentsController(IBookingPaymentService bookingPaymentService,
-            IAdministratorContext administratorContext, ICounterpartyAccountService counterpartyAccountService, IAgencyAccountService agencyAccountService)
+            IAdministratorContext administratorContext, ICounterpartyAccountService counterpartyAccountService, IAgencyAccountService agencyAccountService,
+            IBookingCreditCardPaymentConfirmationService bookingCreditCardConfirmationService)
         {
             _bookingPaymentService = bookingPaymentService;
             _administratorContext = administratorContext;
             _counterpartyAccountService = counterpartyAccountService;
             _agencyAccountService = agencyAccountService;
+            _bookingCreditCardConfirmationService = bookingCreditCardConfirmationService;
         }
 
 
@@ -210,9 +213,27 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
         }
 
 
+        /// <summary>
+        ///     Get list of bookings with unconfirmed credit card payments
+        /// </summary>
+        [HttpGet("confirm/{bookingId}")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
+        [AdministratorPermissions(AdministratorPermissions.OfflinePayment)]
+        public async Task<IActionResult> GetBookingsWithUnconfirmedCreditCardPayments(int bookingId)
+        {
+            var (_, _, administrator, _) = await _administratorContext.GetCurrent();
+            var (isSuccess, _, booking, error) = await _bookingCreditCardConfirmationService.Confirm(bookingId, administrator);
+
+            return isSuccess
+                ? NoContent()
+                : (IActionResult) BadRequest(error);
+        }
+
         private readonly IAgencyAccountService _agencyAccountService;
         private readonly IAdministratorContext _administratorContext;
         private readonly IBookingPaymentService _bookingPaymentService;
+        private readonly IBookingCreditCardPaymentConfirmationService _bookingCreditCardConfirmationService;
         private readonly ICounterpartyAccountService _counterpartyAccountService;
     }
 }

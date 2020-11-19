@@ -14,5 +14,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
         Task<Result<AccommodationBookingInfo, ProblemDetails>> BookByAccount(AccommodationBookingRequest bookingRequest,
             AgentContext agentContext, string languageCode, string clientIp);
+
+        Task VoidMoneyAndCancelBooking(Data.Booking.Booking booking, AgentContext agentContext);
+
+        Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> BookOnProvider(Data.Booking.Booking booking, string referenceCode,
+            string languageCode, bool withBookingOnSupplier = true);
+
+
+        Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details, Data.Booking.Booking booking,
+            AgentContext agentContext);
     }
 }

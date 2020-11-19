@@ -78,6 +78,7 @@ using StackExchange.Redis;
 using Amazon;
 using Amazon.S3;
 using HappyTravel.Edo.Api.Services.Files;
+using HappyTravel.Edo.Api.Services.Payments.CreditCardConfirmation;
 
 namespace HappyTravel.Edo.Api.Infrastructure
 {
@@ -445,6 +446,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<IAccountBalanceAuditService, AccountBalanceAuditService>();
             services.AddTransient<ICreditCardAuditService, CreditCardAuditService>();
             services.AddTransient<IOfflinePaymentAuditService, OfflinePaymentAuditService>();
+            services.AddTransient<ICreditCardPaymentConfirmationAuditService, CreditCardPaymentConfirmationAuditService>();
+            services.AddTransient<IBookingCreditCardPaymentConfirmationService, BookingCreditCardPaymentConfirmationService>();
 
             services.AddTransient<IAccountManagementService, AccountManagementService>();
             services.AddScoped<IAdministratorContext, HttpBasedAdministratorContext>();

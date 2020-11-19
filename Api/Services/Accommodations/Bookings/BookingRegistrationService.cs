@@ -14,6 +14,7 @@ using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEvaluation;
+using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Api.Services.Mailing;
 using HappyTravel.Edo.Api.Services.Payments;
@@ -115,11 +116,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             if (isGetBookingFailure)
                 return Result.Failure<AccommodationBookingInfo, ProblemDetails>(getBookingError);
 
-            return await BookOnProvider(booking, referenceCode, languageCode)
-                .Tap(ProcessResponse)
-                .OnFailure(VoidMoneyAndCancelBooking)
+            return await BookOnProvider(booking, referenceCode, languageCode, false)
+                .Tap(CreditCardPaymentNotify)
                 .Bind(GenerateInvoice)
-                .Bind(SendReceipt)
                 .Bind(GetAccommodationBookingInfo)
                 .Tap(NotifyBookingFinalized)
                 .Tap(SendInvoice)
@@ -142,13 +141,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
 
-            Task ProcessResponse(EdoContracts.Accommodations.Booking bookingResponse) => _bookingResponseProcessor.ProcessResponse(bookingResponse, booking);
+            async Task<Result<Booking, ProblemDetails>> CreditCardPaymentNotify(Booking bookingFromPipe)
+            {
+                await _bookingMailingService.NotifyCreditCardPaymentConfirmation(bookingFromPipe.ReferenceCode);
+                return Result.Success<Booking, ProblemDetails>(bookingFromPipe);
+            }
 
 
-            Task VoidMoneyAndCancelBooking(ProblemDetails problemDetails) => this.VoidMoneyAndCancelBooking(booking, agentContext);
-
-
-            Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details) => this.SendReceipt(details, booking, agentContext);
+            Task NotifyBookingFinalized(AccommodationBookingInfo bookingInfo) => _bookingMailingService.NotifyBookingFinalized(bookingInfo);
 
 
             Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> GenerateInvoice(EdoContracts.Accommodations.Booking details) => this.GenerateInvoice(details, referenceCode, agentContext);
@@ -157,9 +157,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             Task<Result<AccommodationBookingInfo, ProblemDetails>> GetAccommodationBookingInfo(Booking details)
                 => _bookingRecordsManager.GetAccommodationBookingInfo(details.ReferenceCode, languageCode)
                     .ToResultWithProblemDetails();
-
-
-            Task NotifyBookingFinalized(AccommodationBookingInfo bookingInfo) => _bookingMailingService.NotifyBookingFinalized(bookingInfo);
             
             
             Task SendInvoice(AccommodationBookingInfo bookingInfo) => _bookingMailingService.SendInvoice(bookingInfo.BookingId, agentContext.Email, agentContext, languageCode);
@@ -171,9 +168,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
             Result<T, ProblemDetails> WriteLog<T>(Result<T, ProblemDetails> result)
                 => LoggerUtils.WriteLogByResult(result,
-                    () => _logger.LogBookingFinalizationSuccess($"Successfully finalized a booking with reference code: '{referenceCode}'"),
+                    () => _logger.LogBookingFinalizationSuccess($"Successfully finalized a booking with reference code: '{booking.ReferenceCode}'"),
                     () => _logger.LogBookingFinalizationFailure(
-                        $"Failed to finalize a booking with reference code: '{referenceCode}'. Error: {result.Error.Detail}"));
+                        $"Failed to finalize a booking with reference code: '{booking.ReferenceCode}'. Error: {result.Error.Detail}"));
         }
 
 
@@ -294,7 +291,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         
-        private async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details, Data.Booking.Booking booking, AgentContext agentContext)
+        public async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details, Data.Booking.Booking booking, AgentContext agentContext)
         {
             var (_, isReceiptFailure, receiptInfo, receiptError) = await _documentsService.GenerateReceipt(booking.Id, agentContext.AgentId);
             if (isReceiptFailure)
@@ -314,7 +311,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             return Result.Success<EdoContracts.Accommodations.Booking, ProblemDetails>(details);
         }
         
-        private async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> BookOnProvider(Data.Booking.Booking booking, string referenceCode, string languageCode)
+        public async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> BookOnProvider(Data.Booking.Booking booking, string referenceCode,
+            string languageCode, bool withBookingOnSupplier = true)
         {
             // TODO: will be implemented in NIJO-31 
             var bookingRequest = JsonConvert.DeserializeObject<AccommodationBookingRequest>(booking.BookingRequest);
@@ -324,6 +322,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             var roomDetails = bookingRequest.RoomDetails
                 .Select(d => new SlimRoomOccupation(d.Type, d.Passengers, string.Empty, d.IsExtraBedNeeded))
                 .ToList();
+
+            // return stub details without booking on supplier
+            if(!withBookingOnSupplier)
+                return GetStubDetails(booking);
 
             var innerRequest = new BookingRequest(bookingRequest.AvailabilityId,
                 bookingRequest.RoomContractSetId,
@@ -375,7 +377,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        private async Task VoidMoneyAndCancelBooking(Data.Booking.Booking booking, AgentContext agentContext)
+        public async Task VoidMoneyAndCancelBooking(Data.Booking.Booking booking, AgentContext agentContext)
         {
             var (_, isFailure, _, error) = await _supplierConnectorManager.Get(booking.Supplier).CancelBooking(booking.ReferenceCode);
             if (isFailure)
