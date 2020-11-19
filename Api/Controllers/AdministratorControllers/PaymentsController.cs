@@ -214,7 +214,7 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
 
 
         /// <summary>
-        ///     Get list of bookings with unconfirmed credit card payments
+        ///     Confirm credit card payment
         /// </summary>
         [HttpGet("confirm/{bookingId}")]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
