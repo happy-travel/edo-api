@@ -54,17 +54,6 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        public async ValueTask<AgentContext> GetAgent(int agentId)
-        {
-            var (_, isFailure, agent, error) = await GetAgentById(agentId);
-            // Normally this should not happen and such error is a signal that something is going wrong.
-            if (isFailure)
-                throw new UnauthorizedAccessException("Agent retrieval failure");
-
-            return agent;
-        }
-
-
         private async ValueTask<AgentContext> GetAgentInfoByIdentityHash(string identityHash)
         {
             // TODO: use counterparty information from headers to get counterparty id
@@ -74,28 +63,6 @@ namespace HappyTravel.Edo.Api.Services.Agents
                     from agency in _context.Agencies.Where(a => a.Id == agentAgencyRelation.AgencyId && a.IsActive)
                     from counterparty in _context.Counterparties.Where(c => c.Id == agency.CounterpartyId && c.IsActive)
                     where agent.IsActive && agentAgencyRelation.IsActive && agent.IdentityHash == identityHash
-                    select new AgentContext(agent.Id,
-                        agent.FirstName,
-                        agent.LastName,
-                        agent.Email,
-                        agent.Title,
-                        agent.Position,
-                        counterparty.Id,
-                        counterparty.Name,
-                        agency.Id,
-                        agentAgencyRelation.Type == AgentAgencyRelationTypes.Master,
-                        agentAgencyRelation.InAgencyPermissions))
-                .SingleOrDefaultAsync();
-        }
-
-
-        private async ValueTask<Result<AgentContext>> GetAgentById(int agentId)
-        {
-            return await (from agent in _context.Agents
-                    from agentAgencyRelation in _context.AgentAgencyRelations.Where(r => r.AgentId == agent.Id)
-                    from agency in _context.Agencies.Where(a => a.Id == agentAgencyRelation.AgencyId && a.IsActive)
-                    from counterparty in _context.Counterparties.Where(c => c.Id == agency.CounterpartyId && c.IsActive)
-                    where agent.IsActive && agentAgencyRelation.IsActive && agent.Id == agentId
                     select new AgentContext(agent.Id,
                         agent.FirstName,
                         agent.LastName,

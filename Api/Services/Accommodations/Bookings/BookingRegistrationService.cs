@@ -257,14 +257,15 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
             Task ProcessResponse(EdoContracts.Accommodations.Booking bookingResponse) => _bookingResponseProcessor.ProcessResponse(bookingResponse, booking);
 
-            Task VoidMoneyAndCancelBooking(ProblemDetails problemDetails) => this.VoidMoneyAndCancelBooking(booking, agentContext);
+            Task VoidMoneyAndCancelBooking(ProblemDetails problemDetails) => this.VoidMoneyAndCancelBooking(booking, agentContext.ToUserInfo());
 
-            Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> GenerateInvoice(EdoContracts.Accommodations.Booking details) => this.GenerateInvoice(details, booking.ReferenceCode, agentContext);
+            Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> GenerateInvoice(EdoContracts.Accommodations.Booking details)
+                => this.GenerateInvoice(details, booking.ReferenceCode, agentContext);
 
 
             async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceiptIfPaymentMade(EdoContracts.Accommodations.Booking details)
                 => wasPaymentMade
-                    ? await SendReceipt(details, booking, agentContext)
+                    ? await SendReceipt(details, booking, agentContext.ToUserInfo(), agentContext.Email)
                     : details;
 
 
@@ -291,13 +292,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         
-        public async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details, Data.Booking.Booking booking, AgentContext agentContext)
+        public async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details, Data.Booking.Booking booking, UserInfo userInfo, string email)
         {
-            var (_, isReceiptFailure, receiptInfo, receiptError) = await _documentsService.GenerateReceipt(booking.Id, agentContext.AgentId);
+            var (_, isReceiptFailure, receiptInfo, receiptError) = await _documentsService.GenerateReceipt(booking.Id, userInfo.Id);
             if (isReceiptFailure)
                 return ProblemDetailsBuilder.Fail<EdoContracts.Accommodations.Booking>(receiptError);
 
-            await _notificationService.SendReceiptToCustomer(receiptInfo, agentContext.Email);
+            await _notificationService.SendReceiptToCustomer(receiptInfo, email);
             return Result.Success<EdoContracts.Accommodations.Booking, ProblemDetails>(details);
         }
 
@@ -377,7 +378,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task VoidMoneyAndCancelBooking(Data.Booking.Booking booking, AgentContext agentContext)
+        public async Task VoidMoneyAndCancelBooking(Data.Booking.Booking booking, UserInfo userInfo)
         {
             var (_, isFailure, _, error) = await _supplierConnectorManager.Get(booking.Supplier).CancelBooking(booking.ReferenceCode);
             if (isFailure)
@@ -389,7 +390,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return;
             }
 
-            var (_, voidOrRefundFailure, voidOrRefundError) = await _paymentService.VoidOrRefund(booking, agentContext.ToUserInfo());
+            var (_, voidOrRefundFailure, voidOrRefundError) = await _paymentService.VoidOrRefund(booking, userInfo);
             if (voidOrRefundFailure)
                 _logger.LogBookingCancelFailure($"Failure during cancellation of a booking with reference code '{booking.ReferenceCode}':" +
                     $"failed to void or refund money. Error: {voidOrRefundError}");

@@ -1,16 +1,20 @@
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Management.AuditEvents;
+using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Management;
 using HappyTravel.Edo.Common.Enums;
+using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Booking;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
@@ -18,16 +22,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
     {
         public BookingCreditCardPaymentConfirmationService(
             IBookingRecordsManager bookingRecordsManager,
-            IAgentContextService agentContext,
             IBookingRegistrationService bookingRegistrationService,
             IBookingResponseProcessor bookingResponseProcessor,
-            IManagementAuditService managementAuditService)
+            IManagementAuditService managementAuditService,
+            EdoContext context)
         {
             _bookingRecordsManager = bookingRecordsManager;
-            _agentContext = agentContext;
             _bookingRegistrationService = bookingRegistrationService;
             _bookingResponseProcessor = bookingResponseProcessor;
-            _managementAuditService = _managementAuditService;
+            _managementAuditService = managementAuditService;
+            _context = context;
         }
 
         public async Task<Result<Booking, ProblemDetails>> Confirm(int bookingId, Administrator administrator)
@@ -38,7 +42,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             if (isGetBookingFailure)
                 return ProblemDetailsBuilder.Fail<Booking>(getBookingError);
 
-            var agent = await _agentContext.GetAgent(booking.AgentId);
+            var userInfo = new UserInfo(booking.AgentId, UserTypes.Agent);
+            var email = await _context.Agents
+                .Where(a => a.Id == booking.AgentId)
+                .Select(a => a.Email)
+                .SingleOrDefaultAsync();
 
             return await _bookingRegistrationService.BookOnProvider(booking, booking.ReferenceCode, booking.LanguageCode)
                 .Tap(ProcessResponse)
@@ -63,14 +71,15 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             Task ProcessResponse(EdoContracts.Accommodations.Booking bookingResponse) => _bookingResponseProcessor.ProcessResponse(bookingResponse, booking);
 
 
-            Task VoidMoneyAndCancelBooking(ProblemDetails problemDetails) => _bookingRegistrationService.VoidMoneyAndCancelBooking(booking, agent);
+            Task VoidMoneyAndCancelBooking(ProblemDetails problemDetails) => _bookingRegistrationService.VoidMoneyAndCancelBooking(booking, userInfo);
 
 
             Task<Result<AccommodationBookingInfo, ProblemDetails>> GetAccommodationBookingInfo(EdoContracts.Accommodations.Booking details)
                 => _bookingRecordsManager.GetAccommodationBookingInfo(details.ReferenceCode, booking.LanguageCode)
                     .ToResultWithProblemDetails();
 
-            Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details) => _bookingRegistrationService.SendReceipt(details, booking, agent);
+            Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> SendReceipt(EdoContracts.Accommodations.Booking details)
+                => _bookingRegistrationService.SendReceipt(details, booking, userInfo, email);
 
 
             async Task<Result<Booking, ProblemDetails>> WriteAuditLog(AccommodationBookingInfo details)
@@ -83,9 +92,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
 
         private readonly IBookingRecordsManager _bookingRecordsManager;
-        private readonly IAgentContextService _agentContext;
         private readonly IBookingRegistrationService _bookingRegistrationService;
         private readonly IBookingResponseProcessor _bookingResponseProcessor;
         private readonly IManagementAuditService _managementAuditService;
+        private readonly EdoContext _context;
     }
 }
