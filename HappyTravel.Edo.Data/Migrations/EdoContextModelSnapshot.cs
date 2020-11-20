@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.Edo.Data.Agents;
@@ -220,9 +219,6 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<int>("InAgencyPermissions")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -390,6 +386,9 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<int>("Currency")
                         .HasColumnType("integer");
 
+                    b.Property<int>("DataProvider")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime?>("DeadlineDate")
                         .HasColumnType("timestamp without time zone");
 
@@ -430,9 +429,6 @@ namespace HappyTravel.Edo.Data.Migrations
                         .HasColumnType("jsonb");
 
                     b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Supplier")
                         .HasColumnType("integer");
 
                     b.Property<string>("SupplierReferenceCode")
@@ -1065,30 +1061,6 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.ToTable("CreditCardAuditLogs");
                 });
 
-            modelBuilder.Entity("HappyTravel.Edo.Data.Payments.CreditCardPaymentConfirmationAuditLogEntry", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("ReferenceCode")
-                        .HasColumnType("text");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserType")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("CreditCardPaymentConfirmationAuditLogs");
-                });
-
             modelBuilder.Entity("HappyTravel.Edo.Data.Payments.OfflinePaymentAuditLogEntry", b =>
                 {
                     b.Property<int>("Id")
@@ -1228,8 +1200,6 @@ namespace HappyTravel.Edo.Data.Migrations
                         .IsRequired()
                         .HasColumnName("Data")
                         .HasColumnType("jsonb");
-
-                    b.HasDiscriminator().HasValue(2);
                 });
 
             modelBuilder.Entity("HappyTravel.Edo.Data.Agents.AgentInvitation", b =>

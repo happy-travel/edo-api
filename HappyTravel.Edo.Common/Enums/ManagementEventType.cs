@@ -8,6 +8,7 @@ namespace HappyTravel.Edo.Common.Enums
         CounterpartyDeactivation = 30,
         AgencyDeactivation = 40,
         CounterpartyActivation = 50,
-        AgencyActivation = 60
+        AgencyActivation = 60,
+        CreditCardPaymentConfirmation = 70
     }
 }

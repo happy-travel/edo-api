@@ -3,9 +3,10 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Bookings;
-using HappyTravel.Edo.Api.Models.Users;
+using HappyTravel.Edo.Api.Models.Management.AuditEvents;
 using HappyTravel.Edo.Api.Services.Agents;
-using HappyTravel.Edo.Api.Services.Payments.CreditCardConfirmation;
+using HappyTravel.Edo.Api.Services.Management;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Booking;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.EdoContracts.General.Enums;
@@ -17,16 +18,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
     {
         public BookingCreditCardPaymentConfirmationService(
             IBookingRecordsManager bookingRecordsManager,
-            ICreditCardPaymentConfirmationAuditService creditCardPaymentConfirmationAuditService,
             IAgentContextService agentContext,
             IBookingRegistrationService bookingRegistrationService,
-            IBookingResponseProcessor bookingResponseProcessor)
+            IBookingResponseProcessor bookingResponseProcessor,
+            IManagementAuditService managementAuditService)
         {
             _bookingRecordsManager = bookingRecordsManager;
-            _creditCardPaymentConfirmationAuditService = creditCardPaymentConfirmationAuditService;
             _agentContext = agentContext;
             _bookingRegistrationService = bookingRegistrationService;
             _bookingResponseProcessor = bookingResponseProcessor;
+            _managementAuditService = _managementAuditService;
         }
 
         public async Task<Result<Booking, ProblemDetails>> Confirm(int bookingId, Administrator administrator)
@@ -74,16 +75,17 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
             async Task<Result<Booking, ProblemDetails>> WriteAuditLog(AccommodationBookingInfo details)
             {
-                await _creditCardPaymentConfirmationAuditService.Write(administrator.ToUserInfo(), booking.ReferenceCode);
+                await _managementAuditService.Write(ManagementEventType.CreditCardPaymentConfirmation,
+                    new CreditCardPaymentConfirmationEvent(administrator.Id, booking.ReferenceCode));
                 return Result.Success<Booking, ProblemDetails>(booking);
             }
         }
 
 
         private readonly IBookingRecordsManager _bookingRecordsManager;
-        private readonly ICreditCardPaymentConfirmationAuditService _creditCardPaymentConfirmationAuditService;
         private readonly IAgentContextService _agentContext;
         private readonly IBookingRegistrationService _bookingRegistrationService;
         private readonly IBookingResponseProcessor _bookingResponseProcessor;
+        private readonly IManagementAuditService _managementAuditService;
     }
 }

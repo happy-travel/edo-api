@@ -56,7 +56,6 @@ namespace HappyTravel.Edo.Data
         public virtual DbSet<AccountBalanceAuditLogEntry> AccountBalanceAuditLogs { get; set; }
         public DbSet<OfflinePaymentAuditLogEntry> OfflinePaymentAuditLogs { get; set; }
         public DbSet<CreditCardAuditLogEntry> CreditCardAuditLogs { get; set; }
-        public DbSet<CreditCardPaymentConfirmationAuditLogEntry> CreditCardPaymentConfirmationAuditLogs { get; set; }
 
         public virtual DbSet<MarkupPolicy> MarkupPolicies { get; set; }
 
