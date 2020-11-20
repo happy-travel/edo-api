@@ -117,7 +117,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo, ProblemDetails>(getBookingError);
 
             return await BookOnProvider(booking, referenceCode, languageCode, false)
-                .Tap(CreditCardPaymentNotify)
+                .Tap(NotifyOnCreditCardPayment)
                 .Bind(GenerateInvoice)
                 .Bind(GetAccommodationBookingInfo)
                 .Tap(NotifyBookingFinalized)
@@ -141,7 +141,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
 
-            async Task<Result<Booking, ProblemDetails>> CreditCardPaymentNotify(Booking bookingFromPipe)
+            async Task<Result<Booking, ProblemDetails>> NotifyOnCreditCardPayment(Booking bookingFromPipe)
             {
                 await _bookingMailingService.NotifyCreditCardPaymentConfirmation(bookingFromPipe.ReferenceCode);
                 return Result.Success<Booking, ProblemDetails>(bookingFromPipe);
@@ -312,7 +312,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         public async Task<Result<EdoContracts.Accommodations.Booking, ProblemDetails>> BookOnProvider(Data.Booking.Booking booking, string referenceCode,
-            string languageCode, bool withBookingOnSupplier = true)
+            string languageCode, bool isBookedOnSupplier = true)
         {
             // TODO: will be implemented in NIJO-31 
             var bookingRequest = JsonConvert.DeserializeObject<AccommodationBookingRequest>(booking.BookingRequest);
@@ -324,7 +324,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 .ToList();
 
             // return stub details without booking on supplier
-            if(!withBookingOnSupplier)
+            if(!isBookedOnSupplier)
                 return GetStubDetails(booking);
 
             var innerRequest = new BookingRequest(bookingRequest.AvailabilityId,

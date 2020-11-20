@@ -216,11 +216,11 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
         /// <summary>
         ///     Confirm credit card payment
         /// </summary>
-        [HttpGet("confirm/{bookingId}")]
+        [HttpGet("credit-card/{bookingId}/confirm")]
         [ProducesResponseType((int) HttpStatusCode.NoContent)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [AdministratorPermissions(AdministratorPermissions.OfflinePayment)]
-        public async Task<IActionResult> GetBookingsWithUnconfirmedCreditCardPayments(int bookingId)
+        public async Task<IActionResult> ConfirmCreditCartPayment(int bookingId)
         {
             var (_, _, administrator, _) = await _administratorContext.GetCurrent();
             var (isSuccess, _, booking, error) = await _bookingCreditCardConfirmationService.Confirm(bookingId, administrator);
