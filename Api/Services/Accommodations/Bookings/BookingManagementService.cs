@@ -38,7 +38,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             if (isGetBookingFailure)
                 return ProblemDetailsBuilder.Fail<VoidObject>(getBookingError);
 
-            if (!agent.IsUsingAgency(booking.AgencyId))
+            // Check up booking cancel permissions NIJO-1076
+            if (agent.AgencyId != booking.AgencyId)
                 return ProblemDetailsBuilder.Fail<VoidObject>("The booking does not belong to your current agency");
 
             return await CancelBooking(booking, agent.ToUserInfo());

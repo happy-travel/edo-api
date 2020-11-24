@@ -10,6 +10,7 @@ using HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.PaymentLinks;
+using HappyTravel.Edo.UnitTests.Utility;
 using HappyTravel.Money.Enums;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -19,8 +20,9 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
 {
     public class LinkCreation
     {
-        public LinkCreation(Mock<EdoContext> edoContextMock)
+        public LinkCreation()
         {
+            var edoContextMock = MockEdoContextFactory.Create();
             _edoContextMock = edoContextMock;
 
             _edoContextMock

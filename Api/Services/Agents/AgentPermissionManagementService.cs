@@ -19,16 +19,15 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        public Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agencyId, int agentId,
+        public Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agentId,
             List<InAgencyPermissions> permissionsList, AgentContext agent) =>
-            SetInAgencyPermissions(agencyId, agentId, permissionsList.Aggregate((p1, p2) => p1 | p2), agent);
+            SetInAgencyPermissions(agentId, permissionsList.Aggregate((p1, p2) => p1 | p2), agent);
 
 
-        private async Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agencyId, int agentId,
+        private async Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agentId,
             InAgencyPermissions permissions, AgentContext agent)
         {
             return await Result.Success()
-                .Ensure(() => agent.IsUsingAgency(agencyId), "You can only edit permissions of agents from your current agency")
                 .Bind(GetRelation)
                 .Ensure(IsPermissionManagementRightNotLost, "Cannot revoke last permission management rights")
                 .Map(UpdatePermissions);
@@ -36,11 +35,11 @@ namespace HappyTravel.Edo.Api.Services.Agents
             async Task<Result<AgentAgencyRelation>> GetRelation()
             {
                 var relation = await _context.AgentAgencyRelations
-                    .SingleOrDefaultAsync(r => r.AgentId == agentId && r.AgencyId == agencyId);
+                    .SingleOrDefaultAsync(r => r.AgentId == agentId && r.AgencyId == agent.AgencyId);
 
                 return relation is null
                     ? Result.Failure<AgentAgencyRelation>(
-                        $"Could not find relation between the agent {agentId} and the agency {agencyId}")
+                        $"Could not find relation between the agent {agentId} and the agency {agent.AgencyId}")
                     : Result.Success(relation);
             }
 

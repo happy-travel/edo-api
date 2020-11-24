@@ -10,6 +10,6 @@ namespace HappyTravel.Edo.Api.Services.Agents
     {
         Task<Maybe<AgencyAccommodationBookingSettings>> GetAccommodationBookingSettings(int agencyId);
 
-        Task<Result<DisplayedPaymentOptionsSettings>> GetDisplayedPaymentOptions(int agencyId, AgentContext agentContext);
+        Task<Result<DisplayedPaymentOptionsSettings>> GetDisplayedPaymentOptions(AgentContext agentContext);
     }
 }

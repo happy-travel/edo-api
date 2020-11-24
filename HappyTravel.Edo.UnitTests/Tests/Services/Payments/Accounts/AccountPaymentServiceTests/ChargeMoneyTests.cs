@@ -30,12 +30,13 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.Accounts.AccountPaym
 {
     public class ChargeMoneyTests : IDisposable
     {
-        public ChargeMoneyTests(Mock<EdoContext> edoContextMock)
+        public ChargeMoneyTests()
         {
             var entityLockerMock = new Mock<IEntityLocker>();
 
             entityLockerMock.Setup(l => l.Acquire<It.IsAnyType>(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(Result.Success()));
             
+            var edoContextMock = MockEdoContextFactory.Create();
             _edoContextMock = edoContextMock;
             _mockedEdoContext = edoContextMock.Object;
 

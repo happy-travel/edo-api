@@ -83,18 +83,15 @@ namespace HappyTravel.Edo.Api.Services.Agents
             return newInfo;
         }
 
-        public async Task<Result<List<SlimAgentInfo>>> GetAgents(int agencyId, AgentContext agentContext)
+        public async Task<Result<List<SlimAgentInfo>>> GetAgents(AgentContext agentContext)
         {
-            if (!agentContext.IsUsingAgency(agencyId))
-                return Result.Failure<List<SlimAgentInfo>>("You can only view agents from your current agency");
-
             var hasObserveMarkupPermission = agentContext.InAgencyPermissions.HasFlag(InAgencyPermissions.ObserveMarkup);
 
             var relations = await
                 (from relation in _context.AgentAgencyRelations
                     join agent in _context.Agents
                         on relation.AgentId equals agent.Id
-                    where relation.AgencyId == agencyId
+                    where relation.AgencyId == agentContext.AgencyId
                     select new {relation, agent})
                 .ToListAsync();
 
@@ -130,11 +127,8 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        public async Task<Result<AgentInfoInAgency>> GetAgent(int agencyId, int agentId, AgentContext agentContext)
+        public async Task<Result<AgentInfoInAgency>> GetAgent(int agentId, AgentContext agentContext)
         {
-            if (!agentContext.IsUsingAgency(agencyId))
-                return Result.Failure<AgentInfoInAgency>("You can only view agents from your current agency");
-
             var foundAgent = await (
                     from cr in _context.AgentAgencyRelations
                     join agent in _context.Agents
@@ -143,7 +137,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
                         on cr.AgencyId equals agency.Id
                     join counterparty in _context.Counterparties
                         on agency.CounterpartyId equals counterparty.Id
-                    where cr.AgencyId == agencyId && cr.AgentId == agentId
+                    where cr.AgencyId == agentContext.AgencyId && cr.AgentId == agentId
                     select (AgentInfoInAgency?) new AgentInfoInAgency(agent.Id, agent.FirstName, agent.LastName, agent.Email, agent.Title, agent.Position, counterparty.Id, counterparty.Name,
                         cr.AgencyId, agency.Name, cr.Type == AgentAgencyRelationTypes.Master, cr.InAgencyPermissions.ToList(), cr.IsActive))
                 .SingleOrDefaultAsync();

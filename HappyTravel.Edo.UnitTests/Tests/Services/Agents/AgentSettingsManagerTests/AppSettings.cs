@@ -12,9 +12,10 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Agents.AgentSettingsManagerTe
 {
     public class AppSettings
     {
-        public AppSettings(Mock<EdoContext> edoContextMock, IJsonSerializer serializer)
+        public AppSettings()
         {
-            _settingsManager = new AgentSettingsManager(edoContextMock.Object, serializer);
+            var edoContextMock = MockEdoContextFactory.Create();
+            _settingsManager = new AgentSettingsManager(edoContextMock.Object, new NewtonsoftJsonSerializer());
             edoContextMock
                 .Setup(c => c.Agents)
                 .Returns(DbSetMockProvider.GetDbSetMock(new List<Agent>

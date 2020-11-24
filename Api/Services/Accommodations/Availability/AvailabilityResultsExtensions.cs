@@ -61,35 +61,35 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             var roomContracts = new List<RoomContract>(sourceRoomContractSet.RoomContracts.Count);
             foreach (var room in sourceRoomContractSet.RoomContracts)
             {
-                var roomPrices = new List<DailyPrice>(room.RoomPrices.Count);
-                foreach (var roomPrice in room.RoomPrices)
+                var dailyRates = new List<DailyRate>(room.DailyRoomRates.Count);
+                foreach (var dailyRate in room.DailyRoomRates)
                 {
-                    var roomGross = await priceProcessFunction(roomPrice.Gross);
-                    var roomNetTotal = await priceProcessFunction(roomPrice.NetTotal);
+                    var roomGross = await priceProcessFunction(dailyRate.Gross);
+                    var roomFinalPrice = await priceProcessFunction(dailyRate.FinalPrice);
 
-                    roomPrices.Add(BuildDailyPrice(roomPrice, roomNetTotal, roomGross));
+                    dailyRates.Add(BuildDailyPrice(dailyRate, roomFinalPrice, roomGross));
                 }
 
-                var totalPriceNet = await priceProcessFunction(room.TotalPrice.NetTotal);
-                var totalPriceGross = await priceProcessFunction(room.TotalPrice.Gross);
-                var totalPrice = new Price(totalPriceNet, totalPriceGross);
+                var totalPriceNet = await priceProcessFunction(room.Rate.FinalPrice);
+                var totalPriceGross = await priceProcessFunction(room.Rate.FinalPrice);
+                var totalRate = new Rate(totalPriceNet, totalPriceGross);
 
-                roomContracts.Add(BuildRoomContracts(room, roomPrices, totalPrice));
+                roomContracts.Add(BuildRoomContracts(room, dailyRates, totalRate));
             }
 
-            var roomContractSetGross = await priceProcessFunction(sourceRoomContractSet.Price.Gross);
-            var roomContractSetNetTotal = await priceProcessFunction(sourceRoomContractSet.Price.NetTotal);
-            var roomContractSetPrice = new Price(roomContractSetNetTotal, roomContractSetGross, sourceRoomContractSet.Price.Discounts,
-                sourceRoomContractSet.Price.Type, sourceRoomContractSet.Price.Description);
+            var roomContractSetGross = await priceProcessFunction(sourceRoomContractSet.Rate.Gross);
+            var roomContractSetNetTotal = await priceProcessFunction(sourceRoomContractSet.Rate.FinalPrice);
+            var roomContractSetRate = new Rate(roomContractSetNetTotal, roomContractSetGross, sourceRoomContractSet.Rate.Discounts,
+                sourceRoomContractSet.Rate.Type, sourceRoomContractSet.Rate.Description);
 
-            return BuildRoomContractSet(sourceRoomContractSet, roomContractSetPrice, roomContracts);
-
-
-            static DailyPrice BuildDailyPrice(in DailyPrice roomPrice, MoneyAmount roomNetTotal, MoneyAmount roomGross)
-                => new DailyPrice(roomPrice.FromDate, roomPrice.ToDate, roomNetTotal, roomGross, roomPrice.Type, roomPrice.Description);
+            return BuildRoomContractSet(sourceRoomContractSet, roomContractSetRate, roomContracts);
 
 
-            static RoomContract BuildRoomContracts(in RoomContract room, List<DailyPrice> roomPrices, Price totalPrice)
+            static DailyRate BuildDailyPrice(in DailyRate dailyRate, MoneyAmount roomNetTotal, MoneyAmount roomGross)
+                => new DailyRate(dailyRate.FromDate, dailyRate.ToDate, roomNetTotal, roomGross, dailyRate.Type, dailyRate.Description);
+
+
+            static RoomContract BuildRoomContracts(in RoomContract room, List<DailyRate> roomPrices, Rate totalPrice)
                 => new RoomContract(room.BoardBasis, 
                     room.MealPlan, 
                     room.ContractTypeCode,
@@ -106,8 +106,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                     room.Deadline,
                     room.IsAdvancePurchaseRate);
 
-            static RoomContractSet BuildRoomContractSet(in RoomContractSet roomContractSet, in Price roomContractSetPrice, List<RoomContract> rooms)
-                => new RoomContractSet(roomContractSet.Id, roomContractSetPrice, roomContractSet.Deadline, rooms, roomContractSet.IsAdvancePurchaseRate);
+            static RoomContractSet BuildRoomContractSet(in RoomContractSet roomContractSet, in Rate roomContractSetRate, List<RoomContract> rooms)
+                => new RoomContractSet(roomContractSet.Id, roomContractSetRate, roomContractSet.Deadline, rooms, roomContractSet.IsAdvancePurchaseRate);
         }
 
 
@@ -117,13 +117,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                 return null;
             
             return availabilityDetails.RoomContractSets
-                .Select(a => a.Price.Currency)
+                .Select(a => a.Rate.Currency)
                 .First();
         }
         
         public static Currencies? GetCurrency(this RoomContractSetAvailability? availabilityDetails)
         {
-            return availabilityDetails?.RoomContractSet.Price.Currency;
+            return availabilityDetails?.RoomContractSet.Rate.Currency;
         }
 
 
@@ -151,7 +151,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             if (!accommodationAvailability.RoomContractSets.Any())
                 return null;
 
-            return accommodationAvailability.RoomContractSets.First().Price.Currency;
+            return accommodationAvailability.RoomContractSets.First().Rate.Currency;
         }
         
         

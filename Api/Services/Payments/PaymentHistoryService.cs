@@ -25,7 +25,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public async Task<Result<List<PaymentHistoryData>>> GetAgentHistory(PaymentHistoryRequest paymentHistoryRequest, int agencyId, AgentContext agent)
+        public async Task<Result<List<PaymentHistoryData>>> GetAgentHistory(PaymentHistoryRequest paymentHistoryRequest, AgentContext agent)
         {
             var validationResult = Validate(paymentHistoryRequest);
             if (validationResult.IsFailure)
@@ -36,7 +36,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     on account.Id equals auditLogEntry.AccountId
                 join booking in _edoContext.Bookings
                     on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where account.AgencyId == agencyId &&
+                where account.AgencyId == agent.AgencyId &&
                     auditLogEntry.UserId == agent.AgentId &&
                     auditLogEntry.UserType == UserTypes.Agent &&
                     auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
@@ -57,7 +57,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             var cardHistoryQuery = from auditLogEntry in _edoContext.CreditCardAuditLogs
                 join booking in _edoContext.Bookings
                     on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where booking.AgencyId == agencyId &&
+                where booking.AgencyId == agent.AgencyId &&
                     auditLogEntry.UserId == agent.AgentId &&
                     auditLogEntry.UserType == UserTypes.Agent &&
                     auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
@@ -82,21 +82,18 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public async Task<Result<List<PaymentHistoryData>>> GetAgencyHistory(PaymentHistoryRequest paymentHistoryRequest, int agencyId, AgentContext agent)
+        public async Task<Result<List<PaymentHistoryData>>> GetAgencyHistory(PaymentHistoryRequest paymentHistoryRequest, AgentContext agent)
         {
             var validationResult = Validate(paymentHistoryRequest);
             if (validationResult.IsFailure)
                 return Result.Failure<List<PaymentHistoryData>>(validationResult.Error);
-
-            if (!agent.IsUsingAgency(agencyId))
-                return Result.Failure<List<PaymentHistoryData>>("You can only observe history of an agency you are currently using");
 
             var accountHistoryQuery = from account in _edoContext.AgencyAccounts
                 join auditLogEntry in _edoContext.AccountBalanceAuditLogs
                     on account.Id equals auditLogEntry.AccountId
                 join booking in _edoContext.Bookings
                     on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where account.AgencyId == agencyId &&
+                where account.AgencyId == agent.AgencyId &&
                     auditLogEntry.UserType == UserTypes.Agent &&
                     auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
                     auditLogEntry.Created >= paymentHistoryRequest.FromDate
@@ -116,7 +113,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
             var cardHistoryQuery = from auditLogEntry in _edoContext.CreditCardAuditLogs
                 join booking in _edoContext.Bookings
                     on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where booking.AgencyId == agencyId &&
+                where booking.AgencyId == agent.AgencyId &&
                     auditLogEntry.UserType == UserTypes.Agent &&
                     auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
                     auditLogEntry.Created >= paymentHistoryRequest.FromDate

@@ -108,7 +108,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         public async Task<Result<AccommodationBookingInfo, ProblemDetails>> Finalize(string referenceCode, AgentContext agentContext, string languageCode)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await GetAgentsBooking()
-                .Ensure(b => agentContext.IsUsingAgency(b.AgencyId), ProblemDetailsBuilder.Build("The booking does not belong to your current agency"))
+                .Ensure(b => agentContext.AgencyId == b.AgencyId, ProblemDetailsBuilder.Build("The booking does not belong to your current agency"))
                 .Bind(CheckBookingIsPaid)
                 .OnFailure(WriteLogFailure);
 

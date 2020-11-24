@@ -47,8 +47,9 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [ProducesResponseType((int)HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetDisplayedPaymentOptions([FromRoute] int agencyId)
         {
+            // TODO: Remove agencyId from route NIJO-1075
             var agent = await _agentContextService.GetAgent();
-            return OkOrBadRequest(await _agencySystemSettingsService.GetDisplayedPaymentOptions(agencyId, agent));
+            return OkOrBadRequest(await _agencySystemSettingsService.GetDisplayedPaymentOptions(agent));
         }
 
 

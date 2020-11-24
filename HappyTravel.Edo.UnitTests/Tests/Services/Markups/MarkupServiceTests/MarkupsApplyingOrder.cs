@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using FloxDc.CacheFlow;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.Agents;
@@ -10,8 +9,8 @@ using HappyTravel.Edo.Api.Services.CurrencyConversion;
 using HappyTravel.Edo.Api.Services.Markups;
 using HappyTravel.Edo.Api.Services.Markups.Templates;
 using HappyTravel.Edo.Common.Enums.Markup;
-using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Markup;
+using HappyTravel.Edo.UnitTests.Mocks;
 using HappyTravel.Edo.UnitTests.Utility;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
@@ -24,13 +23,14 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
 {
     public class MarkupsApplyingOrder
     {
-        public MarkupsApplyingOrder(Mock<EdoContext> edoContextMock, IDoubleFlow flow)
+        public MarkupsApplyingOrder()
         {
             var allPolicies = _agentPolicies
                 .Union(_counterpartyPolicies)
                 .Union(_globalPolicies)
                 .Union(_agencyPolicies);
             
+            var edoContextMock = MockEdoContextFactory.Create();
             edoContextMock.Setup(c => c.MarkupPolicies)
                 .Returns(DbSetMockProvider.GetDbSetMock(allPolicies));
             
@@ -52,7 +52,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
                 
                 
             _markupService = new MarkupService(edoContextMock.Object,
-                flow,
+                new FakeDoubleFlow(), 
                 new MarkupPolicyTemplateService(),
                 currencyRateServiceMock.Object,
                 agentSettingsMock.Object,

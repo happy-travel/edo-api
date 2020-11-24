@@ -125,6 +125,25 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
 
 
         /// <summary>
+        ///    Resend agent invitation
+        /// </summary>
+        /// <param name="invitationCode">Invitation code</param>>
+        [HttpPost("agents/invitations/{invitationId}/resend")]
+        [ProducesResponseType((int) HttpStatusCode.NoContent)]
+        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
+        [MinCounterpartyState(CounterpartyStates.ReadOnly)]
+        [InAgencyPermissions(InAgencyPermissions.AgentInvitation)]
+        public async Task<IActionResult> Resend(string invitationCode)
+        {
+            var agent = await _agentContextService.GetAgent();
+            var (_, isFailure, error) = await _agentInvitationService.Resend(invitationCode, agent);
+            if (isFailure)
+                return BadRequest(error);
+
+            return NoContent();
+        }
+
+        /// <summary>
         ///     Create invitation for regular agent.
         /// </summary>
         /// <param name="request">Regular agent registration request.</param>
@@ -238,7 +257,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [InAgencyPermissions(InAgencyPermissions.ObserveAgents)]
         public async Task<IActionResult> GetAgents(int agencyId)
         {
-            var (_, isFailure, agents, error) = await _agentService.GetAgents(agencyId, await _agentContextService.GetAgent());
+            // TODO: Remove agencyId from route NIJO-1075
+            var (_, isFailure, agents, error) = await _agentService.GetAgents(await _agentContextService.GetAgent());
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
 
@@ -256,7 +276,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [InAgencyPermissions(InAgencyPermissions.PermissionManagement)]
         public async Task<IActionResult> GetAgentInfo(int agencyId, int agentId)
         {
-            var (_, isFailure, agent, error) = await _agentService.GetAgent(agencyId, agentId, await _agentContextService.GetAgent());
+            // TODO: Remove agencyId from route NIJO-1075
+            var (_, isFailure, agent, error) = await _agentService.GetAgent(agentId, await _agentContextService.GetAgent());
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
 
@@ -275,8 +296,9 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> UpdatePermissionsInAgency(int agencyId, int agentId,
             [FromBody] List<InAgencyPermissions> newPermissions)
         {
+            // TODO: Remove agencyId from route NIJO-1075
             var (_, isFailure, permissions, error) = await _permissionManagementService
-                .SetInAgencyPermissions(agencyId, agentId, newPermissions, await _agentContextService.GetAgent());
+                .SetInAgencyPermissions(agentId, newPermissions, await _agentContextService.GetAgent());
 
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));

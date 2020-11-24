@@ -2,10 +2,12 @@ using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Filters.Authorization.AgentExistingFilters;
+using HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters;
 using HappyTravel.Edo.Api.Infrastructure;
-using HappyTravel.Edo.Api.Models.Agencies;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Services.Agents;
+using HappyTravel.Edo.Api.Services.Files;
+using HappyTravel.Edo.Common.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Controllers.AgentControllers
@@ -17,10 +19,12 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
     public class CounterpartiesController : BaseController
     {
         public CounterpartiesController(ICounterpartyService counterpartyService,
-            IAgentContextService agentContextService)
+            IAgentContextService agentContextService,
+            IContractFileService contractFileService)
         {
             _counterpartyService = counterpartyService;
             _agentContextService = agentContextService;
+            _contractFileService = contractFileService;
         }
 
 
@@ -83,7 +87,28 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         }
 
 
+        /// <summary>
+        /// Downloads a contract pdf file of the counterparty agent is currently using.
+        /// </summary>
+        [HttpGet("contract-file")]
+        [ProducesResponseType(typeof(FileStreamResult), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        [InAgencyPermissions(InAgencyPermissions.ObserveCounterpartyContract)]
+        public async Task<IActionResult> GetContractFile()
+        {
+            var agent = await _agentContextService.GetAgent();
+
+            var (_, isFailure, (stream, contentType), error) = await _contractFileService.Get(agent);
+
+            if (isFailure)
+                return BadRequest(ProblemDetailsBuilder.Build(error));
+
+            return File(stream, contentType);
+        }
+
+
         private readonly ICounterpartyService _counterpartyService;
         private readonly IAgentContextService _agentContextService;
+        private readonly IContractFileService _contractFileService;
     }
 }

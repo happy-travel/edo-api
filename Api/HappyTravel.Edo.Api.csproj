@@ -25,12 +25,14 @@
     <PackageReference Include="HappyTravel.AmazonS3Client" Version="0.8.0" />
     <PackageReference Include="HappyTravel.Formatters" Version="1.0.0" />
     <PackageReference Include="HappyTravel.MailSender" Version="1.1.0" />
-    <PackageReference Include="HappyTravel.Money" Version="1.0.0" />
-    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.15" />
+    <PackageReference Include="HappyTravel.StdOutLogger" Version="1.0.18" />
     <PackageReference Include="HappyTravel.VaultClient" Version="1.0.5" />
     <PackageReference Include="FluentValidation" Version="9.2.2" />
     <PackageReference Include="FluentValidator.Core" Version="1.0.1" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
+    <PackageReference Include="Imageflow.NativeRuntime.ubuntu_16_04-x86_64" Version="1.5.2-rc56" />
+    <PackageReference Include="Imageflow.NativeRuntime.win-x86_64" Version="1.5.2-rc56" />
+    <PackageReference Include="Imageflow.Net" Version="0.7.10" />
     <PackageReference Include="LocationNameNormalizer" Version="1.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.1.1" />
@@ -49,6 +51,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.1.8" />
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="5.6.3" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,7 @@ using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.Edo.Data.Agents;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -15,9 +16,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HappyTravel.Edo.Data.Migrations
 {
     [DbContext(typeof(EdoContext))]
-    partial class EdoContextModelSnapshot : ModelSnapshot
+    [Migration("20201121105837_AddUploadedImages")]
+    partial class AddUploadedImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -508,22 +510,6 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("BookingAuditLog");
-                });
-
-            modelBuilder.Entity("HappyTravel.Edo.Data.Booking.CreditCardPaymentConfirmation", b =>
-                {
-                    b.Property<int>("BookingId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AgentId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("ConfirmedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.HasKey("BookingId");
-
-                    b.ToTable("CreditCardPaymentConfirmations");
                 });
 
             modelBuilder.Entity("HappyTravel.Edo.Data.Documents.Invoice", b =>
@@ -1258,15 +1244,6 @@ namespace HappyTravel.Edo.Data.Migrations
                         .HasColumnType("jsonb");
 
                     b.HasDiscriminator().HasValue(1);
-                });
-
-            modelBuilder.Entity("HappyTravel.Edo.Data.Booking.CreditCardPaymentConfirmation", b =>
-                {
-                    b.HasOne("HappyTravel.Edo.Data.Booking.Booking", "Booking")
-                        .WithOne("CreditCardPaymentConfirmation")
-                        .HasForeignKey("HappyTravel.Edo.Data.Booking.CreditCardPaymentConfirmation", "BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

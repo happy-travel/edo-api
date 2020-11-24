@@ -23,10 +23,10 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
     public class CounterpartiesController : BaseController
     {
         public CounterpartiesController(ICounterpartyManagementService counterpartyManagementService,
-            IContractFileService contractFileService)
+            IContractFileManagementService contractFileManagementService)
         {
             _counterpartyManagementService = counterpartyManagementService;
-            _contractFileService = contractFileService;
+            _contractFileManagementService = contractFileManagementService;
         }
 
 
@@ -230,7 +230,7 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
         [AdministratorPermissions(AdministratorPermissions.CounterpartyManagement)]
         public async Task<IActionResult> AddContractFile(int counterpartyId, [FromForm] IFormFile file)
         {
-            var result = await _contractFileService.Add(counterpartyId, file);
+            var result = await _contractFileManagementService.Add(counterpartyId, file);
 
             return OkOrBadRequest(result);
         }
@@ -246,7 +246,7 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
         [AdministratorPermissions(AdministratorPermissions.CounterpartyManagement)]
         public async Task<IActionResult> GetContractFile(int counterpartyId)
         {
-            var (_, isFailure, (stream, contentType), error) = await _contractFileService.Get(counterpartyId);
+            var (_, isFailure, (stream, contentType), error) = await _contractFileManagementService.Get(counterpartyId);
 
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
@@ -256,6 +256,6 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
 
 
         private readonly ICounterpartyManagementService _counterpartyManagementService;
-        private readonly IContractFileService _contractFileService;
+        private readonly IContractFileManagementService _contractFileManagementService;
     }
 }

@@ -15,8 +15,9 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Agents.AgentPermissionManagem
 {
     public class AgentPermissionManagementServiceTests
     {
-        public AgentPermissionManagementServiceTests(Mock<EdoContext> edoContextMock)
+        public AgentPermissionManagementServiceTests()
         {
+            var edoContextMock = MockEdoContextFactory.Create();
             edoContextMock.Setup(x => x.AgentAgencyRelations).Returns(DbSetMockProvider.GetDbSetMock(_relations));
 
             _agentPermissionManagementService = new AgentPermissionManagementService(edoContextMock.Object);
@@ -27,7 +28,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Agents.AgentPermissionManagem
         public async Task Set_must_succeed()
         {
             var (isSuccess, _, _, _) = await _agentPermissionManagementService
-                .SetInAgencyPermissions(1, 1, InAgencyPermissions.None.ToList(), AgentContextRegular);
+                .SetInAgencyPermissions(1, InAgencyPermissions.None.ToList(), AgentContextRegular);
 
             Assert.True(isSuccess);
         }
@@ -37,7 +38,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Agents.AgentPermissionManagem
         public async Task Set_relation_not_found_must_fail()
         {
             var (_, isFailure, _, error) = await _agentPermissionManagementService
-                .SetInAgencyPermissions(1, 0, InAgencyPermissions.None.ToList(), AgentContextRegular);
+                .SetInAgencyPermissions(0, InAgencyPermissions.None.ToList(), AgentContextRegular);
 
             Assert.True(isFailure);
             Assert.Equal("Could not find relation between the agent 0 and the agency 1", error);
@@ -48,7 +49,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Agents.AgentPermissionManagem
         public async Task Set_revoke_last_management_must_fail()
         {
             var (_, isFailure, _, error) = await _agentPermissionManagementService
-                .SetInAgencyPermissions(1, 2, InAgencyPermissions.None.ToList(), AgentContextRegular);
+                .SetInAgencyPermissions(2, InAgencyPermissions.None.ToList(), AgentContextRegular);
 
             Assert.True(isFailure);
             Assert.Equal("Cannot revoke last permission management rights", error);

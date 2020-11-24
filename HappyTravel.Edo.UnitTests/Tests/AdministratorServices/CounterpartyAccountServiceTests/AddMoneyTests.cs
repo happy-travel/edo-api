@@ -22,14 +22,14 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
 {
     public class AddMoneyTests
     {
-        public AddMoneyTests(Mock<EdoContext> edoContextMock)
+        public AddMoneyTests()
         {
             var entityLockerMock = new Mock<IEntityLocker>();
 
             entityLockerMock.Setup(l => l.Acquire<It.IsAnyType>(It.IsAny<string>(), It.IsAny<string>())).Returns(Task.FromResult(Result.Success()));
 
-            _edoContextMock = edoContextMock;
-            _mockedEdoContext = edoContextMock.Object;
+            _edoContextMock = MockEdoContextFactory.Create();
+            _mockedEdoContext = _edoContextMock.Object;
 
             _counterpartyAccountService = new CounterpartyAccountService(_mockedEdoContext, entityLockerMock.Object, Mock.Of<IAccountBalanceAuditService>());
 
@@ -37,7 +37,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
 
             var dbFacade = new Mock<DatabaseFacade>(_mockedEdoContext);
             dbFacade.Setup(d => d.CreateExecutionStrategy()).Returns(strategy);
-            edoContextMock.Setup(c => c.Database).Returns(dbFacade.Object);
+            _edoContextMock.Setup(c => c.Database).Returns(dbFacade.Object);
 
         }
 

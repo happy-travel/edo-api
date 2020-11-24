@@ -384,6 +384,7 @@ namespace HappyTravel.Edo.Api.Infrastructure
 
             var amazonS3DocumentsOptions = vaultClient.Get(configuration["AmazonS3:Options"]).GetAwaiter().GetResult();
             var contractsS3FolderName = configuration["AmazonS3:ContractsS3FolderName"];
+            var imagesS3FolderName = configuration["AmazonS3:ImagesS3FolderName"];
 
             services.AddAmazonS3Client(options =>
             {
@@ -399,6 +400,12 @@ namespace HappyTravel.Edo.Api.Infrastructure
             {
                 options.Bucket = amazonS3DocumentsOptions["bucket"];
                 options.S3FolderName = contractsS3FolderName;
+            });
+
+            services.Configure<ImageFileServiceOptions>(options =>
+            {
+                options.Bucket = amazonS3DocumentsOptions["bucket"];
+                options.S3FolderName = imagesS3FolderName;
             });
 
             return services;
@@ -551,7 +558,9 @@ namespace HappyTravel.Edo.Api.Infrastructure
             
             services.AddTransient<IAccommodationBookingSettingsService, AccommodationBookingSettingsService>();
 
+            services.AddTransient<IContractFileManagementService, ContractFileManagementService>();
             services.AddTransient<IContractFileService, ContractFileService>();
+            services.AddTransient<IImageFileService, ImageFileService>();
             
             return services;
         }

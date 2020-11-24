@@ -21,9 +21,9 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
 {
     public class GettingLinkData
     {
-        public GettingLinkData(Mock<EdoContext> edoContextMock, IDateTimeProvider dateTimeProvider,
-            ILogger<PaymentLinkService> logger)
+        public GettingLinkData()
         {
+            var edoContextMock = MockEdoContextFactory.Create();
             edoContextMock.Setup(c => c.PaymentLinks)
                 .Returns(DbSetMockProvider.GetDbSetMock(Links));
 
@@ -32,6 +32,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.External.PaymentLink
             companyServiceMock.Setup(c => c.Get())
                 .Returns(new ValueTask<Result<CompanyInfo>>(Result.Success(new CompanyInfo())));
 
+            var dateTimeProvider = new DefaultDateTimeProvider();
             _linkStorage = new PaymentLinksStorage(edoContextMock.Object,
                 dateTimeProvider,
                 emptyOptions,

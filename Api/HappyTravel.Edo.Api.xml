@@ -422,6 +422,21 @@
             <param name="recipientAccountId">Id of the recepient agency account</param>
             <param name="amount">Amount of money to transfer</param>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgencyImagesController.Add(Microsoft.AspNetCore.Http.IFormFile)">
+            <summary>
+                Uploads an image
+            </summary>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgencyImagesController.Get">
+            <summary>
+                Gets all uploaded images for the current agency
+            </summary>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgencyImagesController.Delete(System.String)">
+            <summary>
+                Deletes the image
+            </summary>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgencySettingsController.GetAdvancedPurchaseRatesSettings(System.Int32)">
             <summary>
                 Gets Advanced Purchase Rates settings for an agency.
@@ -456,6 +471,12 @@
             </summary>
             <param name="request">Regular agent registration request.</param>
             <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.Resend(System.String)">
+            <summary>
+               Resend agent invitation
+            </summary>
+            <param name="invitationCode">Invitation code</param>>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.CreateInvitation(HappyTravel.Edo.Api.Models.Agents.SendAgentInvitationRequest)">
             <summary>
@@ -1026,6 +1047,26 @@
         <member name="P:HappyTravel.Edo.Api.Models.Agencies.AgencyInfo.Id">
             <summary>
                 Id of the counterparty agency.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimUploadedImage.FileName">
+            <summary>
+            File name of the image
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimUploadedImage.Url">
+            <summary>
+            Download link of the image
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimUploadedImage.Created">
+            <summary>
+            DateTime when the image with this name was uploaded first time
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimUploadedImage.Updated">
+            <summary>
+            DateTime when the image with this name was uploaded last time
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Agents.AgentAgencyRelationInfo.Id">

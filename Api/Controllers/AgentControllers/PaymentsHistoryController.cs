@@ -40,8 +40,9 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [HttpPost("history/agencies/{agencyId}/agent")]
         public async Task<IActionResult> GetAgentHistory([Required] int agencyId, [FromBody] PaymentHistoryRequest historyRequest)
         {
+            // TODO: Remove agencyId from route NIJO-1075
             var agent = await _agentContextService.GetAgent();
-            var (_, isFailure, response, error) = await _paymentHistoryService.GetAgentHistory(historyRequest, agencyId, agent);
+            var (_, isFailure, response, error) = await _paymentHistoryService.GetAgentHistory(historyRequest, agent);
             if (isFailure)
                 return BadRequest(error);
 
@@ -62,8 +63,9 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [InAgencyPermissions(InAgencyPermissions.ObservePaymentHistory)]
         public async Task<IActionResult> GetAgencyHistory([Required] int agencyId, [FromBody] PaymentHistoryRequest historyRequest)
         {
+            // TODO: Remove agencyId from route NIJO-1075
             var agent = await _agentContextService.GetAgent();
-            var (_, isFailure, response, error) = await _paymentHistoryService.GetAgencyHistory(historyRequest, agencyId, agent);
+            var (_, isFailure, response, error) = await _paymentHistoryService.GetAgencyHistory(historyRequest, agent);
             if (isFailure)
                 return BadRequest(error);
 
