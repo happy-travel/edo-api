@@ -78,7 +78,9 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         public async Task<IActionResult> GetCounterparty(int counterpartyId)
         {
-            var (_, isFailure, counterpartyInfo, error) = await _counterpartyService.Get(counterpartyId, await _agentContextService.GetAgent(), LanguageCode);
+            // TODO: remove counterpartyId from the route NIJO-1075
+            var agent = await _agentContextService.GetAgent();
+            var (_, isFailure, counterpartyInfo, error) = await _counterpartyService.Get(agent.CounterpartyId, LanguageCode);
 
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));

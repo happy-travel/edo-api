@@ -42,9 +42,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task<Result<BookingVoucherData>> GenerateVoucher(int bookingId, AgentContext agent, string languageCode)
+        public async Task<Result<BookingVoucherData>> GenerateVoucher(int bookingId, string firstName, string lastName, string languageCode)
         {
-            var (_, isBookingFailure, booking, bookingError) = await _bookingRecordsManager.Get(bookingId, agent.AgentId);
+            var (_, isBookingFailure, booking, bookingError) = await _bookingRecordsManager.Get(bookingId);
             if (isBookingFailure)
                 return Result.Failure<BookingVoucherData>(bookingError);
 
@@ -60,10 +60,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             if (!AvailableForVoucherPaymentStatuses.Contains(booking.PaymentStatus))
                 return Result.Failure<BookingVoucherData>($"Voucher is not allowed for payment status '{EnumFormatters.FromDescription(booking.PaymentStatus)}'");
 
-
             return Result.Success(new BookingVoucherData
             (
-                $"{agent.LastName} {agent.LastName}",
+                $"{firstName} {lastName}",
                 booking.Id,
                 GetAccommodationInfo(in accommodationDetails),
                 (booking.CheckOutDate - booking.CheckInDate).Days,
@@ -91,9 +90,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice(int bookingId, AgentContext agent)
+        public async Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice(int bookingId, int agentId)
         {
-            var (_, isFailure, booking, _) = await _bookingRecordsManager.Get(bookingId, agent.AgentId);
+            var (_, isFailure, booking, _) = await _bookingRecordsManager.Get(bookingId, agentId);
             if (isFailure)
                 return Result.Failure<(DocumentRegistrationInfo Metadata, BookingInvoiceData Data)>("Could not find booking");
             
@@ -101,13 +100,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task<Result> GenerateInvoice(string referenceCode, AgentContext agent)
+        public async Task<Result> GenerateInvoice(string referenceCode)
         {
             var (_, isBookingFailure, booking, bookingError) = await _bookingRecordsManager.Get(referenceCode);
             if (isBookingFailure)
                 return Result.Failure(bookingError);
 
-            var (_, isCounterpartyFailure, counterparty, counterpartyError) = await _counterpartyService.Get(booking.CounterpartyId, agent);
+            var (_, isCounterpartyFailure, counterparty, counterpartyError) = await _counterpartyService.Get(booking.CounterpartyId);
             if (isCounterpartyFailure)
                 return Result.Failure(counterpartyError);
 

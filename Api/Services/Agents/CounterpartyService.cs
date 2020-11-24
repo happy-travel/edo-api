@@ -1,11 +1,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.Edo.Api.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Agencies;
 using HappyTravel.Edo.Api.Models.Agents;
-using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
@@ -16,12 +14,10 @@ namespace HappyTravel.Edo.Api.Services.Agents
     public class CounterpartyService : ICounterpartyService
     {
         public CounterpartyService(EdoContext context,
-            IAccountManagementService accountManagementService,
             IAgentService agentService,
             IDateTimeProvider dateTimeProvider)
         {
             _context = context;
-            _accountManagementService = accountManagementService;
             _agentService = agentService;
             _dateTimeProvider = dateTimeProvider;
         }
@@ -153,11 +149,9 @@ namespace HappyTravel.Edo.Api.Services.Agents
                 .SingleAsync(a => a.CounterpartyId == counterpartyId && a.ParentId == null);
 
 
-        public async Task<Result<CounterpartyInfo>> Get(int counterpartyId, AgentContext agent, string languageCode = LocalizationHelper.DefaultLanguageCode)
+        public async Task<Result<CounterpartyInfo>> Get(int counterpartyId, string languageCode = LocalizationHelper.DefaultLanguageCode)
         {
-            return await GetCounterpartyInfo(counterpartyId, languageCode)
-                .Ensure(x => agent.IsInCounterparty(counterpartyId),
-                    "The agent isn't affiliated with the counterparty");
+            return await GetCounterpartyInfo(counterpartyId, languageCode);
         }
 
 
@@ -193,7 +187,6 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        private readonly IAccountManagementService _accountManagementService;
         private readonly IAgentService _agentService;
         private readonly EdoContext _context;
         private readonly IDateTimeProvider _dateTimeProvider;
