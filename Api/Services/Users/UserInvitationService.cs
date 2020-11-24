@@ -100,11 +100,19 @@ namespace HappyTravel.Edo.Api.Services.Users
         {
             return GetInvitation(invitationCode).ToResult("Could not find invitation")
                 .Ensure(IsNotAccepted, "Already accepted")
+                .Ensure(IsNotResent, "Already resent")
                 .Ensure(HasCorrectType, "Invitation type mismatch")
                 .Ensure(InvitationIsActual, "Invitation expired")
                 .Map(GetInvitationData<TInvitationData>);
 
-            bool IsNotAccepted(InvitationBase invitation) => !invitation.IsAccepted;
+            static bool IsNotAccepted(InvitationBase invitation) => !invitation.IsAccepted;
+
+            static bool IsNotResent(InvitationBase invitation) => invitation.InvitationType switch
+            {
+                UserInvitationTypes.Agent => !((AgentInvitation) invitation).IsResent,
+                UserInvitationTypes.Administrator => true,
+                _ => throw new NotImplementedException($"{Formatters.EnumFormatters.FromDescription(invitation.InvitationType)} not supported")
+            };
 
             bool HasCorrectType(InvitationBase invitation) => invitation.InvitationType == invitationType;
 

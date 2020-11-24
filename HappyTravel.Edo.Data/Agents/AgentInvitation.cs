@@ -3,6 +3,7 @@ namespace HappyTravel.Edo.Data.Agents
     public class AgentInvitation : InvitationBase
     {
         public AgentInvitationData Data { get; set; }
+        public bool IsResent { get; set; }
 
 
         public class AgentInvitationData
