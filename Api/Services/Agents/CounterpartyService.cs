@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -25,6 +27,9 @@ namespace HappyTravel.Edo.Api.Services.Agents
 
         public async Task<Result<CounterpartyInfo>> Add(CounterpartyEditRequest counterparty)
         {
+            // TODO: Remove
+            var countryCodesForDisabledMarkups = new List<string> {"RU", "AM", "BY", "KZ", "AZ", "TJ", "UZ", "KG", "MD"};
+
             var (_, isFailure, error) = CounterpartyValidator.Validate(counterparty);
             if (isFailure)
                 return Result.Failure<CounterpartyInfo>(error);
@@ -59,8 +64,24 @@ namespace HappyTravel.Edo.Api.Services.Agents
                 ParentId = null,
             };
             _context.Agencies.Add(defaultAgency);
-
             await _context.SaveChangesAsync();
+
+            //TODO: Remove 
+            if (countryCodesForDisabledMarkups.Contains(counterparty.CountryCode) && _dateTimeProvider.UtcToday() < new DateTime(2020, 12, 8))
+            {
+                var defaultAgencySettings = new AgencySystemSettings
+                {
+                    AgencyId = defaultAgency.Id,
+                    AccommodationBookingSettings = new AgencyAccommodationBookingSettings
+                    {
+                        IsMarkupDisabled = true
+                    }
+                };
+
+                _context.AgencySystemSettings.Add(defaultAgencySettings);
+                await _context.SaveChangesAsync();
+            }
+
             return await GetCounterpartyInfo(createdCounterparty.Id);
         }
 
@@ -155,7 +176,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        private async Task<Result<CounterpartyInfo>> GetCounterpartyInfo(int counterpartyId, string languageCode = LocalizationHelper.DefaultLanguageCode )
+        private async Task<Result<CounterpartyInfo>> GetCounterpartyInfo(int counterpartyId, string languageCode = LocalizationHelper.DefaultLanguageCode)
         {
             var result = await (from cp in _context.Counterparties
                 join c in _context.Countries on cp.CountryCode equals c.Code
