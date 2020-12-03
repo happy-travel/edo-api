@@ -325,7 +325,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> CancelBooking(int bookingId)
         {
             var agent = await _agentContextService.GetAgent();
-            var (_, isFailure, error) = await _bookingManagementService.Cancel(bookingId, agent);
+            var (_, isFailure, _, error) = await _bookingManagementService.Cancel(bookingId, agent);
             if (isFailure)
                 return BadRequest(error);
 
