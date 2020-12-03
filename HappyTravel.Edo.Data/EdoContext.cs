@@ -62,6 +62,7 @@ namespace HappyTravel.Edo.Data
         public virtual DbSet<Agency> Agencies { get; set; }
 
         public DbSet<AppliedMarkup> MarkupLog { get; set; }
+        public DbSet<PaymentMarkupLog> PaymentMarkupLogs { get; set; }
 
         public DbSet<SupplierOrder> SupplierOrders { get; set; }
 
@@ -230,6 +231,7 @@ namespace HappyTravel.Edo.Data
             BuildCounterpartyAgencies(builder);
             BuildSupplierOrders(builder);
             BuildMarkupLogs(builder);
+            BuildPaymentMarkupLogs(builder);
             BuildPaymentLinks(builder);
             BuildServiceAccounts(builder);
             BuildBookingAuditLog(builder);
@@ -276,6 +278,15 @@ namespace HappyTravel.Edo.Data
                     .HasColumnType("jsonb")
                     .HasConversion(list => JsonConvert.SerializeObject(list),
                         list => JsonConvert.DeserializeObject<List<MarkupPolicy>>(list));
+            });
+        }
+
+
+        private void BuildPaymentMarkupLogs(ModelBuilder builder)
+        {
+            builder.Entity<PaymentMarkupLog>(markupLogRecord =>
+            {
+                markupLogRecord.HasKey(m => m.Id);
             });
         }
 

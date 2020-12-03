@@ -15,7 +15,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.CurrencyConversion.CurrencyCo
         public async Task Conversion_should_returns_success_when_a_current_currency_is_null()
         {
             var getCurrencyFunc = new Func<object, Currencies?>(o => null);
-            var service = new CurrencyConverterService(null, null);
+            var service = new CurrencyConverterService(null, null, null, null);
 
             var result = await service.ConvertPricesInData(new AgentContext(), new object(), null, getCurrencyFunc);
 
@@ -27,7 +27,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.CurrencyConversion.CurrencyCo
         public async Task Conversion_should_returns_success_when_a_current_currency_equals_a_target_currency()
         {
             var getCurrencyFunc = new Func<object, Currencies?>(o => CurrencyConverterService.TargetCurrency);
-            var service = new CurrencyConverterService(null, null);
+            var service = new CurrencyConverterService(null, null, null, null);
 
             var result = await service.ConvertPricesInData(new AgentContext(), new object(), null, getCurrencyFunc);
 
@@ -39,7 +39,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.CurrencyConversion.CurrencyCo
         public async Task Conversion_should_returns_failure_when_a_current_currency_is_not_specified()
         {
             var getCurrencyFunc = new Func<object, Currencies?>(o => Currencies.NotSpecified);
-            var service = new CurrencyConverterService(null, null);
+            var service = new CurrencyConverterService(null, null, null, null);
 
             var result = await service.ConvertPricesInData(new AgentContext(), new object(), null, getCurrencyFunc);
 
@@ -53,7 +53,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.CurrencyConversion.CurrencyCo
             var rateServiceMock = new Mock<ICurrencyRateService>();
             rateServiceMock.Setup(s => s.Get(It.IsAny<Currencies>(), It.IsAny<Currencies>()))
                 .Returns(new ValueTask<Result<decimal>>(Result.Failure<decimal>("error")));
-            var service = new CurrencyConverterService(rateServiceMock.Object, null);
+            var service = new CurrencyConverterService(rateServiceMock.Object, null, null, null);
 
             var result = await service.ConvertPricesInData(new AgentContext(), new object(), null, GetCurrencyFunc);
 

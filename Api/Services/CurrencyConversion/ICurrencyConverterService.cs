@@ -11,5 +11,8 @@ namespace HappyTravel.Edo.Api.Services.CurrencyConversion
     {
         Task<Result<TData>> ConvertPricesInData<TData>(AgentContext agent, TData data,
             Func<TData, PriceProcessFunction, ValueTask<TData>> changePricesFunc, Func<TData, Currencies?> getCurrencyFunc);
+
+
+        Task<Result<decimal>> Convert(Currencies source, Currencies target, decimal value);
     }
 }

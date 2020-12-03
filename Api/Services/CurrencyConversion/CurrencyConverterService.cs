@@ -1,7 +1,10 @@
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.CurrencyConverter;
+using HappyTravel.Edo.Api.Infrastructure.Constants;
+using HappyTravel.Edo.Api.Infrastructure.Converters;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Services.PriceProcessing;
 using HappyTravel.Money.Enums;
@@ -12,10 +15,12 @@ namespace HappyTravel.Edo.Api.Services.CurrencyConversion
 {
     public class CurrencyConverterService : ICurrencyConverterService
     {
-        public CurrencyConverterService(ICurrencyRateService rateService, ICurrencyConverterFactory converterFactory)
+        public CurrencyConverterService(ICurrencyRateService rateService, ICurrencyConverterFactory converterFactory, IHttpClientFactory clientFactory, IJsonSerializer jsonSerializer)
         {
             _converterFactory = converterFactory;
             _rateService = rateService;
+            _clientFactory = clientFactory;
+            _jsonSerializer = jsonSerializer;
         }
 
 
@@ -49,10 +54,28 @@ namespace HappyTravel.Edo.Api.Services.CurrencyConversion
         }
 
 
+        public async Task<Result<decimal>> Convert(Currencies source, Currencies target, decimal value)
+        {
+            if (source == target)
+                return value;
+
+            using var client = _clientFactory.CreateClient(HttpClientNames.CurrencyService);
+            var request = await client.GetAsync($"{source}/{target}/{value}");
+
+            if (!request.IsSuccessStatusCode)
+                return Result.Failure<decimal>($"Cannot convert {source} currency to {target}");
+
+            var moneyAmount = _jsonSerializer.DeserializeObject<MoneyAmount>(await request.Content.ReadAsStringAsync());
+            return moneyAmount.Amount;
+        }
+
+
         // Only USD Currency is supported for now.
         public const Currencies TargetCurrency = Currencies.USD;
 
         private readonly ICurrencyConverterFactory _converterFactory;
         private readonly ICurrencyRateService _rateService;
+        private readonly IHttpClientFactory _clientFactory;
+        private readonly IJsonSerializer _jsonSerializer;
     }
 }
