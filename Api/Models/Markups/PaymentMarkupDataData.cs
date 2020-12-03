@@ -3,9 +3,9 @@ using HappyTravel.Money.Enums;
 
 namespace HappyTravel.Edo.Api.Models.Markups
 {
-    public readonly struct PaymentMarkupDataData : IEquatable<PaymentMarkupDataData>
+    public readonly struct PaymentMarkupData : IEquatable<PaymentMarkupData>
     {
-        public PaymentMarkupDataData(int bookingId, int agencyAccountId, Currencies sourceCurrency, Currencies targetCurrency)
+        public PaymentMarkupData(int bookingId, int agencyAccountId, Currencies sourceCurrency, Currencies targetCurrency)
         {
             BookingId = bookingId;
             AgencyAccountId = agencyAccountId;
@@ -20,14 +20,14 @@ namespace HappyTravel.Edo.Api.Models.Markups
         public Currencies TargetCurrency { get; }
 
 
-        public bool Equals(PaymentMarkupDataData other)
+        public bool Equals(PaymentMarkupData other)
             => BookingId == other.BookingId
                 && AgencyAccountId == other.AgencyAccountId
                 && SourceCurrency == other.SourceCurrency
                 && TargetCurrency == other.TargetCurrency;
 
 
-        public override bool Equals(object obj) => obj is PaymentMarkupDataData other && Equals(other);
+        public override bool Equals(object obj) => obj is PaymentMarkupData other && Equals(other);
 
 
         public override int GetHashCode() => HashCode.Combine(BookingId, AgencyAccountId, (int) SourceCurrency, (int) TargetCurrency);

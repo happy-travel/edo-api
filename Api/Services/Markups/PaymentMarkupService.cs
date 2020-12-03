@@ -35,18 +35,18 @@ namespace HappyTravel.Edo.Api.Services.Markups
                 .Bind(ChangeBalance)
                 .Tap(WriteLog);
 
-            Task<Result<PaymentMarkupDataWithValue>> GetValue(PaymentMarkupDataData data)
+            Task<Result<PaymentMarkupDataWithValue>> GetValue(PaymentMarkupData data)
                 => GetMarkupValue(data, isWriteOff);
         }
 
 
-        private async Task<Result<PaymentMarkupDataWithValue>> GetMarkupValue(PaymentMarkupDataData data, bool isWriteOff)
+        private async Task<Result<PaymentMarkupDataWithValue>> GetMarkupValue(PaymentMarkupData data, bool isWriteOff)
         {
             // TODO: get markup value
             const decimal markup = 0;
 
             var (_, isFailure, value, error) = await _converter.Convert(data.SourceCurrency, data.TargetCurrency, markup);
-            value = isWriteOff ? value : -value;
+            value = isWriteOff ? -value : value;
 
             return isFailure
                 ? Result.Failure<PaymentMarkupDataWithValue>(error)
@@ -54,17 +54,17 @@ namespace HappyTravel.Edo.Api.Services.Markups
         }
 
 
-        private async Task<Result<PaymentMarkupDataData>> GetData(int bookingId)
+        private async Task<Result<PaymentMarkupData>> GetData(int bookingId)
         {
             var query = from booking in _edoContext.Bookings
                 join agencyAccount in _edoContext.AgencyAccounts on booking.AgencyId equals agencyAccount.AgencyId
                 where booking.Id == bookingId
-                select new PaymentMarkupDataData(booking.Id, agencyAccount.Id, booking.Currency, agencyAccount.Currency);
+                select new PaymentMarkupData(booking.Id, agencyAccount.Id, booking.Currency, agencyAccount.Currency);
 
             var result = await query.SingleOrDefaultAsync();
 
             return result.Equals(default)
-                ? Result.Failure<PaymentMarkupDataData>($"Cannot find agency account by booking id {bookingId}")
+                ? Result.Failure<PaymentMarkupData>($"Cannot find agency account by booking id {bookingId}")
                 : result;
         }
 

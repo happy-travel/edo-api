@@ -4,7 +4,7 @@ namespace HappyTravel.Edo.Api.Models.Markups
 {
     public readonly struct PaymentMarkupDataWithValue
     {
-        public PaymentMarkupDataWithValue(PaymentMarkupDataData data, decimal value)
+        public PaymentMarkupDataWithValue(in PaymentMarkupData data, decimal value)
         {
             BookingId = data.BookingId;
             AgencyAccountId = data.AgencyAccountId;
