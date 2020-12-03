@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations.Enums;
 using HappyTravel.EdoContracts.General.Enums;
@@ -21,6 +22,9 @@ namespace HappyTravel.Edo.Data.Booking
         public DateTime CheckOutDate { get; set; }
         
         public DateTime? DeadlineDate { get; set; }
+
+        public decimal SupplierPrice { get; set; }
+
         public decimal TotalPrice { get; set; }
         
         public Currencies Currency { get; set; }
@@ -47,5 +51,6 @@ namespace HappyTravel.Edo.Data.Booking
         public string AccommodationId { get; set; }
         public string AccommodationName { get; set; }
         public AccommodationLocation Location { get; set; }
+        public List<Markup> AppliedMarkups { get; set; }
     }
 }

@@ -19,9 +19,9 @@ using HappyTravel.Edo.Data.PaymentLinks;
 using HappyTravel.Edo.Data.Payments;
 using HappyTravel.Edo.Data.Suppliers;
 using HappyTravel.EdoContracts.GeoData.Enums;
-using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using AppliedMarkup = HappyTravel.Edo.Data.Markup.AppliedMarkup;
 
 namespace HappyTravel.Edo.Data
 {
@@ -605,6 +605,9 @@ namespace HappyTravel.Edo.Data
                     .HasConversion(
                         value => JsonConvert.SerializeObject(value),
                         value => JsonConvert.DeserializeObject<List<BookedRoom>>(value));
+
+                booking.Property(b => b.AppliedMarkups)
+                    .HasColumnType("jsonb");
             });
         }
 
