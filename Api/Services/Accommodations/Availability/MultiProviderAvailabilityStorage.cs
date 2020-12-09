@@ -34,14 +34,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
 
             async ValueTask<TObject> Get(string key, bool isCachingEnabled)
             {
-                if(!isCachingEnabled)
+                if (!isCachingEnabled)
                     return await _distributedFlow.GetAsync<TObject>(key);
                 
                 if (_memoryFlow.TryGetValue(key, out TObject value))
                     return value;
                     
                 value = await _distributedFlow.GetAsync<TObject>(key);
-                if(value != null && !value.Equals(default))
+                if (value != null && !value.Equals(default))
                     _memoryFlow.Set(key, value, CacheExpirationTime);
                 
                 return value;

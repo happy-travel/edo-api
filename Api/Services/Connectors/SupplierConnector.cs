@@ -121,7 +121,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
             sw.Stop();
             _logger.LogSupplierConnectorRequestDuration($"Request to {_baseUrl} finished at {sw.ElapsedMilliseconds} ms.");
             
-            if(result.IsFailure)
+            if (result.IsFailure)
                 _logger.LogSupplierConnectorRequestError($"Error executing connector request to {_baseUrl}: '{result.Error.Detail}', status code: '{result.Error.Status}'");
 
             return result;

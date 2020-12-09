@@ -140,7 +140,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             async Task<Result<CreditCardPaymentResult>> Authorize()
             {
                 var (_, isFailure, token, error) = await _creditCardsManagementService.GetToken(request.CardId, agent);
-                if(isFailure)
+                if (isFailure)
                     return Result.Failure<CreditCardPaymentResult>(error);
                 
                 var cardPaymentRequest = await CreatePaymentRequest(servicePrice,
@@ -256,7 +256,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                     Enum.Parse<Currencies>(payment.Currency),
                     serviceBuyer.AgentId);
                 
-                if(isProcessFailure)
+                if (isProcessFailure)
                     return Result.Failure<(CreditCardPaymentResult, Payment)>(processError);
                 
                 return Result.Success((processResult, payment));

@@ -52,7 +52,7 @@ namespace HappyTravel.Edo.Api.Services.Management
                     .Get(supplierAccommodationId.Supplier)
                     .GetAccommodation(supplierAccommodationId.Id, languageCode);
                 
-                if(isFailure)
+                if (isFailure)
                     return Result.Failure<AccommodationDuplicateReportInfo>($"Could not find accommodation: {result.Detail}");
                 
                 accommodations.Add(SupplierData.Create(supplierAccommodationId.Supplier, accommodationDetails));
@@ -72,7 +72,7 @@ namespace HappyTravel.Edo.Api.Services.Management
             async Task<Result<AccommodationDuplicateReport>> ApproveReport(int reportId)
             {
                 var report = await _context.AccommodationDuplicateReports.SingleOrDefaultAsync(r => r.Id == reportId);
-                if(report == default)
+                if (report == default)
                     return Result.Failure<AccommodationDuplicateReport>("Could not find a report");
                 
                 report.ApprovalState = AccommodationDuplicateReportState.Approved;
@@ -104,7 +104,7 @@ namespace HappyTravel.Edo.Api.Services.Management
             async Task<Result<AccommodationDuplicateReport>> DisapproveReport(int reportId)
             {
                 var report = await _context.AccommodationDuplicateReports.SingleOrDefaultAsync(r => r.Id == reportId);
-                if(report == default)
+                if (report == default)
                     return Result.Failure<AccommodationDuplicateReport>("Could not find a report");
                 
                 report.ApprovalState = AccommodationDuplicateReportState.Disapproved;

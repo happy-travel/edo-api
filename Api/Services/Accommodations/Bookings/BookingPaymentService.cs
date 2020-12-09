@@ -195,7 +195,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         public async Task<Result<MoneyAmount>> GetServicePrice(string referenceCode)
         {
             var booking = await _context.Bookings.SingleOrDefaultAsync(b => b.ReferenceCode == referenceCode);
-            if(booking == default)
+            if (booking == default)
                 return Result.Failure<MoneyAmount>("Could not find booking");
 
             return Result.Success(new MoneyAmount(booking.TotalPrice, booking.Currency));

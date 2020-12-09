@@ -69,7 +69,7 @@ namespace HappyTravel.Edo.Api.Services.Locations
                         continue;
                 }
                 
-                if(!enabledSuppliers.Intersect(location.Suppliers).Any())
+                if (!enabledSuppliers.Intersect(location.Suppliers).Any())
                     continue;
                 
                 var predictionValue = BuildPredictionValue(location, languageCode);

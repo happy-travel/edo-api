@@ -88,7 +88,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                 // Saving all the changes in price that was done by markups
                 Action<MarkupApplicationResult<EdoContracts.Accommodations.RoomContractSetAvailability?>> logAction = appliedMarkup =>
                 {
-                    if(appliedMarkup.Before is null || appliedMarkup.After is null)
+                    if (appliedMarkup.Before is null || appliedMarkup.After is null)
                         return;
                     
                     var markupAmount = appliedMarkup.After.Value.RoomContractSet.Rate.FinalPrice - appliedMarkup.Before.Value.RoomContractSet.Rate.FinalPrice;
@@ -107,7 +107,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
 
             Task SaveToCache(DataWithMarkup<EdoContracts.Accommodations.RoomContractSetAvailability?> responseWithDeadline)
             {
-                if(!responseWithDeadline.Data.HasValue)
+                if (!responseWithDeadline.Data.HasValue)
                     return Task.CompletedTask;
 
                 // TODO: Check that this id will not change on all connectors NIJO-823
@@ -142,7 +142,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                     settings.PassedDeadlineOffersMode == PassedDeadlineOffersMode.DisplayOnly)
                 {
                     var deadlineDate = availability.Value.RoomContractSet.Deadline.Date;
-                    if(deadlineDate.HasValue && deadlineDate.Value.Date <= _dateTimeProvider.UtcTomorrow())
+                    if (deadlineDate.HasValue && deadlineDate.Value.Date <= _dateTimeProvider.UtcTomorrow())
                         return ProblemDetailsBuilder.Fail<EdoContracts.Accommodations.RoomContractSetAvailability?>("You can't book the contract within deadline without explicit approval from a Happytravel.com officer.");
                 }
 

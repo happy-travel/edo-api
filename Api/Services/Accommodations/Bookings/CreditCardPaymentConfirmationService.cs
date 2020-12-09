@@ -39,13 +39,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
                 var data = await query.SingleOrDefaultAsync();
 
-                if(data is null)
+                if (data is null)
                     return Result.Failure<Booking>($"Booking with Id {bookingId} not found");
 
-                if(data.ConfirmedAt != default)
+                if (data.ConfirmedAt != default)
                     return Result.Failure<Booking>("Payment already confirmed");
 
-                if(data.booking.PaymentMethod != PaymentMethods.CreditCard)
+                if (data.booking.PaymentMethod != PaymentMethods.CreditCard)
                     return Result.Failure<Booking>($"Wrong payment method {data.booking.PaymentMethod}");
 
                 return data.booking;

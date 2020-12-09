@@ -26,7 +26,7 @@ namespace HappyTravel.Edo.Api.Services.Markups
         {
             var bookingMarkupPayment = await GetPaymentData();
 
-            if(bookingMarkupPayment.Equals(default))
+            if (bookingMarkupPayment.Equals(default))
                 return Result.Success();
 
             return await AppendMoney()

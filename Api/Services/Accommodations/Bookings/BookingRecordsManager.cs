@@ -255,7 +255,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo>("Permission denied");
 
             var (_, isFailure, bookingInfo, error) = await ConvertToBookingInfo(bookingDataResult.Value, languageCode, agentContext);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error);
 
             return bookingInfo;
@@ -272,7 +272,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo>("Permission denied");
 
             var (_, isFailure, bookingInfo, error) = await ConvertToBookingInfo(bookingDataResult.Value, languageCode, agentContext);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error);
 
             return bookingInfo;
@@ -286,7 +286,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo>(bookingDataResult.Error);
             
             var (_, isFailure, bookingInfo, error) = await ConvertToBookingInfo(bookingDataResult.Value, languageCode);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error);
 
             return bookingInfo;
@@ -359,7 +359,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         private async Task<Result<AccommodationBookingInfo>> ConvertToBookingInfo(Booking booking, string languageCode, AgentContext? agentContext = null)
         {
             var (_, isFailure, accommodation, error) = await _accommodationService.Get(booking.Supplier, booking.AccommodationId, languageCode);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error.Detail);
             
             var bookingDetails = GetDetails(booking, accommodation);
