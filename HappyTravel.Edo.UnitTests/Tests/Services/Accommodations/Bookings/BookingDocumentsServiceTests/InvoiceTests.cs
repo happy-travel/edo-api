@@ -25,49 +25,6 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
 {
     public class InvoiceTests
     {
-        [Theory]
-        [InlineData(BookingStatuses.Cancelled)]
-        [InlineData(BookingStatuses.Rejected)]
-        public async Task When_booking_has_not_allowed_status_generation_invoice_should_fail(BookingStatuses status)
-        {
-            var agentContext = AgentInfoFactory.GetByAgentId(1);
-            var bookingDocumentsService = CreateBookingDocumentsService(new Booking
-            {
-                Id = 1,
-                AgentId = 1,
-                Status = status
-            }, true);
-
-            var (isSuccess, _) = await bookingDocumentsService.GetActualInvoice(1, agentContext.AgentId);
-
-            Assert.False(isSuccess);
-        }
-
-
-        [Theory]
-        [InlineData(BookingStatuses.Confirmed)]
-        [InlineData(BookingStatuses.Invalid)]
-        [InlineData(BookingStatuses.Pending)]
-        [InlineData(BookingStatuses.Reverted)]
-        [InlineData(BookingStatuses.InternalProcessing)]
-        [InlineData(BookingStatuses.ManualCorrectionNeeded)]
-        [InlineData(BookingStatuses.WaitingForResponse)]
-        public async Task When_booking_has_allowed_status_generation_invoice_should_succeed(BookingStatuses status)
-        {
-            var agentContext = AgentInfoFactory.GetByAgentId(1);
-            var bookingDocumentsService = CreateBookingDocumentsService(new Booking
-            {
-                Id = 1,
-                AgentId = 1,
-                Status = status
-            }, true);
-
-            var (isSuccess, _) = await bookingDocumentsService.GetActualInvoice(1, agentContext.AgentId);
-
-            Assert.True(isSuccess);
-        }
-
-
         [Fact]
         public async Task When_invoice_not_found_should_fail()
         {
