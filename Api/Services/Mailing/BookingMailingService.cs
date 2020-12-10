@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FluentValidation;
-using HappyTravel.Edo.Api.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Agents;
@@ -18,6 +16,7 @@ using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Documents;
 using HappyTravel.EdoContracts.General;
 using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Formatters;
@@ -84,41 +83,60 @@ namespace HappyTravel.Edo.Api.Services.Mailing
             // TODO: hardcoded to be removed with UEDA-20
             var addresses = new List<string> {email};
             addresses.AddRange(_options.CcNotificationAddresses);
-            
-            return _bookingDocumentsService.GetActualInvoice(bookingId, agentId)
-                .Bind(invoice =>
-                {
-                    var (registrationInfo, data) = invoice;
-                    var invoiceData = new InvoiceData
-                    {
-                        Number = registrationInfo.Number,
-                        BuyerDetails = data.BuyerDetails,
-                        InvoiceDate = DateTimeFormatters.ToDateString(registrationInfo.Date),
-                        InvoiceItems = data.InvoiceItems
-                            .Select(i => new InvoiceData.InvoiceItem
-                            {
-                                Number = i.Number,
-                                Price = FormatPrice(i.Price),
-                                Total = FormatPrice(i.Total),
-                                AccommodationName = i.AccommodationName,
-                                RoomDescription = i.RoomDescription,
-                                RoomType = EnumFormatters.FromDescription(i.RoomType),
-                                DeadlineDate = DateTimeFormatters.ToDateString(i.DeadlineDate),
-                                MainPassengerName = PersonNameFormatters.ToMaskedName(i.MainPassengerFirstName, i.MainPassengerLastName)
-                            })
-                            .ToList(),
-                        TotalPrice = FormatPrice(data.TotalPrice),
-                        CurrencyCode = EnumFormatters.FromDescription(data.TotalPrice.Currency),
-                        ReferenceCode = data.ReferenceCode,
-                        SellerDetails = data.SellerDetails,
-                        PayDueDate = DateTimeFormatters.ToDateString(data.PayDueDate),
-                        CheckInDate = DateTimeFormatters.ToDateString(data.CheckInDate),
-                        CheckOutDate = DateTimeFormatters.ToDateString(data.CheckOutDate),
-                        PaymentStatus = EnumFormatters.FromDescription(data.PaymentStatus)
-                    };
 
-                    return _mailSender.Send(_options.InvoiceTemplateId, addresses, invoiceData);
-                });
+            return CheckBookingStatus()
+                .Bind(GetActualInvoice)
+                .Bind(Send);
+
+
+            async Task<Result> CheckBookingStatus()
+            {
+                var isAllowed = await _context.Bookings
+                    .AnyAsync(b => b.Id == bookingId && !NotAvailableForSentInvoiceStatuses.Contains(b.Status));
+
+                return isAllowed
+                    ? Result.Success()
+                    : Result.Failure($"Sent invoice for booking id {bookingId} not allowed");
+            }
+
+
+            Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice()
+                => _bookingDocumentsService.GetActualInvoice(bookingId, agentId);
+
+
+            Task<Result> Send((DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data) invoice)
+            {
+                var (registrationInfo, data) = invoice;
+                var invoiceData = new InvoiceData
+                {
+                    Number = registrationInfo.Number,
+                    BuyerDetails = data.BuyerDetails,
+                    InvoiceDate = DateTimeFormatters.ToDateString(registrationInfo.Date),
+                    InvoiceItems = data.InvoiceItems
+                        .Select(i => new InvoiceData.InvoiceItem
+                        {
+                            Number = i.Number,
+                            Price = FormatPrice(i.Price),
+                            Total = FormatPrice(i.Total),
+                            AccommodationName = i.AccommodationName,
+                            RoomDescription = i.RoomDescription,
+                            RoomType = EnumFormatters.FromDescription(i.RoomType),
+                            DeadlineDate = DateTimeFormatters.ToDateString(i.DeadlineDate),
+                            MainPassengerName = PersonNameFormatters.ToMaskedName(i.MainPassengerFirstName, i.MainPassengerLastName)
+                        })
+                        .ToList(),
+                    TotalPrice = FormatPrice(data.TotalPrice),
+                    CurrencyCode = EnumFormatters.FromDescription(data.TotalPrice.Currency),
+                    ReferenceCode = data.ReferenceCode,
+                    SellerDetails = data.SellerDetails,
+                    PayDueDate = DateTimeFormatters.ToDateString(data.PayDueDate),
+                    CheckInDate = DateTimeFormatters.ToDateString(data.CheckInDate),
+                    CheckOutDate = DateTimeFormatters.ToDateString(data.CheckOutDate),
+                    PaymentStatus = EnumFormatters.FromDescription(data.PaymentStatus)
+                };
+
+                return _mailSender.Send(_options.InvoiceTemplateId, addresses, invoiceData);
+            }
         }
 
 
@@ -542,6 +560,12 @@ namespace HappyTravel.Edo.Api.Services.Mailing
             BookingStatuses.InternalProcessing,
             BookingStatuses.Pending,
             BookingStatuses.WaitingForResponse
+        };
+
+        private static readonly HashSet<BookingStatuses> NotAvailableForSentInvoiceStatuses = new HashSet<BookingStatuses>
+        {
+            BookingStatuses.Cancelled,
+            BookingStatuses.Rejected
         };
         
         private const int DayBeforeAdministratorsNotification = 5;
