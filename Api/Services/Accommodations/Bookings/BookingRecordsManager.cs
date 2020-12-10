@@ -130,15 +130,37 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public Task<List<AgentBoundedData<SlimAccommodationBookingInfo>>> GetAgencyBookingsInfo(AgentContext agentContext)
+        public IQueryable<AgentBoundedData<SlimAccommodationBookingInfo>> GetAgencyBookingsInfo(AgentContext agentContext)
         {
-            return (from booking in _context.Bookings
+            return from booking in _context.Bookings
                 join agent in _context.Agents on booking.AgentId equals agent.Id
                 where booking.AgencyId == agentContext.AgencyId
-                let bookingInfo = new SlimAccommodationBookingInfo(booking)
-                let agentInfo = new SlimAgentDescription(agent.Id, agent.FirstName, agent.LastName, agent.Position)
-                select new AgentBoundedData<SlimAccommodationBookingInfo>(agentInfo, bookingInfo))
-                .ToListAsync();
+                select new AgentBoundedData<SlimAccommodationBookingInfo>
+                {
+                    Agent = new SlimAgentDescription
+                    {
+                        Id = agent.Id,
+                        FirstName = agent.FirstName,
+                        LastName = agent.LastName,
+                        Position = agent.Position
+                    },
+                    Data = new SlimAccommodationBookingInfo
+                    {
+                        Id = booking.Id,
+                        ReferenceCode = booking.ReferenceCode,
+                        AccommodationName = booking.AccommodationName,
+                        CountryName = booking.Location.Country,
+                        LocalityName = booking.Location.Locality,
+                        Deadline = booking.DeadlineDate,
+                        Price = new MoneyAmount(booking.TotalPrice, booking.Currency),
+                        CheckInDate = booking.CheckInDate,
+                        CheckOutDate = booking.CheckOutDate,
+                        Status = booking.Status,
+                        PaymentStatus = booking.PaymentStatus,
+                        Rooms = booking.Rooms,
+                        Supplier = booking.Supplier
+                    }
+                };
         }
 
 
@@ -209,7 +231,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo>("Permission denied");
 
             var (_, isFailure, bookingInfo, error) = await ConvertToBookingInfo(bookingDataResult.Value, languageCode, agentContext);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error);
 
             return bookingInfo;
@@ -226,7 +248,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo>("Permission denied");
 
             var (_, isFailure, bookingInfo, error) = await ConvertToBookingInfo(bookingDataResult.Value, languageCode, agentContext);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error);
 
             return bookingInfo;
@@ -240,7 +262,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<AccommodationBookingInfo>(bookingDataResult.Error);
             
             var (_, isFailure, bookingInfo, error) = await ConvertToBookingInfo(bookingDataResult.Value, languageCode);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error);
 
             return bookingInfo;
@@ -250,18 +272,33 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         /// Gets all booking info of the current agent
         /// </summary>
         /// <returns>List of the slim booking models </returns>
-        public async Task<Result<List<SlimAccommodationBookingInfo>>> GetAgentBookingsInfo(AgentContext agentContext)
+        public IQueryable<SlimAccommodationBookingInfo> GetAgentBookingsInfo(AgentContext agentContext)
         {
-            var bookingData = await _context.Bookings
+            var bookingData = _context.Bookings
                 .Where(b => b.AgentId == agentContext.AgentId)
                 .Where(b => 
                     (b.PaymentMethod == PaymentMethods.BankTransfer)
                     || (b.PaymentMethod != PaymentMethods.BankTransfer && b.PaymentStatus != BookingPaymentStatuses.NotPaid))
                 .Select(b =>
-                    new SlimAccommodationBookingInfo(b)
-                ).ToListAsync();
+                    new SlimAccommodationBookingInfo
+                    {
+                        Id = b.Id,
+                        ReferenceCode = b.ReferenceCode,
+                        AccommodationName = b.AccommodationName,
+                        CountryName = b.Location.Country,
+                        LocalityName = b.Location.Locality,
+                        Deadline = b.DeadlineDate,
+                        Price = new MoneyAmount(b.TotalPrice, b.Currency),
+                        CheckInDate = b.CheckInDate,
+                        CheckOutDate = b.CheckOutDate,
+                        Status = b.Status,
+                        PaymentStatus = b.PaymentStatus,
+                        Rooms = b.Rooms,
+                        Supplier = b.Supplier
+                    }
+                );
 
-            return Result.Success(bookingData);
+            return bookingData;
         }
 
 
@@ -298,7 +335,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         private async Task<Result<AccommodationBookingInfo>> ConvertToBookingInfo(Booking booking, string languageCode, AgentContext? agentContext = null)
         {
             var (_, isFailure, accommodation, error) = await _accommodationService.Get(booking.Supplier, booking.AccommodationId, languageCode);
-            if(isFailure)
+            if (isFailure)
                 return Result.Failure<AccommodationBookingInfo>(error.Detail);
             
             var bookingDetails = GetDetails(booking, accommodation);

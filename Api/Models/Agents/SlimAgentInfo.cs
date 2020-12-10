@@ -19,26 +19,26 @@ namespace HappyTravel.Edo.Api.Models.Agents
         /// <summary>
         ///     Agent ID.
         /// </summary>
-        public int AgentId { get; }
+        public int AgentId { get; init; }
 
         /// <summary>
         ///     First and last name.
         /// </summary>
-        public string Name { get; }
+        public string Name { get; init; }
 
         /// <summary>
         /// Created date timestamp.
         /// </summary>
-        public long Created { get; }
+        public long Created { get; init; }
 
         /// <summary>
         ///     Markup settings of the agent.
         /// </summary>
-        public string MarkupSettings { get; }
+        public string MarkupSettings { get; init; }
 
         /// <summary>
         /// Activity state
         /// </summary>
-        public bool IsActive { get; }
+        public bool IsActive { get; init; }
     }
 }

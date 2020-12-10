@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -13,6 +14,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Money.Models;
+using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Controllers.AgentControllers
@@ -211,17 +213,13 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// </summary>
         /// <returns>List of slim booking data.</returns>
         [ProducesResponseType(typeof(List<SlimAccommodationBookingInfo>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("agent")]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
         [AgentRequired]
-        public async Task<IActionResult> GetAgentBookings()
+        [EnableQuery]
+        public async Task<ActionResult<IQueryable<SlimAccommodationBookingInfo>>> GetAgentBookings()
         {
-            var (_, isFailure, bookings, error) = await _bookingRecordsManager.GetAgentBookingsInfo(await _agentContextService.GetAgent());
-            if (isFailure)
-                return BadRequest(error);
-
-            return Ok(bookings);
+            return Ok(_bookingRecordsManager.GetAgentBookingsInfo(await _agentContextService.GetAgent()));
         }
 
 
@@ -230,14 +228,13 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// </summary>
         /// <returns>List of slim booking data.</returns>
         [ProducesResponseType(typeof(List<AgentBoundedData<SlimAccommodationBookingInfo>>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [HttpGet("agency")]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
         [InAgencyPermissions((InAgencyPermissions.AgencyBookingsManagement))]
-        public async Task<IActionResult> GetAgencyBookings()
+        [EnableQuery]
+        public async Task<ActionResult<IQueryable<AgentBoundedData<SlimAccommodationBookingInfo>>>> GetAgencyBookings()
         {
-            var bookings = await _bookingRecordsManager.GetAgencyBookingsInfo(await _agentContextService.GetAgent());
-            return Ok(bookings);
+            return Ok(_bookingRecordsManager.GetAgencyBookingsInfo(await _agentContextService.GetAgent()));
         }
 
 

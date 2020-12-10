@@ -19,14 +19,12 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        public Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agentId,
-            List<InAgencyPermissions> permissionsList, AgentContext agent) =>
-            SetInAgencyPermissions(agentId, permissionsList.Aggregate((p1, p2) => p1 | p2), agent);
-
-
-        private async Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agentId,
-            InAgencyPermissions permissions, AgentContext agent)
+        public async Task<Result<List<InAgencyPermissions>>> SetInAgencyPermissions(int agentId, List<InAgencyPermissions> permissionsList, AgentContext agent)
         {
+            var permissions = permissionsList.Any()
+                ? permissionsList.Aggregate((p1, p2) => p1 | p2)
+                : default;
+
             return await Result.Success()
                 .Bind(GetRelation)
                 .Ensure(IsPermissionManagementRightNotLost, "Cannot revoke last permission management rights")

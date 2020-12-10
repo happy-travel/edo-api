@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Accommodations;
@@ -23,9 +24,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 
         Task<Result<Data.Booking.Booking>> Get(int bookingId, int agentId);
         
-        Task<Result<List<SlimAccommodationBookingInfo>>> GetAgentBookingsInfo(AgentContext agentContext);
+        IQueryable<SlimAccommodationBookingInfo> GetAgentBookingsInfo(AgentContext agentContext);
         
-        Task<List<AgentBoundedData<SlimAccommodationBookingInfo>>> GetAgencyBookingsInfo(AgentContext agentContext);
+        IQueryable<AgentBoundedData<SlimAccommodationBookingInfo>> GetAgencyBookingsInfo(AgentContext agentContext);
         
         Task Confirm(EdoContracts.Accommodations.Booking bookingDetails, Data.Booking.Booking booking);
         

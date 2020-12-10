@@ -1,149 +1,67 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Models.Agents;
-using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.CurrencyConversion;
-using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Markups.Templates;
 using HappyTravel.Edo.Api.Services.PriceProcessing;
 using HappyTravel.Edo.Common.Enums.Markup;
-using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Markup;
+using HappyTravel.Money.Helpers;
 using HappyTravel.Money.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.Markups
 {
     public class MarkupService : IMarkupService
     {
-        public MarkupService(EdoContext context, 
-            IDoubleFlow flow,
+        public MarkupService(IMarkupPolicyService markupPolicyService,
             IMarkupPolicyTemplateService templateService,
             ICurrencyRateService currencyRateService,
-            IAgentSettingsManager agentSettingsManager,
-            IAccommodationBookingSettingsService accommodationBookingSettingsService)
+            IMemoryFlow flow)
         {
-            _context = context;
-            _flow = flow;
+            _markupPolicyService = markupPolicyService;
             _templateService = templateService;
             _currencyRateService = currencyRateService;
-            _agentSettingsManager = agentSettingsManager;
-            _accommodationBookingSettingsService = accommodationBookingSettingsService;
+            _flow = flow;
         }
-
-
-        public async Task<Markup> Get(AgentContext agentContext, MarkupPolicyTarget policyTarget)
+        
+        
+        public async Task<TDetails> ApplyMarkups<TDetails>(AgentContext agent, TDetails details,
+            Func<TDetails, PriceProcessFunction, ValueTask<TDetails>> priceProcessFunc, 
+            Action<MarkupApplicationResult<TDetails>> logAction = null)
         {
-            var searchSettings = await _accommodationBookingSettingsService.Get(agentContext);
-            if (searchSettings.IsMarkupDisabled)
-                return Markup.Empty;
+            var policies = await _markupPolicyService.Get(agent, MarkupPolicyTarget.AccommodationAvailability);
+            var currentData = details;
+            foreach (var policy in policies)
+            {
+                var detailsBefore = currentData;
+                
+                var processFunction = GetPriceProcessFunction(policy);
+                currentData = await priceProcessFunc(currentData, processFunction);
+
+                logAction?.Invoke(new MarkupApplicationResult<TDetails>(detailsBefore, policy, currentData));
+            }
             
-            var agentSettings = await GetAgentSettings(agentContext);
-            var agentPolicies = await GetAgentPolicies(agentContext, agentSettings, policyTarget);
-            var markupFunction = CreateAggregatedMarkupFunction(agentPolicies);
-            return new Markup
-            {
-                Policies = agentPolicies,
-                Function = markupFunction
-            };
+            var ceiledResponse = await priceProcessFunc(currentData, price =>
+                new ValueTask<MoneyAmount>(MoneyRounder.Ceil(price)));
+
+            return ceiledResponse;
         }
 
 
-       
-
-
-        private Task<AgentUserSettings> GetAgentSettings(AgentContext agentContext)
+        private PriceProcessFunction GetPriceProcessFunction(MarkupPolicy policy)
         {
-            return _flow.GetOrSetAsync(
-                key: BuildKey(),
-                getValueFunction: async () => await _agentSettingsManager.GetUserSettings(agentContext),
-                AgentSettingsCachingTime); 
-            
-            string BuildKey()
-                => _flow.BuildKey(nameof(MarkupService),
-                    nameof(GetAgentSettings),
-                    agentContext.AgentId.ToString());
-        }
-
-
-        private Task<List<MarkupPolicy>> GetAgentPolicies(AgentContext agentContext, AgentUserSettings userSettings,
-            MarkupPolicyTarget policyTarget)
-        {
-            var (agentId, counterpartyId, agencyId, _) = agentContext;
-
-            return _flow.GetOrSetAsync(BuildKey(),
-                GetOrderedPolicies,
-                AgentPoliciesCachingTime);
-
-
-            string BuildKey()
-                => _flow.BuildKey(nameof(MarkupService),
-                    nameof(GetAgentPolicies),
-                    agentId.ToString());
-
-
-            async Task<List<MarkupPolicy>> GetOrderedPolicies()
+            var policyFunction = GetPolicyFunction(policy);
+            return async initialPrice =>
             {
-                var policiesFromDb = await GetPoliciesFromDb();
-                return policiesFromDb.Where(FilterBySettings)
-                    .OrderBy(SortByScope)
-                    .ThenBy(p => p.Order)
-                    .ToList();
-            }
-
-
-            bool FilterBySettings(MarkupPolicy policy)
-            {
-                if (policy.ScopeType == MarkupPolicyScopeType.EndClient && !userSettings.IsEndClientMarkupsEnabled)
-                    return false;
-
-                return true;
-            }
-
-
-            int SortByScope(MarkupPolicy policy) => (int) policy.ScopeType;
-
-
-            Task<List<MarkupPolicy>> GetPoliciesFromDb()
-            {
-                return _context.MarkupPolicies
-                    .Where(p => p.Target == policyTarget)
-                    .Where(p =>
-                        p.ScopeType == MarkupPolicyScopeType.Global ||
-                        p.ScopeType == MarkupPolicyScopeType.Counterparty && p.CounterpartyId == counterpartyId ||
-                        p.ScopeType == MarkupPolicyScopeType.Agency && p.AgencyId == agencyId ||
-                        p.ScopeType == MarkupPolicyScopeType.Agent && p.AgentId == agentId ||
-                        p.ScopeType == MarkupPolicyScopeType.EndClient && p.AgentId == agentId
-                    )
-                    .ToListAsync();
-            }
-        }
-
-
-        private PriceProcessFunction CreateAggregatedMarkupFunction(List<MarkupPolicy> policies)
-        {
-            var markupPolicyFunctions = policies
-                .Select(GetPolicyFunction)
-                .ToList();
-
-            // TODO: rewrite to async streams after migrating to .NET Core 3
-            return async supplierPrice =>
-            {
-                var amount = supplierPrice.Amount;
-                foreach (var markupPolicyFunction in markupPolicyFunctions)
-                {
-                    var (_, _, currencyRate, _) = await _currencyRateService.Get(supplierPrice.Currency, markupPolicyFunction.Currency);
-                    amount = markupPolicyFunction.Function(amount * currencyRate) / currencyRate;
-                }
-
-                return new MoneyAmount(amount, supplierPrice.Currency);
+                var amount = initialPrice.Amount;
+                var (_, _, currencyRate, _) = await _currencyRateService.Get(initialPrice.Currency, policyFunction.Currency);
+                amount = policyFunction.Function(amount * currencyRate) / currencyRate;
+                return new MoneyAmount(amount, initialPrice.Currency);
             };
         }
 
@@ -165,22 +83,17 @@ namespace HappyTravel.Edo.Api.Services.Markups
 
 
             string BuildKey(MarkupPolicy policyWithFunc)
-                => _flow.BuildKey(nameof(MarkupService),
+                => _flow.BuildKey(nameof(MarkupPolicyService),
                     nameof(GetPolicyFunction),
                     policyWithFunc.Id.ToString(),
                     policyWithFunc.Modified.ToString(CultureInfo.InvariantCulture));
         }
-
-
-        private static readonly TimeSpan MarkupPolicyFunctionCachingTime = TimeSpan.FromDays(1);
-        private static readonly TimeSpan AgentPoliciesCachingTime = TimeSpan.FromMinutes(2);
-        private static readonly TimeSpan AgentSettingsCachingTime = TimeSpan.FromMinutes(2);
-        private static readonly TimeSpan AgencySettingsCachingTime = TimeSpan.FromMinutes(2);
-        private readonly EdoContext _context;
-        private readonly ICurrencyRateService _currencyRateService;
-        private readonly IAgentSettingsManager _agentSettingsManager;
-        private readonly IAccommodationBookingSettingsService _accommodationBookingSettingsService;
-        private readonly IDoubleFlow _flow;
+        
         private readonly IMarkupPolicyTemplateService _templateService;
+        private readonly ICurrencyRateService _currencyRateService;
+        private static readonly TimeSpan MarkupPolicyFunctionCachingTime = TimeSpan.FromDays(1);
+        
+        private readonly IMarkupPolicyService _markupPolicyService;
+        private readonly IMemoryFlow _flow;
     }
 }

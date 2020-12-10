@@ -82,7 +82,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
         private Task<Result<PaymentResponse>> ProcessPay(PaymentLink link, string code, string token, string ip, string languageCode)
         {
             return Pay()
-                .TapIf(IsPaymentComplete, CheckPaymentAmount)
+                .CheckIf(IsPaymentComplete, CheckPaymentAmount)
                 .TapIf(IsPaymentComplete, SendConfirmation)
                 .Map(ToPaymentResponse)
                 .Tap(StorePaymentResult);

@@ -23,7 +23,7 @@ namespace HappyTravel.Edo.Api.Services.CurrencyConversion
             Func<TData, PriceProcessFunction, ValueTask<TData>> changePricesFunc, Func<TData, Currencies?> getCurrencyFunc)
         {
             var currentCurrency = getCurrencyFunc(data);
-            if(!currentCurrency.HasValue)
+            if (!currentCurrency.HasValue)
                 return Result.Success(data);
             
             if (currentCurrency == TargetCurrency)

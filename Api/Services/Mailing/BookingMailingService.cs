@@ -132,7 +132,8 @@ namespace HappyTravel.Edo.Api.Services.Mailing
                     PayDueDate = DateTimeFormatters.ToDateString(data.PayDueDate),
                     CheckInDate = DateTimeFormatters.ToDateString(data.CheckInDate),
                     CheckOutDate = DateTimeFormatters.ToDateString(data.CheckOutDate),
-                    PaymentStatus = EnumFormatters.FromDescription(data.PaymentStatus)
+                    PaymentStatus = EnumFormatters.FromDescription(data.PaymentStatus),
+                    DeadlineDate = DateTimeFormatters.ToDateString(data.DeadlineDate)
                 };
 
                 return _mailSender.Send(_options.InvoiceTemplateId, addresses, invoiceData);
@@ -440,11 +441,11 @@ namespace HappyTravel.Edo.Api.Services.Mailing
             }
 
 
-            Task<Result> SendNotifyToAdmin(CreditCardPaymentConfirmationNotification data)
+            Task SendNotifyToAdmin(CreditCardPaymentConfirmationNotification data)
                 => _mailSender.Send(_options.AdminCreditCardPaymentConfirmationTemplateId, _options.CcNotificationAddresses, data);
 
 
-            Task<Result> SendNotifyToAgent(CreditCardPaymentConfirmationNotification data)
+            Task SendNotifyToAgent(CreditCardPaymentConfirmationNotification data)
                 => _mailSender.Send(_options.AgentCreditCardPaymentConfirmationTemplateId, data.Email, data);
         }
 
@@ -567,7 +568,7 @@ namespace HappyTravel.Edo.Api.Services.Mailing
             BookingStatuses.Cancelled,
             BookingStatuses.Rejected
         };
-        
+
         private const int DayBeforeAdministratorsNotification = 5;
         private const int MonthlyReportScheduleDay = 1;
 

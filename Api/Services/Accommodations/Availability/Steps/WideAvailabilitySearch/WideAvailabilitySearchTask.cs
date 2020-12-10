@@ -108,11 +108,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             }
 
 
-            async Task<EdoContracts.Accommodations.Availability> ApplyMarkups(EdoContracts.Accommodations.Availability response)
-            {
-                var markup = await _priceProcessor.ApplyMarkups(agent, response, AvailabilityResultsExtensions.ProcessPrices);
-                return markup.Data;
-            }
+            Task<EdoContracts.Accommodations.Availability> ApplyMarkups(EdoContracts.Accommodations.Availability response) 
+                => _priceProcessor.ApplyMarkups(agent, response, AvailabilityResultsExtensions.ProcessPrices);
 
 
             async Task<List<AccommodationAvailabilityResult>> Convert(EdoContracts.Accommodations.Availability details)

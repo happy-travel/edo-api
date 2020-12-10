@@ -111,6 +111,6 @@ namespace HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions
         }
 
 
-        private static VoidObject Dummy() => VoidObject.Instance;
+        private static Unit Dummy() => Unit.Instance;
     }
 }

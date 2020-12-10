@@ -28,7 +28,7 @@ namespace HappyTravel.Edo.Api.Services.Company
                 var companyInfo = await _context.StaticData
                     .SingleOrDefaultAsync(sd => sd.Type == StaticDataTypes.CompanyInfo);
                 
-                if(companyInfo == default)
+                if (companyInfo == default)
                     return default;
 
                 return JsonSerializer.Deserialize<CompanyInfo>(companyInfo.Data.RootElement.ToString());

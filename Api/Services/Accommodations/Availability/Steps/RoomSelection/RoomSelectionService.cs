@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using Elasticsearch.Net;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Infrastructure.Analytics;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Agents;
+using HappyTravel.Edo.Api.Models.Analytics.Events;
 using HappyTravel.Edo.Api.Models.Availabilities;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch;
 using HappyTravel.Edo.Api.Services.Accommodations.Mappings;
@@ -14,9 +17,9 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Common.Enums.AgencySettings;
 using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.EdoContracts.Accommodations;
-using HappyTravel.EdoContracts.Accommodations.Internals;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using IDateTimeProvider = HappyTravel.Edo.Api.Infrastructure.IDateTimeProvider;
 using RoomContractSet = HappyTravel.Edo.Api.Models.Accommodations.RoomContractSet;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection
@@ -28,20 +31,22 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
             IAccommodationDuplicatesService duplicatesService,
             IAccommodationBookingSettingsService accommodationBookingSettingsService,
             IDateTimeProvider dateTimeProvider,
-            IServiceScopeFactory serviceScopeFactory)
+            IServiceScopeFactory serviceScopeFactory,
+            IElasticLowLevelClient elastic)
         {
-            _supplierConnectorManager = supplierConnectorManager;
-            _wideAvailabilityStorage = wideAvailabilityStorage;
-            _duplicatesService = duplicatesService;
             _accommodationBookingSettingsService = accommodationBookingSettingsService;
             _dateTimeProvider = dateTimeProvider;
+            _duplicatesService = duplicatesService;
+            _elastic = elastic;
             _serviceScopeFactory = serviceScopeFactory;
+            _supplierConnectorManager = supplierConnectorManager;
+            _wideAvailabilityStorage = wideAvailabilityStorage;
         }
 
 
         public async Task<Result<AvailabilitySearchTaskState>> GetState(Guid searchId, Guid resultId, AgentContext agent)
         {
-            var (_, isFailure, selectedResult, error) =  await GetSelectedResult(searchId, resultId, agent);
+            var (_, isFailure, selectedResult, error) = await GetSelectedResult(searchId, resultId, agent);
             if (isFailure)
                 return Result.Failure<AvailabilitySearchTaskState>(error);
             
@@ -65,6 +70,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
             var (_, isFailure, selectedResult, error) = await GetSelectedResult(searchId, resultId, agent);
             if (isFailure)
                 return ProblemDetailsBuilder.Fail<Accommodation>(error);
+
+            _elastic.LogAccommodationAvailabilityRequested(new AccommodationAvailabilityRequestEvent(selectedResult.Result.Accommodation.Id,
+                selectedResult.Result.Accommodation.Name, agent.CounterpartyName));
             
             return await _supplierConnectorManager
                 .Get(selectedResult.Supplier)
@@ -182,13 +190,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
                 ? Result.Failure<(Suppliers, AccommodationAvailabilityResult)>("Could not find selected availability")
                 : result;
         }
-
         
-        private readonly ISupplierConnectorManager _supplierConnectorManager;
-        private readonly IWideAvailabilityStorage _wideAvailabilityStorage;
-        private readonly IAccommodationDuplicatesService _duplicatesService;
+        
         private readonly IAccommodationBookingSettingsService _accommodationBookingSettingsService;
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly IAccommodationDuplicatesService _duplicatesService;
+        private readonly IElasticLowLevelClient _elastic;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ISupplierConnectorManager _supplierConnectorManager;
+        private readonly IWideAvailabilityStorage _wideAvailabilityStorage;
     }
 }

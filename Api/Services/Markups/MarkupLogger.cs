@@ -18,7 +18,7 @@ namespace HappyTravel.Edo.Api.Services.Markups
 
         public Task Write(string referenceCode, ServiceTypes serviceType, List<MarkupPolicy> policies)
         {
-            _context.MarkupLog.Add(new AppliedMarkup
+            _context.MarkupLog.Add(new AppliedMarkupLog
             {
                 Policies = policies,
                 ReferenceCode = referenceCode,

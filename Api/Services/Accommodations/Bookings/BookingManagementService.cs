@@ -32,41 +32,41 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, AgentContext agent)
+        public async Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, AgentContext agent)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.Get(bookingId, agent.AgentId);
             if (isGetBookingFailure)
-                return ProblemDetailsBuilder.Fail<VoidObject>(getBookingError);
+                return ProblemDetailsBuilder.Fail<Unit>(getBookingError);
 
             // Check up booking cancel permissions NIJO-1076
             if (agent.AgencyId != booking.AgencyId)
-                return ProblemDetailsBuilder.Fail<VoidObject>("The booking does not belong to your current agency");
+                return ProblemDetailsBuilder.Fail<Unit>("The booking does not belong to your current agency");
 
             return await CancelBooking(booking, agent.ToUserInfo());
         }
 
 
-        public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, ServiceAccount serviceAccount)
+        public async Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, ServiceAccount serviceAccount)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.Get(bookingId);
             if (isGetBookingFailure)
-                return ProblemDetailsBuilder.Fail<VoidObject>(getBookingError);
+                return ProblemDetailsBuilder.Fail<Unit>(getBookingError);
 
             return await CancelBooking(booking, serviceAccount.ToUserInfo());
         }
 
 
-        public async Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, Administrator administrator, bool requireProviderConfirmation)
+        public async Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, Administrator administrator, bool requireProviderConfirmation)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.Get(bookingId);
             if (isGetBookingFailure)
-                return ProblemDetailsBuilder.Fail<VoidObject>(getBookingError);
+                return ProblemDetailsBuilder.Fail<Unit>(getBookingError);
 
             return await CancelBooking(booking, administrator.ToUserInfo(), requireProviderConfirmation);
         }
 
 
-        public async Task<Result<VoidObject, ProblemDetails>> RefreshStatus(int bookingId)
+        public async Task<Result<Unit, ProblemDetails>> RefreshStatus(int bookingId)
         {
             var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.Get(bookingId);
             if (isGetBookingFailure)
@@ -74,7 +74,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 _logger.LogBookingRefreshStatusFailure(
                     $"Failed to refresh status for a booking with id {bookingId} while getting the booking. Error: {getBookingError}");
                 
-                return ProblemDetailsBuilder.Fail<VoidObject>(getBookingError);
+                return ProblemDetailsBuilder.Fail<Unit>(getBookingError);
             }
 
             var oldStatus = booking.Status;
@@ -88,7 +88,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 _logger.LogBookingRefreshStatusFailure($"Failed to refresh status for a booking with reference code: '{referenceCode}' " +
                     $"while getting info from a supplier. Error: {getBookingError}");
                 
-                return Result.Failure<VoidObject, ProblemDetails>(getDetailsError);
+                return Result.Failure<Unit, ProblemDetails>(getDetailsError);
             }
 
             await _responseProcessor.ProcessResponse(newDetails, booking);
@@ -96,11 +96,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             _logger.LogBookingRefreshStatusSuccess($"Successfully refreshed status fot a booking with reference code: '{referenceCode}'. " +
                 $"Old status: {oldStatus}. New status: {newDetails.Status}");
 
-            return VoidObject.Instance;
+            return Unit.Instance;
         }
 
 
-        private async Task<Result<VoidObject, ProblemDetails>> CancelBooking(Data.Booking.Booking booking, UserInfo user,
+        private async Task<Result<Unit, ProblemDetails>> CancelBooking(Data.Booking.Booking booking, UserInfo user,
             bool requireProviderConfirmation = true)
         {
             if (booking.Status == BookingStatuses.Cancelled)
@@ -108,15 +108,22 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 _logger.LogBookingAlreadyCancelled(
                     $"Skipping cancellation for a booking with reference code: '{booking.ReferenceCode}'. Already cancelled.");
                 
-                return Result.Success<VoidObject, ProblemDetails>(VoidObject.Instance);
+                return Result.Success<Unit, ProblemDetails>(Unit.Instance);
             }
 
-            return await SendCancellationRequest()
+            return await CheckBookingCanBeCancelled()
+                .Bind(SendCancellationRequest)
                 .Bind(ProcessCancellation)
                 .Finally(WriteLog);
 
 
-            async Task<Result<Data.Booking.Booking, ProblemDetails>> SendCancellationRequest()
+            Result<Unit, ProblemDetails> CheckBookingCanBeCancelled()
+                => booking.Status == BookingStatuses.Confirmed
+                    ? Unit.Instance
+                    : ProblemDetailsBuilder.Fail<Unit>("Only confirmed bookings can be cancelled");
+
+
+            async Task<Result<Data.Booking.Booking, ProblemDetails>> SendCancellationRequest(Unit _)
             {
                 var (_, isCancelFailure, _, cancelError) = await _supplierConnectorManager.Get(booking.Supplier).CancelBooking(booking.ReferenceCode);
                 return isCancelFailure && requireProviderConfirmation
@@ -125,12 +132,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
             
-            async Task<Result<VoidObject, ProblemDetails>> ProcessCancellation(Data.Booking.Booking b)
+            async Task<Result<Unit, ProblemDetails>> ProcessCancellation(Data.Booking.Booking b)
             {
-                if(b.UpdateMode == BookingUpdateModes.Synchronous || !requireProviderConfirmation)
+                if (b.UpdateMode == BookingUpdateModes.Synchronous || !requireProviderConfirmation)
                     return await _bookingChangesProcessor.ProcessCancellation(b, user).ToResultWithProblemDetails();
 
-                return VoidObject.Instance;
+                return Unit.Instance;
             }
 
 

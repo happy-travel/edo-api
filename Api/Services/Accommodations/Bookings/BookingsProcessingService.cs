@@ -160,7 +160,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                     .Finally(CreateResult);
 
 
-                Result<string> CreateResult(Result<VoidObject, ProblemDetails> result)
+                Result<string> CreateResult(Result<Unit, ProblemDetails> result)
                     => result.IsSuccess
                         ? Result.Success($"Booking '{booking.ReferenceCode}' was cancelled.")
                         : Result.Failure<string>($"Unable to cancel booking '{booking.ReferenceCode}'. Reason: {result.Error.Detail}");

@@ -13,19 +13,19 @@ namespace HappyTravel.Edo.Api.Models.Agents
         /// <summary>
         /// Agent id
         /// </summary>
-        public int Id { get; }
+        public int Id { get; init; }
 
         /// <summary>
         /// Agent's First Name
         /// </summary>
-        public string FirstName { get; }
+        public string FirstName { get; init; }
         
         // Agent's Last Name
-        public string LastName { get; }
+        public string LastName { get; init; }
         
         /// <summary>
         /// Agent's position
         /// </summary>
-        public string Position { get; }
+        public string Position { get; init; }
     }
 }

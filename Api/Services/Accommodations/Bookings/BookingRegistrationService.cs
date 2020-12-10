@@ -123,7 +123,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 .Bind(CaptureMoneyIfDeadlinePassed)
                 .OnFailure(VoidMoneyAndCancelBooking)
                 .Bind(GenerateInvoice)
-                .Tap(NotifyOnCreditCardPayment)
+                .Bind(NotifyOnCreditCardPayment)
                 .Bind(GetAccommodationBookingInfo)
                 .Finally(WriteLog);
 

@@ -22,7 +22,7 @@ namespace HappyTravel.Edo.Api.Infrastructure.SupplierConnectors
             CancellationToken cancellationToken = default);
         
         
-        Task<Result<VoidObject, ProblemDetails>> Post(Uri uri,
+        Task<Result<Unit, ProblemDetails>> Post(Uri uri,
             string languageCode = LocalizationHelper.DefaultLanguageCode,
             CancellationToken cancellationToken = default);
 

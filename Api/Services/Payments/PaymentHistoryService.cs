@@ -1,18 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using CSharpFunctionalExtensions;
-using FluentValidation;
-using HappyTravel.Edo.Api.Extensions;
-using HappyTravel.Edo.Api.Infrastructure;
+using System.Linq.Expressions;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Payments;
-using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
+using HappyTravel.Edo.Data.Booking;
 using HappyTravel.EdoContracts.General.Enums;
-using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json.Linq;
 
 namespace HappyTravel.Edo.Api.Services.Payments
@@ -25,165 +19,82 @@ namespace HappyTravel.Edo.Api.Services.Payments
         }
 
 
-        public async Task<Result<List<PaymentHistoryData>>> GetAgentHistory(PaymentHistoryRequest paymentHistoryRequest, AgentContext agent)
+        public IQueryable<PaymentHistoryData> GetAgentHistory(AgentContext agent)
         {
-            var validationResult = Validate(paymentHistoryRequest);
-            if (validationResult.IsFailure)
-                return Result.Failure<List<PaymentHistoryData>>(validationResult.Error);
-
-            var accountHistoryQuery = from account in _edoContext.AgencyAccounts
-                join auditLogEntry in _edoContext.AccountBalanceAuditLogs
-                    on account.Id equals auditLogEntry.AccountId
-                join booking in _edoContext.Bookings
-                    on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where account.AgencyId == agent.AgencyId &&
-                    auditLogEntry.UserId == agent.AgentId &&
-                    auditLogEntry.UserType == UserTypes.Agent &&
-                    auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
-                    auditLogEntry.Created >= paymentHistoryRequest.FromDate
-                select new PaymentHistoryData(auditLogEntry.Created,
-                    auditLogEntry.Amount,
-                    JObject.Parse(auditLogEntry.EventData),
-                    account.Currency.ToString(),
-                    auditLogEntry.UserId,
-                    ToPaymentHistoryType(auditLogEntry.Type),
-                    PaymentMethods.BankTransfer,
-                    booking.AccommodationName,
-                    booking.MainPassengerName,
-                    booking.Id,
-                    booking.ReferenceCode);
-
-            
-            var cardHistoryQuery = from auditLogEntry in _edoContext.CreditCardAuditLogs
-                join booking in _edoContext.Bookings
-                    on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where booking.AgencyId == agent.AgencyId &&
-                    auditLogEntry.UserId == agent.AgentId &&
-                    auditLogEntry.UserType == UserTypes.Agent &&
-                    auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
-                    auditLogEntry.Created >= paymentHistoryRequest.FromDate
-                select new PaymentHistoryData(auditLogEntry.Created,
-                    auditLogEntry.Amount,
-                    JObject.Parse(auditLogEntry.EventData),
-                    auditLogEntry.Currency.ToString(),
-                    auditLogEntry.UserId,
-                    ToPaymentHistoryType(auditLogEntry.Type),
-                    PaymentMethods.CreditCard,
-                    booking.AccommodationName,
-                    booking.MainPassengerName,
-                    booking.Id,
-                    booking.ReferenceCode);
-
-
-            return (await accountHistoryQuery.ToListAsync())
-                .Union(await cardHistoryQuery.ToListAsync())
-                .OrderByDescending(h => h.Created)
-                .ToList();
+            return GetData(agent.AgentId, booking => booking.AgentId == agent.AgentId);
         }
 
 
-        public async Task<Result<List<PaymentHistoryData>>> GetAgencyHistory(PaymentHistoryRequest paymentHistoryRequest, AgentContext agent)
+        public IQueryable<PaymentHistoryData> GetAgencyHistory(AgentContext agent)
         {
-            var validationResult = Validate(paymentHistoryRequest);
-            if (validationResult.IsFailure)
-                return Result.Failure<List<PaymentHistoryData>>(validationResult.Error);
-
-            var accountHistoryQuery = from account in _edoContext.AgencyAccounts
-                join auditLogEntry in _edoContext.AccountBalanceAuditLogs
-                    on account.Id equals auditLogEntry.AccountId
-                join booking in _edoContext.Bookings
-                    on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where account.AgencyId == agent.AgencyId &&
-                    auditLogEntry.UserType == UserTypes.Agent &&
-                    auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
-                    auditLogEntry.Created >= paymentHistoryRequest.FromDate
-                select new PaymentHistoryData(auditLogEntry.Created,
-                    auditLogEntry.Amount,
-                    JObject.Parse(auditLogEntry.EventData),
-                    account.Currency.ToString(),
-                    auditLogEntry.UserId,
-                    ToPaymentHistoryType(auditLogEntry.Type),
-                    PaymentMethods.BankTransfer,
-                    booking.AccommodationName,
-                    booking.MainPassengerName,
-                    booking.Id,
-                    booking.ReferenceCode);
-
-            
-            var cardHistoryQuery = from auditLogEntry in _edoContext.CreditCardAuditLogs
-                join booking in _edoContext.Bookings
-                    on auditLogEntry.ReferenceCode equals booking.ReferenceCode
-                where booking.AgencyId == agent.AgencyId &&
-                    auditLogEntry.UserType == UserTypes.Agent &&
-                    auditLogEntry.Created <= paymentHistoryRequest.ToDate &&
-                    auditLogEntry.Created >= paymentHistoryRequest.FromDate
-                select new PaymentHistoryData(auditLogEntry.Created,
-                    auditLogEntry.Amount,
-                    JObject.Parse(auditLogEntry.EventData),
-                    auditLogEntry.Currency.ToString(),
-                    auditLogEntry.UserId,
-                    ToPaymentHistoryType(auditLogEntry.Type),
-                    PaymentMethods.CreditCard,
-                    booking.AccommodationName,
-                    booking.MainPassengerName,
-                    booking.Id,
-                    booking.ReferenceCode);
-
-            return (await accountHistoryQuery.ToListAsync())
-                .Union(await cardHistoryQuery.ToListAsync())
-                .OrderByDescending(h => h.Created)
-                .ToList();
+            return GetData(agent.AgentId, booking => booking.AgencyId == agent.AgencyId);
         }
 
 
-        private Result Validate(PaymentHistoryRequest paymentHistoryRequest)
+        private IQueryable<PaymentHistoryData> GetData(int agentId, Expression<Func<Booking, bool>> filterExpression)
         {
-            return GenericValidator<PaymentHistoryRequest>.Validate(setup =>
-            {
-                setup.RuleFor(i => i.ToDate)
-                    .GreaterThanOrEqualTo(request => request.FromDate)
-                    .WithMessage($"{nameof(paymentHistoryRequest.ToDate)} must be greater then {nameof(paymentHistoryRequest.FromDate)}");
-                setup.RuleFor(i => (i.ToDate - i.FromDate).Days)
-                    .LessThanOrEqualTo(MaxRequestDaysNumber)
-                    .WithMessage(
-                        $"Total days between {nameof(paymentHistoryRequest.FromDate)} and {nameof(paymentHistoryRequest.ToDate)} should be less or equal {MaxRequestDaysNumber}");
-            }, paymentHistoryRequest);
+            var bookings = _edoContext.Bookings.Where(filterExpression);
+
+            return from booking in bookings
+                join accountAuditLogEntry in _edoContext.AccountBalanceAuditLogs
+                    on booking.ReferenceCode equals accountAuditLogEntry.ReferenceCode into accountAuditLogEntries
+                from accountAuditLogEntry in accountAuditLogEntries.DefaultIfEmpty()
+                join cardAuditLogEntry in _edoContext.CreditCardAuditLogs
+                    on booking.ReferenceCode equals cardAuditLogEntry.ReferenceCode into cardAuditLogEntries
+                from cardAuditLogEntry in cardAuditLogEntries.DefaultIfEmpty()
+                where
+                    accountAuditLogEntry.UserId == agentId &&
+                    accountAuditLogEntry.UserType == UserTypes.Agent ||
+                    cardAuditLogEntry.UserId == agentId &&
+                    cardAuditLogEntry.UserType == UserTypes.Agent
+                let isAccountLogEntry = accountAuditLogEntry != null && cardAuditLogEntry == null
+                let eventType = isAccountLogEntry ? ToPaymentHistoryType(accountAuditLogEntry.Type) : ToPaymentHistoryType(cardAuditLogEntry.Type)
+                select new PaymentHistoryData
+                {
+                    Created = isAccountLogEntry ? accountAuditLogEntry.Created : cardAuditLogEntry.Created,
+                    Amount = isAccountLogEntry ? accountAuditLogEntry.Amount : cardAuditLogEntry.Amount,
+                    EventData = JObject.Parse(isAccountLogEntry ? accountAuditLogEntry.EventData : cardAuditLogEntry.EventData),
+                    Currency = booking.Currency,
+                    AgentId = booking.AgentId,
+                    EventType = eventType,
+                    PaymentMethod = isAccountLogEntry ? PaymentMethods.BankTransfer : PaymentMethods.CreditCard,
+                    AccommodationName = booking.AccommodationName,
+                    LeadingPassenger = booking.MainPassengerName,
+                    BookingId = booking.Id,
+                    ReferenceCode = booking.ReferenceCode
+                };
         }
 
 
         private static PaymentHistoryType ToPaymentHistoryType(AccountEventType type)
         {
-            switch (type)
+            return type switch
             {
-                case AccountEventType.None: return PaymentHistoryType.None;
-                case AccountEventType.Add: return PaymentHistoryType.Add;
-                case AccountEventType.Charge: return PaymentHistoryType.Charge;
-                case AccountEventType.Authorize: return PaymentHistoryType.Authorize;
-                case AccountEventType.Capture: return PaymentHistoryType.Capture;
-                case AccountEventType.Void: return PaymentHistoryType.Void;
-                case AccountEventType.Refund: return PaymentHistoryType.Refund;
-                case AccountEventType.CounterpartyTransferToAgency: return PaymentHistoryType.Add;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
+                AccountEventType.None => PaymentHistoryType.None,
+                AccountEventType.Add => PaymentHistoryType.Add,
+                AccountEventType.Charge => PaymentHistoryType.Charge,
+                AccountEventType.Authorize => PaymentHistoryType.Authorize,
+                AccountEventType.Capture => PaymentHistoryType.Capture,
+                AccountEventType.Void => PaymentHistoryType.Void,
+                AccountEventType.Refund => PaymentHistoryType.Refund,
+                AccountEventType.CounterpartyTransferToAgency => PaymentHistoryType.Add,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
         }
 
 
         private static PaymentHistoryType ToPaymentHistoryType(CreditCardEventType type)
         {
-            switch (type)
+            return type switch
             {
-                case CreditCardEventType.Authorize: return PaymentHistoryType.Authorize;
-                case CreditCardEventType.Capture: return PaymentHistoryType.Capture;
-                case CreditCardEventType.Void: return PaymentHistoryType.None;
-                case CreditCardEventType.None: return PaymentHistoryType.None;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
-            }
+                CreditCardEventType.Authorize => PaymentHistoryType.Authorize,
+                CreditCardEventType.Capture => PaymentHistoryType.Capture,
+                CreditCardEventType.Void => PaymentHistoryType.None,
+                CreditCardEventType.None => PaymentHistoryType.None,
+                CreditCardEventType.Refund => PaymentHistoryType.Refund,
+                _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+            };
         }
-
-
-        private const int MaxRequestDaysNumber = 3650;
 
         private readonly EdoContext _edoContext;
     }

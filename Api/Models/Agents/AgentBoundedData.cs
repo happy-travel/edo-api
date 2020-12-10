@@ -14,11 +14,11 @@ namespace HappyTravel.Edo.Api.Models.Agents
         /// <summary>
         /// Nested data
         /// </summary>
-        public TData Data { get; }
+        public TData Data { get; init; }
         
         /// <summary>
         /// Slim agent information
         /// </summary>
-        public SlimAgentDescription Agent { get; }
+        public SlimAgentDescription Agent { get; init; }
     }
 }

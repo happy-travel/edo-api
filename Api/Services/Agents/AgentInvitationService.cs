@@ -73,8 +73,8 @@ namespace HappyTravel.Edo.Api.Services.Agents
         public async Task<Result> Resend(string invitationCode, AgentContext agent)
         {
             return await GetExistingInvitation()
-                .Tap(SendInvitation)
-                .Bind(DisableExistingInvitation);
+                .Bind(SendInvitation)
+                .Tap(DisableExistingInvitation);
 
 
             async Task<Result<AgentInvitation>> GetExistingInvitation()
@@ -83,24 +83,25 @@ namespace HappyTravel.Edo.Api.Services.Agents
                     .AgentInvitations
                     .SingleOrDefaultAsync(i => i.CodeHash == invitationCode);
 
-                return invitation ?? Result.Failure<AgentInvitation>($"Invitation with Code {invitationCode} not found");
+                if (invitation is null)
+                    return Result.Failure<AgentInvitation>($"Invitation with Code {invitationCode} not found");
+
+                if (invitation.IsResent)
+                    return Result.Failure<AgentInvitation>($"Already resent invitation");
+
+                return invitation;
             }
 
 
-            Task<Result> SendInvitation(AgentInvitation existingInvitation)
-                => Send(existingInvitation.ToSendAgentInvitationRequest(), agent);
+            Task<Result<AgentInvitation>> SendInvitation(AgentInvitation existingInvitation)
+                => Send(existingInvitation.ToSendAgentInvitationRequest(), agent).Map(() => existingInvitation);
 
 
-            async Task<Result> DisableExistingInvitation(AgentInvitation existingInvitation)
+            async Task DisableExistingInvitation(AgentInvitation existingInvitation)
             {
-                if (existingInvitation is null)
-                {
-                    return Result.Failure("Old invitation can not be null");
-                }
-
                 existingInvitation.IsResent = true;
+                _context.Update(existingInvitation);
                 await _context.SaveChangesAsync();
-                return Result.Success();
             }
         }
 

@@ -1,15 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Filters.Authorization.AgentExistingFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.CounterpartyStatesFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters;
+using HappyTravel.Edo.Api.Filters.OData;
 using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Payments;
 using HappyTravel.Edo.Common.Enums;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNet.OData.Query.Validators;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Controllers.AgentControllers
@@ -30,42 +35,36 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// <summary>
         ///     Gets payment history for current agent.
         /// </summary>
-        /// <param name="historyRequest"></param>
         /// <returns></returns>
         [ProducesResponseType(typeof(List<PaymentHistoryData>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [AgentRequired]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
-        [HttpPost("history/agent")]
-        public async Task<IActionResult> GetAgentHistory([FromBody] PaymentHistoryRequest historyRequest)
+        [HttpGet("history/agent")]
+        // TODO: uncomment after implementation pagination in fronted
+        // [EnablePaginatedQuery(MaxTop = 100)]
+        [EnableQuery]
+        public async Task<ActionResult<List<PaymentHistoryData>>> GetAgentHistory()
         {
             var agent = await _agentContextService.GetAgent();
-            var (_, isFailure, response, error) = await _paymentHistoryService.GetAgentHistory(historyRequest, agent);
-            if (isFailure)
-                return BadRequest(error);
-
-            return Ok(response);
+            return Ok(_paymentHistoryService.GetAgentHistory(agent));
         }
 
 
         /// <summary>
         ///     Gets payment history for an agency.
         /// </summary>
-        /// <param name="historyRequest"></param>
         /// <returns></returns>
         [ProducesResponseType(typeof(List<PaymentHistoryData>), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
-        [HttpPost("history/agency")]
+        [HttpGet("history/agency")]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
         [InAgencyPermissions(InAgencyPermissions.ObservePaymentHistory)]
-        public async Task<IActionResult> GetAgencyHistory([FromBody] PaymentHistoryRequest historyRequest)
+        // TODO: uncomment after implementation pagination in fronted
+        // [EnablePaginatedQuery(MaxTop = 100)]
+        [EnableQuery]
+        public async Task<ActionResult<IQueryable<PaymentHistoryData>>> GetAgencyHistory()
         {
             var agent = await _agentContextService.GetAgent();
-            var (_, isFailure, response, error) = await _paymentHistoryService.GetAgencyHistory(historyRequest, agent);
-            if (isFailure)
-                return BadRequest(error);
-
-            return Ok(response);
+            return Ok (_paymentHistoryService.GetAgencyHistory(agent));
         }
 
 

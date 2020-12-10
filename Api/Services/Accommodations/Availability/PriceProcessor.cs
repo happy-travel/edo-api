@@ -33,20 +33,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         }
 
 
-        public async Task<DataWithMarkup<TDetails>> ApplyMarkups<TDetails>(AgentContext agent, TDetails details,
-            Func<TDetails, PriceProcessFunction, ValueTask<TDetails>> priceProcessFunc)
-        {
-            var markup = await _markupService.Get(agent, MarkupPolicyTarget.AccommodationAvailability);
-            var responseWithMarkup = await priceProcessFunc(details, markup.Function);
-            var ceiledResponse = await priceProcessFunc(responseWithMarkup, price =>
-                new ValueTask<MoneyAmount>(MoneyRounder.Ceil(price)));
+        public Task<TDetails> ApplyMarkups<TDetails>(AgentContext agent, TDetails details,
+            Func<TDetails, PriceProcessFunction, ValueTask<TDetails>> priceProcessFunc, Action<MarkupApplicationResult<TDetails>> logAction = null)
+            => _markupService.ApplyMarkups(agent, details, priceProcessFunc, logAction);
 
-            return DataWithMarkup.Create(ceiledResponse, markup.Policies);
-        }
-
-
-        private readonly ICurrencyConverterService _currencyConverter;
 
         private readonly IMarkupService _markupService;
+        private readonly ICurrencyConverterService _currencyConverter;
     }
 }

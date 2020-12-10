@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Agents;
@@ -14,7 +15,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
 
         Task<AgentEditableInfo> UpdateCurrentAgent(AgentEditableInfo newInfo, AgentContext agentContext);
 
-        Task<Result<List<SlimAgentInfo>>> GetAgents(AgentContext agentContext);
+        IQueryable<SlimAgentInfo> GetAgents(AgentContext agentContext);
 
         Task<Result<AgentInfoInAgency>> GetAgent(int agentId, AgentContext agentContext);
 

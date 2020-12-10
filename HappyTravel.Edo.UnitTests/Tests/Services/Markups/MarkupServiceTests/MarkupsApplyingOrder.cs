@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ using Assert = Xunit.Assert;
 
 namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
 {
-    public class MarkupsApplyingOrder
+    public class MarkupsApplyingOrder : IDisposable
     {
         public MarkupsApplyingOrder()
         {
@@ -38,7 +39,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
             currencyRateServiceMock
                 .Setup(c => c.Get(It.IsAny<Currencies>(), It.IsAny<Currencies>()))
                 .Returns(new ValueTask<Result<decimal>>(Result.Success((decimal)1)));
-
+    
             var agentSettingsMock = new Mock<IAgentSettingsManager>();
             
             agentSettingsMock
@@ -51,25 +52,24 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
                 .ReturnsAsync(new AccommodationBookingSettings(default, default, default, false, default));
                 
                 
-            _markupService = new MarkupService(edoContextMock.Object,
+            _markupPolicyService = new MarkupPolicyService(edoContextMock.Object,
                 new FakeDoubleFlow(), 
-                new MarkupPolicyTemplateService(),
-                currencyRateServiceMock.Object,
                 agentSettingsMock.Object,
                 accommodationBookingSettingsServiceMock.Object);
+            
+            _markupService = new MarkupService(_markupPolicyService, new MarkupPolicyTemplateService(), currencyRateServiceMock.Object, new FakeMemoryFlow());
         }
-
-
+    
+    
         [Fact]
         public async Task Policies_should_be_ordered_by_scope()
         {
-            var markup = await _markupService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
-            var policies = markup.Policies;
+            var policies = await _markupPolicyService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
             for (var i = 0; i < policies.Count - 1; i++)
             {
                 Assert.True(ScopeOrderIsCorrect(policies[i].ScopeType, policies[i + 1].ScopeType));
             }
-
+    
             bool ScopeOrderIsCorrect(MarkupPolicyScopeType firstScope, MarkupPolicyScopeType secondScope)
             {
                 switch (firstScope)
@@ -108,33 +108,34 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
         [Fact]
         public async Task Policies_in_scope_should_be_ordered_by_order()
         {
-            var markup = await _markupService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
-            var policies = markup.Policies;
+            var policies = await _markupPolicyService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
             for (var i = 0; i < policies.Count - 1; i++)
             {
                 Assert.True(ScopeOrderIsCorrect(policies[i], policies[i + 1]));
             }
-
+    
             bool ScopeOrderIsCorrect(MarkupPolicy firstPolicy, MarkupPolicy secondPolicy)
             {
                 if (firstPolicy.ScopeType != secondPolicy.ScopeType)
                     return true;
-
+    
                 return firstPolicy.Order < secondPolicy.Order;
             }
         }
-
+    
         [Theory]
         [InlineData(100, Currencies.EUR, 42065202)]
         [InlineData(240.5, Currencies.USD, 101075202.0)]
         [InlineData(0.13, Currencies.USD, 119802.00)]
         public async Task Policies_calculation_should_execute_in_right_order(decimal supplierPrice, Currencies currency, decimal expectedResultPrice)
         {
-            var markup = await _markupService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
-            var (resultPrice, _) = await markup.Function(new MoneyAmount(supplierPrice, currency));
-            Assert.Equal(expectedResultPrice, resultPrice);
+            var data = new ClassUnderMarkup {Price = new MoneyAmount(supplierPrice, currency)};
+            
+            var dataWithMarkup = await _markupService.ApplyMarkups(AgentContext,  data, ClassUnderMarkup.Apply);
+            
+            Assert.Equal(expectedResultPrice, dataWithMarkup.Price.Amount);
         }
-
+    
         private readonly IEnumerable<MarkupPolicy> _agentPolicies = new[]
         {
             new MarkupPolicy
@@ -242,8 +243,12 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
                 TemplateSettings = new Dictionary<string, decimal> {{"factor", 14}},
             }
         };
-        
+
+        public void Dispose() { }
+
+
         private static readonly AgentContext AgentContext = AgentInfoFactory.CreateWithCounterpartyAndAgency(1, 1, 1);
+        private readonly MarkupPolicyService _markupPolicyService;
         private readonly MarkupService _markupService;
     }
 }

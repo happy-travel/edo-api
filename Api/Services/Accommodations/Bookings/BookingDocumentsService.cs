@@ -54,13 +54,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             var (_, isAccommodationFailure, accommodationDetails, accommodationError) = await _accommodationService.Get(booking.Supplier, 
                 booking.AccommodationId, languageCode);
                 
-            if(isAccommodationFailure)
+            if (isAccommodationFailure)
                 return Result.Failure<BookingVoucherData>(accommodationError.Detail);
 
             var (isBannerSuccess, _, bannerImage, _) = await _imageFileService.GetBanner(agent);
             var (isLogoSuccess, _, logoImage, _) = await _imageFileService.GetLogo(agent);
 
-            if(!AvailableForVoucherBookingStatuses.Contains(booking.Status))
+            if (!AvailableForVoucherBookingStatuses.Contains(booking.Status))
                 return Result.Failure<BookingVoucherData>($"Voucher is not allowed for booking status '{EnumFormatters.FromDescription(booking.Status)}'");
 
             if (!AvailableForVoucherPaymentStatuses.Contains(booking.PaymentStatus))
@@ -185,7 +185,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 return Result.Failure<(DocumentRegistrationInfo, PaymentReceipt)>(bookingError);
             
             var (_, isInvoiceFailure, invoiceInfo, invoiceError) = await GetActualInvoice(booking);
-            if(isInvoiceFailure)
+            if (isInvoiceFailure)
                 return Result.Failure<(DocumentRegistrationInfo, PaymentReceipt)>(invoiceError);
             
             var receiptData = new PaymentReceipt(booking.TotalPrice, 
@@ -205,7 +205,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 $"{agent.FirstName} {agent.LastName}");
 
             var (_, isRegistrationFailure, regInfo, registrationError) = await _receiptService.Register(invoiceInfo.RegistrationInfo.Number, receiptData);
-            if(isRegistrationFailure)
+            if (isRegistrationFailure)
                 return Result.Failure<(DocumentRegistrationInfo, PaymentReceipt)>(registrationError);
                 
             return Result.Success((regInfo, receiptData));

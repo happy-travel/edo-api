@@ -48,9 +48,9 @@ namespace HappyTravel.Edo.Api.Infrastructure.SupplierConnectors
             => Send<TResponse>(() => new HttpRequestMessage(HttpMethod.Post, url), languageCode, cancellationToken);
 
 
-        public Task<Result<VoidObject, ProblemDetails>> Post(Uri uri, string languageCode = LocalizationHelper.DefaultLanguageCode,
+        public Task<Result<Unit, ProblemDetails>> Post(Uri uri, string languageCode = LocalizationHelper.DefaultLanguageCode,
             CancellationToken cancellationToken = default)
-            => Post<VoidObject, VoidObject>(uri, VoidObject.Instance, languageCode, cancellationToken);
+            => Post<Unit, Unit>(uri, Unit.Instance, languageCode, cancellationToken);
 
 
         public Task<Result<TResponse, ProblemDetails>> Post<TResponse>(Uri url, Stream stream, string languageCode = LocalizationHelper.DefaultLanguageCode,
@@ -62,7 +62,7 @@ namespace HappyTravel.Edo.Api.Infrastructure.SupplierConnectors
 
 
         private static StringContent BuildContent<T>(T requestContent)
-            => requestContent is VoidObject
+            => requestContent is Unit
                 ? null
                 : new StringContent(JsonConvert.SerializeObject(requestContent), Encoding.UTF8, "application/json");
 

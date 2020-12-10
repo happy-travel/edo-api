@@ -32,11 +32,11 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
                 .Setup(s => s.Get(It.IsAny<AgentContext>()))
                 .ReturnsAsync(new AccommodationBookingSettings(default, default, default, false, default));
             var markupService = CreateMarkupService(accommodationBookingsSettingsMock.Object);
+            var classUnderMarkup = new ClassUnderMarkup {Price = new MoneyAmount(supplierPrice, currency)};
             
-            var markup = await markupService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
+            var processed = await markupService.ApplyMarkups(AgentContext, classUnderMarkup, ClassUnderMarkup.Apply);
             
-            var (resultPrice, _) = await markup.Function(new MoneyAmount(supplierPrice, currency));
-            Assert.Equal(expectedResultPrice, resultPrice);
+            Assert.Equal(expectedResultPrice, processed.Price.Amount);
         }
         
         
@@ -51,11 +51,11 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
                 .Setup(s => s.Get(It.IsAny<AgentContext>()))
                 .ReturnsAsync(new AccommodationBookingSettings(default, default, default, true, false));
             var markupService = CreateMarkupService(accommodationBookingSettingsServiceMock.Object);
+            var classUnderMarkup = new ClassUnderMarkup {Price = new MoneyAmount(supplierPrice, currency)};
             
-            var markup = await markupService.Get(AgentContext, MarkupPolicyTarget.AccommodationAvailability);
+            var processed = await markupService.ApplyMarkups(AgentContext, classUnderMarkup, ClassUnderMarkup.Apply);
             
-            var (resultPrice, _) = await markup.Function(new MoneyAmount(supplierPrice, currency));
-            Assert.Equal(expectedResultPrice, resultPrice);
+            Assert.Equal(expectedResultPrice, processed.Price.Amount);
         }
 
         
@@ -78,13 +78,15 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
                 .Setup(s => s.GetUserSettings(It.IsAny<AgentContext>()))
                 .Returns(Task.FromResult(new AgentUserSettings(true, It.IsAny<Currencies>(), It.IsAny<Currencies>(), It.IsAny<int>())));
             
-            return new MarkupService(edoContextMock.Object,
+            var functionService = new MarkupPolicyService(edoContextMock.Object,
                 flow,
-                new MarkupPolicyTemplateService(),
-                currencyRateServiceMock.Object,
                 agentSettingsMock.Object,
                 accommodationBookingSettingsService);
+            
+            return new MarkupService(functionService, new MarkupPolicyTemplateService(),
+                currencyRateServiceMock.Object, new FakeMemoryFlow());
         }
+        
         
         private readonly IEnumerable<MarkupPolicy> _policies = new[]
         {

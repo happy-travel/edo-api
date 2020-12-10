@@ -77,9 +77,11 @@ using Polly.Extensions.Http;
 using StackExchange.Redis;
 using Amazon;
 using Amazon.S3;
+using Elasticsearch.Net;
 using HappyTravel.CurrencyConverter.Extensions;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.Edo.Api.Services.Files;
+using Prometheus;
 
 namespace HappyTravel.Edo.Api.Infrastructure
 {
@@ -126,7 +128,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
                 .AddPolicyHandler(GetDefaultRetryPolicy());
 
             services.AddHttpClient(HttpClientNames.Connectors)
-                .SetHandlerLifetime(TimeSpan.FromMinutes(5));
+                .SetHandlerLifetime(TimeSpan.FromMinutes(5))
+                .UseHttpClientMetrics();
 
             return services;
         }
@@ -473,6 +476,7 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<ICreditCardsManagementService, CreditCardsManagementService>();
             services.AddTransient<IPayfortSignatureService, PayfortSignatureService>();
 
+            services.AddTransient<IMarkupPolicyService, MarkupPolicyService>();
             services.AddTransient<IMarkupService, MarkupService>();
 
             services.AddSingleton<IMarkupPolicyTemplateService, MarkupPolicyTemplateService>();
@@ -623,6 +627,20 @@ namespace HappyTravel.Edo.Api.Infrastructure
             });
 
             return services;
+        }
+
+
+        public static IServiceCollection AddUserEventLogging(this IServiceCollection services, IConfiguration configuration,
+            VaultClient.VaultClient vaultClient)
+        {
+            var elasticOptions = vaultClient.Get(configuration["UserEvents:Elastic"]).GetAwaiter().GetResult();
+            return services.AddSingleton<IElasticLowLevelClient>(provider =>
+            {
+                var settings = new ConnectionConfiguration(new Uri(elasticOptions["url"]));
+                var client = new ElasticLowLevelClient(settings);
+
+                return client;
+            });
         }
 
 

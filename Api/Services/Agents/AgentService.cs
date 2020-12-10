@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FluentValidation;
@@ -13,6 +12,7 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Common.Enums.Markup;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
+using IdentityModel;
 using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.Agents
@@ -83,47 +83,23 @@ namespace HappyTravel.Edo.Api.Services.Agents
             return newInfo;
         }
 
-        public async Task<Result<List<SlimAgentInfo>>> GetAgents(AgentContext agentContext)
+        public  IQueryable<SlimAgentInfo> GetAgents(AgentContext agentContext)
         {
-            var hasObserveMarkupPermission = agentContext.InAgencyPermissions.HasFlag(InAgencyPermissions.ObserveMarkup);
+            var relations = _context.AgentAgencyRelations
+                .Where(r => r.AgencyId == agentContext.AgencyId);
 
-            var relations = await
-                (from relation in _context.AgentAgencyRelations
-                    join agent in _context.Agents
-                        on relation.AgentId equals agent.Id
-                    where relation.AgencyId == agentContext.AgencyId
-                    select new {relation, agent})
-                .ToListAsync();
-
-            var agentIdList = relations.Select(x => x.agent.Id).ToList();
-
-            var markupsMap = (await (
-                from markup in _context.MarkupPolicies
-                where markup.AgentId != null 
-                    && agentIdList.Contains(markup.AgentId.Value)
-                    && markup.ScopeType == MarkupPolicyScopeType.Agent
-                select markup)
-                .ToListAsync())
-                .GroupBy(k => (int)k.AgentId)
-                .ToDictionary(k => k.Key, v => v.ToList());
-
-            var results = relations.Select(o =>
-                new SlimAgentInfo(o.agent.Id, o.agent.FirstName, o.agent.LastName,
-                    o.agent.Created, GetMarkupFormula(o.relation), o.relation.IsActive))
-                .ToList();
-
-            return Result.Success(results);
-
-            string GetMarkupFormula(AgentAgencyRelation relation)
-            {
-                if (!markupsMap.TryGetValue(relation.AgentId, out var policies))
-                    return string.Empty;
-
-                if (!hasObserveMarkupPermission)
-                    return string.Empty;
-
-                return _markupPolicyTemplateService.GetMarkupsFormula(policies);
-            }
+            return from relation in relations
+                join agent in _context.Agents on relation.AgentId equals agent.Id
+                let name = $"{agent.FirstName} {agent.LastName}"
+                let created = agent.Created.ToEpochTime()
+                select new SlimAgentInfo
+                {
+                    AgentId = agent.Id,
+                    Name = name,
+                    Created = created,
+                    IsActive = relation.IsActive,
+                    MarkupSettings = string.Empty
+                };
         }
 
 

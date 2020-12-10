@@ -9,12 +9,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
     public interface IBookingManagementService
     {
-        Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, AgentContext agent);
+        Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, AgentContext agent);
         
-        Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, ServiceAccount serviceAccount);
+        Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, ServiceAccount serviceAccount);
 
-        Task<Result<VoidObject, ProblemDetails>> Cancel(int bookingId, Administrator administrator, bool requireProviderConfirmation);
+        Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, Administrator administrator, bool requireProviderConfirmation);
         
-        Task<Result<VoidObject, ProblemDetails>> RefreshStatus(int bookingId);
+        Task<Result<Unit, ProblemDetails>> RefreshStatus(int bookingId);
     }
 }

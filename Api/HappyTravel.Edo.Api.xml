@@ -394,14 +394,14 @@
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.CreateInvitation(HappyTravel.Edo.Api.Models.Agents.SendAgentInvitationRequest)">
             <summary>
-                Create invitation for regular agent.
+                Creates invitation for regular agent.
             </summary>
             <param name="request">Regular agent registration request.</param>
             <returns>Invitation code.</returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.GetInvitationData(System.String)">
             <summary>
-                Get invitation data.
+                Gets invitation data.
             </summary>
             <param name="code">Invitation code.</param>
             <returns>Invitation data, including pre-filled registration information.</returns>
@@ -413,12 +413,12 @@
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.GetOwnInvitations">
             <summary>
-               Gets own invitations list
+               Gets agent invitations list
             </summary>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.GetCurrentAgent">
             <summary>
-                Gets current agent.
+                Gets current agent information
             </summary>
             <returns>Current agent information.</returns>
         </member>
@@ -439,7 +439,7 @@
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.UpdatePermissionsInAgency(System.Int32,System.Collections.Generic.List{HappyTravel.Edo.Common.Enums.InAgencyPermissions})">
             <summary>
-                Updates permissions of a agent of a specified agency
+                Updates permissions agent permissions
             </summary>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.SetApplicationSettings(Newtonsoft.Json.Linq.JToken)">
@@ -956,18 +956,16 @@
             </summary>
             <returns>Account balance</returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.PaymentsHistoryController.GetAgentHistory(HappyTravel.Edo.Api.Models.Payments.PaymentHistoryRequest)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.PaymentsHistoryController.GetAgentHistory">
             <summary>
                 Gets payment history for current agent.
             </summary>
-            <param name="historyRequest"></param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.PaymentsHistoryController.GetAgencyHistory(HappyTravel.Edo.Api.Models.Payments.PaymentHistoryRequest)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.PaymentsHistoryController.GetAgencyHistory">
             <summary>
                 Gets payment history for an agency.
             </summary>
-            <param name="historyRequest"></param>
             <returns></returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.CompanyController.Get">
@@ -994,7 +992,7 @@
             2. EDO has valid token and connectors have invalid information about an Identity server certificate (Identity and EDO were restarted but connector did not)
             </summary>
         </member>
-        <member name="T:HappyTravel.Edo.Api.Infrastructure.VoidObject">
+        <member name="T:HappyTravel.Edo.Api.Infrastructure.Unit">
             <summary>
                 Empty object, used for Result T,E  to provide typed error with no result.
             </summary>
@@ -2444,6 +2442,17 @@
             Gets all booking info of the current agent
             </summary>
             <returns>List of the slim booking models </returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Services.Markups.IMarkupService.ApplyMarkups``1(HappyTravel.Edo.Api.Models.Agents.AgentContext,``0,System.Func{``0,HappyTravel.Edo.Api.Services.PriceProcessing.PriceProcessFunction,System.Threading.Tasks.ValueTask{``0}},System.Action{HappyTravel.Edo.Api.Services.Accommodations.Availability.MarkupApplicationResult{``0}})">
+            <summary>
+            Applies markups to given data
+            </summary>
+            <param name="agent">Agent</param>
+            <param name="details">Data to apply markups</param>
+            <param name="priceProcessFunc">Function to change prices in Data</param>
+            <param name="logAction">Action to execute after each applied markup policy</param>
+            <typeparam name="TDetails">Data type to apply markups</typeparam>
+            <returns>Resulting data with applied markups</returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Startup.AddODataMediaTypes(Microsoft.AspNetCore.Mvc.MvcOptions)">
             <remarks>

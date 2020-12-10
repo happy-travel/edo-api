@@ -1,22 +1,21 @@
 using System.Collections.Generic;
-using HappyTravel.Edo.Data.Markup;
 
 namespace HappyTravel.Edo.Api.Models.Markups
 {
     public readonly struct DataWithMarkup<TData>
     {
-        public DataWithMarkup(TData data, List<MarkupPolicy> policies)
+        public DataWithMarkup(TData data, List<AppliedMarkup> appliedMarkups)
         {
             Data = data;
-            Policies = policies;
+            AppliedMarkups = appliedMarkups;
         }
         
         public TData Data { get; }
-        public List<MarkupPolicy> Policies { get; }
+        public List<AppliedMarkup> AppliedMarkups { get; }
     }
     
     public static class DataWithMarkup
     {
-        public static DataWithMarkup<TProviderData> Create<TProviderData>(TProviderData data, List<MarkupPolicy> policies) => new DataWithMarkup<TProviderData>(data, policies);
+        public static DataWithMarkup<TProviderData> Create<TProviderData>(TProviderData data, List<AppliedMarkup> policies) => new DataWithMarkup<TProviderData>(data, policies);
     }
 }

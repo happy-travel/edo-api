@@ -24,7 +24,7 @@ namespace HappyTravel.Edo.Api.Services.Connectors
 
         Task<Result<Booking, ProblemDetails>>  Book(BookingRequest request, string languageCode);
 
-        Task<Result<VoidObject, ProblemDetails>> CancelBooking(string referenceCode);
+        Task<Result<Unit, ProblemDetails>> CancelBooking(string referenceCode);
 
         Task<Result<Booking, ProblemDetails>> GetBookingDetails(string referenceCode, string languageCode);
 

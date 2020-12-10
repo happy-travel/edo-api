@@ -59,12 +59,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
                 => _priceProcessor.ConvertCurrencies(agent, availabilityDetails, AvailabilityResultsExtensions.ProcessPrices, AvailabilityResultsExtensions.GetCurrency);
 
 
-            Task<DataWithMarkup<AccommodationAvailability>> ApplyMarkups(AccommodationAvailability response) 
+            Task<AccommodationAvailability> ApplyMarkups(AccommodationAvailability response) 
                 => _priceProcessor.ApplyMarkups(agent, response, AvailabilityResultsExtensions.ProcessPrices);
 
 
-            SupplierData<AccommodationAvailability> AddProviderData(DataWithMarkup<AccommodationAvailability> availabilityDetails)
-                => SupplierData.Create(supplier, availabilityDetails.Data);
+            SupplierData<AccommodationAvailability> AddProviderData(AccommodationAvailability availabilityDetails)
+                => SupplierData.Create(supplier, availabilityDetails);
         }
         
         
