@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Money.Helpers;
 using HappyTravel.Money.Models;
-using Booking = HappyTravel.Edo.Data.Booking.Booking;
+using Booking = HappyTravel.Edo.Data.Bookings.Booking;
 
 namespace HappyTravel.Edo.Api.Extensions
 {

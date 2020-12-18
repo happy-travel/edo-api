@@ -5,7 +5,7 @@ using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.EdoContracts.General.Enums;
 using Newtonsoft.Json.Linq;
 

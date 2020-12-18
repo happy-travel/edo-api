@@ -1,7 +1,7 @@
 using System;
 using HappyTravel.Money.Enums;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class AppliedBookingMarkup
     {

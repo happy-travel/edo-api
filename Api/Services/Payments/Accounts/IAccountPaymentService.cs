@@ -3,7 +3,7 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Models.Users;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 

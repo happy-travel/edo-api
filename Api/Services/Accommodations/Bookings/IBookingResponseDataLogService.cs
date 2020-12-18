@@ -5,6 +5,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
     public interface IBookingAuditLogService
     {
-        Task Add(Booking newBookingDetails, Data.Booking.Booking currentBooking = null);
+        Task Add(Booking newBookingDetails, Data.Bookings.Booking currentBooking = null);
     }
 }

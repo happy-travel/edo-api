@@ -14,7 +14,7 @@ using HappyTravel.Edo.Api.Services.Documents;
 using HappyTravel.Edo.Api.Services.Files;
 using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Documents;
 using HappyTravel.Edo.UnitTests.Utility;
 using HappyTravel.Money.Models;

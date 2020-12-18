@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 

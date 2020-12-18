@@ -9,6 +9,7 @@ using HappyTravel.Edo.Api.Services.Mailing;
 using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.EdoContracts.Accommodations.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             _context = context;
         }
         
-        public Task<Result> ProcessCancellation(Data.Booking.Booking booking, UserInfo user)
+        public Task<Result> ProcessCancellation(Booking booking, UserInfo user)
         {
             return SendNotifications()
                 .Tap(CancelSupplierOrder)
@@ -89,7 +90,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         
-        public async Task ProcessConfirmation(Data.Booking.Booking booking, EdoContracts.Accommodations.Booking bookingResponse)
+        public async Task ProcessConfirmation(Booking booking, EdoContracts.Accommodations.Booking bookingResponse)
         {
             await GetBookingInfo(booking.ReferenceCode, booking.LanguageCode)
                 .Tap(Confirm)
@@ -117,7 +118,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         
-        public async Task ProcessBookingNotFound(Data.Booking.Booking booking, EdoContracts.Accommodations.Booking bookingResponse)
+        public async Task ProcessBookingNotFound(Booking booking, EdoContracts.Accommodations.Booking bookingResponse)
         {
             if (_dateTimeProvider.UtcNow() < booking.Created + BookingCheckTimeout)
             {

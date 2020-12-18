@@ -1,6 +1,6 @@
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {

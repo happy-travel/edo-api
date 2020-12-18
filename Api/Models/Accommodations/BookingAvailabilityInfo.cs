@@ -13,8 +13,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
     public readonly struct BookingAvailabilityInfo
     {
         [JsonConstructor]
-        public BookingAvailabilityInfo(
-            string accommodationId,
+        public BookingAvailabilityInfo(string accommodationId,
             string accommodationName,
             RoomContractSet roomContractSet,
             string zoneName,
@@ -28,7 +27,8 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             int numberOfNights,
             Suppliers supplier,
             List<AppliedMarkup> appliedMarkups,
-            decimal supplierPrice)
+            decimal supplierPrice, 
+            string availabilityId)
         {
             AccommodationId = accommodationId;
             AccommodationName = accommodationName;
@@ -45,6 +45,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             Supplier = supplier;
             AppliedMarkups = appliedMarkups;
             SupplierPrice = supplierPrice;
+            AvailabilityId = availabilityId;
         }
 
 
@@ -63,6 +64,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         public Suppliers Supplier { get; }
         public List<AppliedMarkup> AppliedMarkups { get; }
         public decimal SupplierPrice { get; }
+        public string AvailabilityId { get; }
 
 
         public bool Equals(BookingAvailabilityInfo other)

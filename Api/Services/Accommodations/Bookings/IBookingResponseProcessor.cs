@@ -5,6 +5,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
     public interface IBookingResponseProcessor
     {
-        Task ProcessResponse(Booking bookingResponse, Data.Booking.Booking booking);
+        Task ProcessResponse(Booking bookingResponse, Data.Bookings.Booking booking);
     }
 }

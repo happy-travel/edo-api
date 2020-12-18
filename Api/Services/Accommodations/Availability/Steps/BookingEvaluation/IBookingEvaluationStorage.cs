@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.Accommodations;
+using RoomContractSetAvailability = HappyTravel.EdoContracts.Accommodations.RoomContractSetAvailability;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEvaluation
 {
@@ -12,6 +13,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
     {
         Task Set(Guid searchId, Guid resultId, Guid roomContractSetId, DataWithMarkup<RoomContractSetAvailability> availability, Suppliers resultSupplier);
         
-        Task<Result<(Suppliers Source, DataWithMarkup<RoomContractSetAvailability> Result)>> Get(Guid searchId, Guid resultId, Guid roomContractSetId, List<Suppliers> suppliers);
+        Task<Result<BookingAvailabilityInfo>> Get(Guid searchId, Guid resultId, Guid roomContractSetId);
     }
 }

@@ -8,11 +8,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
     public interface IBookingRegistrationService
     {
-        Task<Result<string, ProblemDetails>> Register(AccommodationBookingRequest bookingRequest, AgentContext agentContext, string languageCode);
-
-        Task<Result<AccommodationBookingInfo, ProblemDetails>> Finalize(string referenceCode, AgentContext agentContext, string languageCode);
-
-        Task<Result<AccommodationBookingInfo, ProblemDetails>> BookByAccount(AccommodationBookingRequest bookingRequest,
+        Task<Result<AccommodationBookingInfo>> BookByAccount(AccommodationBookingRequest bookingRequest,
             AgentContext agentContext, string languageCode, string clientIp);
     }
 }

@@ -8,6 +8,7 @@ using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Common.Enums;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.EdoContracts.Accommodations.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -99,7 +100,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        private async Task<Result<Unit, ProblemDetails>> CancelBooking(Data.Booking.Booking booking, UserInfo user,
+        private async Task<Result<Unit, ProblemDetails>> CancelBooking(Booking booking, UserInfo user,
             bool requireProviderConfirmation = true)
         {
             if (booking.Status == BookingStatuses.Cancelled)
@@ -122,16 +123,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                     : ProblemDetailsBuilder.Fail<Unit>("Only confirmed bookings can be cancelled");
 
 
-            async Task<Result<Data.Booking.Booking, ProblemDetails>> SendCancellationRequest(Unit _)
+            async Task<Result<Booking, ProblemDetails>> SendCancellationRequest(Unit _)
             {
                 var (_, isCancelFailure, _, cancelError) = await _supplierConnectorManager.Get(booking.Supplier).CancelBooking(booking.ReferenceCode);
                 return isCancelFailure && requireProviderConfirmation
-                    ? Result.Failure<Data.Booking.Booking, ProblemDetails>(cancelError)
-                    : Result.Success<Data.Booking.Booking, ProblemDetails>(booking);
+                    ? Result.Failure<Booking, ProblemDetails>(cancelError)
+                    : Result.Success<Booking, ProblemDetails>(booking);
             }
 
             
-            async Task<Result<Unit, ProblemDetails>> ProcessCancellation(Data.Booking.Booking b)
+            async Task<Result<Unit, ProblemDetails>> ProcessCancellation(Booking b)
             {
                 return b.UpdateMode switch
                 {

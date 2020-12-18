@@ -13,13 +13,13 @@ using HappyTravel.Edo.Api.Services.CodeProcessors;
 using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.EntityFrameworkCore;
-using Booking = HappyTravel.Edo.Data.Booking.Booking;
+using Booking = HappyTravel.Edo.Data.Bookings.Booking;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
@@ -120,7 +120,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public async Task UpdateBookingDetails(EdoContracts.Accommodations.Booking bookingDetails, Data.Booking.Booking booking)
+        public async Task UpdateBookingDetails(EdoContracts.Accommodations.Booking bookingDetails, Booking booking)
         {
             booking.SupplierReferenceCode = bookingDetails.SupplierReferenceCode;
             booking.Status = bookingDetails.Status.ToInternalStatus();
@@ -185,14 +185,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
 
 
-        public Task Confirm(EdoContracts.Accommodations.Booking bookingDetails, Data.Booking.Booking booking)
+        public Task Confirm(EdoContracts.Accommodations.Booking bookingDetails, Booking booking)
         {
             booking.ConfirmationDate = _dateTimeProvider.UtcNow();
             return UpdateBookingDetails(bookingDetails, booking);
         }
 
 
-        public async Task SetStatus(Data.Booking.Booking booking, BookingStatuses status)
+        public async Task SetStatus(Booking booking, BookingStatuses status)
         {
             booking.Status = status;
             _context.Bookings.Update(booking);
@@ -227,19 +227,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
 
-        private async Task<Result<Data.Booking.Booking>> Get(Expression<Func<Data.Booking.Booking, bool>> filterExpression)
+        private async Task<Result<Booking>> Get(Expression<Func<Booking, bool>> filterExpression)
         {
             var booking = await _context.Bookings
                 .Where(filterExpression)
                 .SingleOrDefaultAsync();
 
             return booking == default
-                ? Result.Failure<Data.Booking.Booking>("Could not get booking data")
+                ? Result.Failure<Booking>("Could not get booking data")
                 : Result.Success(booking);
         }
 
 
-        public async Task<Result<Data.Booking.Booking>> GetAgentsBooking(string referenceCode, AgentContext agentContext)
+        public async Task<Result<Booking>> GetAgentsBooking(string referenceCode, AgentContext agentContext)
         {
             return await Get(booking => agentContext.AgentId == booking.AgentId && booking.ReferenceCode == referenceCode);
         }
@@ -366,7 +366,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
                 agentInformation);
 
 
-            static AccommodationBookingDetails GetDetails(Data.Booking.Booking booking, Accommodation accommodationDetails)
+            static AccommodationBookingDetails GetDetails(Booking booking, Accommodation accommodationDetails)
             {
                 var passengerNumber = booking.Rooms.Sum(r => r.Passengers.Count);
                 var numberOfNights = (booking.CheckOutDate - booking.CheckInDate).Days;

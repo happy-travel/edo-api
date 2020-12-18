@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Agents;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability

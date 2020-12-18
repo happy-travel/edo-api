@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Accommodations

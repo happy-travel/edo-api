@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HappyTravel.Edo.Api.Models.Markups;
-using HappyTravel.Edo.Data.Booking;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {

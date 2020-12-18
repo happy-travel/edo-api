@@ -403,6 +403,19 @@
             </summary>
             <returns>Policy templates.</returns>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentMarkupsController.GetBonuses">
+            <summary>
+                Gets list of applied markups for agency
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentMarkupsController.GetBonusesSummary(HappyTravel.Edo.Api.Models.Agents.BonusSummaryFilter)">
+            <summary>
+                Gets summary amount of applied markups for agency
+            </summary>
+            <param name="filter">Filter for date range</param>
+            <returns></returns>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentsController.RegisterAgentWithCounterparty(HappyTravel.Edo.Api.Models.Agents.RegisterAgentWithCounterpartyRequest)">
             <summary>
                 Registers master agent with related counterparty

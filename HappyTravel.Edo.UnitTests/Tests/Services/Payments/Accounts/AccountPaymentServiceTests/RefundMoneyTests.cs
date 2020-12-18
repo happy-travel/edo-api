@@ -16,7 +16,7 @@ using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Payments;
 using HappyTravel.Edo.UnitTests.Mocks;
 using HappyTravel.Edo.UnitTests.Utility;
@@ -27,7 +27,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
-using Booking = HappyTravel.Edo.Data.Booking.Booking;
+using Booking = HappyTravel.Edo.Data.Bookings.Booking;
 
 namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.Accounts.AccountPaymentServiceTests
 {
@@ -203,9 +203,9 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Payments.Accounts.AccountPaym
             {
                 new BookedRoom(default, default, new MoneyAmount(100m, Currencies.USD), default, default, default, default,
                     new List<KeyValuePair<string, string>>(),
-                    new Data.Booking.Deadline(
+                    new Deadline(
                         new DateTime(2020, 1, 2), 
-                        new List<Data.Booking.CancellationPolicy>{new Data.Booking.CancellationPolicy(new DateTime(2020, 1, 2), 40d)}, null, true),
+                        new List<CancellationPolicy>{new CancellationPolicy(new DateTime(2020, 1, 2), 40d)}, null, true),
                     new EditableList<Passenger>(), default)
             }
         };

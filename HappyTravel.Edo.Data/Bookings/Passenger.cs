@@ -1,6 +1,6 @@
 using HappyTravel.EdoContracts.General.Enums;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class Passenger
     {

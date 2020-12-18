@@ -87,12 +87,34 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// </summary>
         /// <param name="referenceCode"></param>
         /// <returns></returns>
-        [HttpPost("{referenceCode}/finalize")]
+        [HttpPost("{referenceCode}/finalize-")]
         [ProducesResponseType(typeof(AccommodationBookingInfo), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationBooking)]
         public async Task<IActionResult> FinalizeBooking([FromRoute] string referenceCode)
+        {
+            var agent = await _agentContextService.GetAgent();
+            var (_, isFailure, bookingDetails, error) = await _bookingRegistrationService.Finalize(referenceCode, agent, LanguageCode);
+            if (isFailure)
+                return BadRequest(error);
+
+            return Ok(bookingDetails);
+        }
+        
+        
+        /// <summary>
+        ///     Sends booking request to supplier and finalize the booking procedure.
+        ///     Must be used after a successful payment request.
+        /// </summary>
+        /// <param name="referenceCode"></param>
+        /// <returns></returns>
+        [HttpPost("{referenceCode}/finalize")]
+        [ProducesResponseType(typeof(AccommodationBookingInfo), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
+        [MinCounterpartyState(CounterpartyStates.FullAccess)]
+        [InAgencyPermissions(InAgencyPermissions.AccommodationBooking)]
+        public async Task<IActionResult> FinalizeBooking1([FromRoute] string referenceCode)
         {
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, bookingDetails, error) = await _bookingRegistrationService.Finalize(referenceCode, agent, LanguageCode);

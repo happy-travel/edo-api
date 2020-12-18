@@ -5,7 +5,7 @@ using System.Text.Json;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.Edo.Data.Agents;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;

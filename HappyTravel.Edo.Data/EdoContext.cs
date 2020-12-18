@@ -7,8 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.AccommodationMappings;
-using HappyTravel.Edo.Data.Booking;
 using HappyTravel.Edo.Data.Agents;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Documents;
 using HappyTravel.Edo.Data.Infrastructure;
 using HappyTravel.Edo.Data.Locations;
@@ -19,10 +19,10 @@ using HappyTravel.Edo.Data.PaymentLinks;
 using HappyTravel.Edo.Data.Payments;
 using HappyTravel.Edo.Data.Suppliers;
 using HappyTravel.EdoContracts.GeoData.Enums;
-using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using BookingRequest = HappyTravel.Edo.Data.Booking.BookingRequest;
+using Booking = HappyTravel.EdoContracts.Accommodations.Booking;
+using BookingRequest = HappyTravel.Edo.Data.Bookings.BookingRequest;
 
 namespace HappyTravel.Edo.Data
 {
@@ -40,7 +40,7 @@ namespace HappyTravel.Edo.Data
         public virtual DbSet<AgentAgencyRelation> AgentAgencyRelations { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Region> Regions { get; set; }
-        public virtual DbSet<Booking.Booking> Bookings { get; set; }
+        public virtual DbSet<Bookings.Booking> Bookings { get; set; }
         
         public DbSet<BookingRequest> BookingRequests { get; set; }
         public DbSet<CreditCardPaymentConfirmation> CreditCardPaymentConfirmations { get; set; }
@@ -536,7 +536,7 @@ namespace HappyTravel.Edo.Data
 
         private void BuildBooking(ModelBuilder builder)
         {
-            builder.Entity<Booking.Booking>(booking =>
+            builder.Entity<Bookings.Booking>(booking =>
             {
                 booking.HasKey(b => b.Id);
 

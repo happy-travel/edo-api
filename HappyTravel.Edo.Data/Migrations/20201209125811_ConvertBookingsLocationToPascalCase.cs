@@ -1,5 +1,4 @@
-﻿using HappyTravel.Edo.Data.Booking;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace HappyTravel.Edo.Data.Migrations
 {

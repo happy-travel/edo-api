@@ -5,7 +5,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Mailing;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Agents;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.Edo.UnitTests.Utility;
 using HappyTravel.EdoContracts.Accommodations.Enums;

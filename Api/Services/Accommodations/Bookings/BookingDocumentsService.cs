@@ -11,7 +11,7 @@ using HappyTravel.Edo.Api.Services.Documents;
 using HappyTravel.Edo.Api.Services.Files;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Documents;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Internals;
@@ -20,6 +20,7 @@ using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Booking = HappyTravel.Edo.Data.Bookings.Booking;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
 {
@@ -153,7 +154,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             }
 
 
-            static BookingInvoiceData.SellerInfo GetSellerDetails(Data.Booking.Booking booking, BankDetails bankDetails)
+            static BookingInvoiceData.SellerInfo GetSellerDetails(Booking booking, BankDetails bankDetails)
             {
                 if (!bankDetails.AccountDetails.TryGetValue(booking.Currency, out var accountData))
                     accountData = bankDetails.AccountDetails[Currencies.USD];
@@ -212,7 +213,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
         }
         
         
-        private async Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice(Data.Booking.Booking booking)
+        private async Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice(Booking booking)
         {
             var lastInvoice = (await _invoiceService.Get<BookingInvoiceData>(ServiceTypes.HTL, ServiceSource.Internal, booking.ReferenceCode))
                 .OrderByDescending(i => i.Metadata.Date)

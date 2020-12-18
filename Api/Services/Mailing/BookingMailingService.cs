@@ -17,7 +17,7 @@ using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.EdoContracts.General;
 using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Formatters;

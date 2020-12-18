@@ -5,7 +5,7 @@ using HappyTravel.EdoContracts.Accommodations.Enums;
 using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Enums;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class Booking : IEntity
     {

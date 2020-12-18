@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class Deadline
     {

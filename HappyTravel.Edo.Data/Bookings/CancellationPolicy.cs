@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class CancellationPolicy
     {

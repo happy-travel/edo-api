@@ -8,7 +8,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelecti
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch;
 using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using HappyTravel.Edo.Api.Extensions;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Xunit;
-using Booking = HappyTravel.Edo.Data.Booking.Booking;
+using Booking = HappyTravel.Edo.Data.Bookings.Booking;
 
 namespace HappyTravel.Edo.UnitTests.Tests.Extensions.BookingExtensionsTests
 {

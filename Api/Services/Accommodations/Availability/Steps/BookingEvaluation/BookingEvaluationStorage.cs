@@ -28,14 +28,42 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
         }
 
 
-        public async Task<Result<(Suppliers Source, DataWithMarkup<RoomContractSetAvailability> Result)>> Get(Guid searchId, Guid resultId, Guid roomContractSetId, List<Suppliers> suppliers)
+        public async Task<Result<BookingAvailabilityInfo>> Get(Guid searchId, Guid resultId, Guid roomContractSetId)
         {
             var key = BuildKey(searchId, resultId, roomContractSetId);
             
             var result = await _doubleFlow.GetAsync<SupplierData<DataWithMarkup<RoomContractSetAvailability>>>(key, CacheExpirationTime);
-            return result.Equals(default)
-                ? Result.Failure<(Suppliers, DataWithMarkup<RoomContractSetAvailability>)>("Could not find evaluation result")
-                : (result.Source, result.Data);
+            if (result.Equals(default))
+                return Result.Failure<BookingAvailabilityInfo>("Could not find evaluation result");
+
+            return ExtractBookingAvailabilityInfo(result);
+
+        }
+        
+        
+        private BookingAvailabilityInfo ExtractBookingAvailabilityInfo(SupplierData<DataWithMarkup<RoomContractSetAvailability>> dataWithMarkup)
+        {
+            var response = dataWithMarkup.Data.Data;
+            var supplier = dataWithMarkup.Source;
+            var location = response.Accommodation.Location;
+
+            return new BookingAvailabilityInfo(
+                response.Accommodation.Id,
+                response.Accommodation.Name,
+                response.RoomContractSet.ToRoomContractSet(supplier),
+                location.LocalityZone,
+                location.Locality,
+                location.Country,
+                location.CountryCode,
+                location.Address,
+                location.Coordinates,
+                response.CheckInDate,
+                response.CheckOutDate,
+                response.NumberOfNights,
+                supplier,
+                dataWithMarkup.Data.AppliedMarkups,
+                dataWithMarkup.Data.SupplierPrice,
+                dataWithMarkup.Data.Data.AvailabilityId);
         }
 
         

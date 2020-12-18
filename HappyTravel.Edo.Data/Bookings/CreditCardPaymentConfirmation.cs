@@ -1,6 +1,6 @@
 using System;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class CreditCardPaymentConfirmation
     {

@@ -20,7 +20,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings
             _logger = logger;
         }
         
-        public async Task ProcessResponse(Booking bookingResponse, Data.Booking.Booking booking)
+        public async Task ProcessResponse(Booking bookingResponse, Data.Bookings.Booking booking)
         {
             await _bookingAuditLogService.Add(bookingResponse, booking);
 

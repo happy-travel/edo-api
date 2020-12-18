@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using HappyTravel.EdoContracts.Accommodations.Enums;
 using HappyTravel.Money.Models;
 
-namespace HappyTravel.Edo.Data.Booking
+namespace HappyTravel.Edo.Data.Bookings
 {
     public class BookedRoom
     {

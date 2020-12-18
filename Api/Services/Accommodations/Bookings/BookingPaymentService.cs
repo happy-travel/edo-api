@@ -11,7 +11,7 @@ using HappyTravel.Edo.Api.Services.Payments.CreditCards;
 using HappyTravel.Edo.Api.Services.Payments.Offline;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.Data.Booking;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.Edo.Data.Payments;
 using HappyTravel.EdoContracts.General.Enums;
