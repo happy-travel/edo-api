@@ -174,6 +174,20 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
         
+        public async Task<Result<Booking>> Get(int bookingId, int agentId, int agencyId)
+        {
+            var permissions = await _context.AgentAgencyRelations
+                .Where(a => a.AgencyId == agencyId && a.AgentId == agentId)
+                .Select(a => a.InAgencyPermissions)
+                .SingleOrDefaultAsync();
+
+            if (permissions.HasFlag(InAgencyPermissions.AgencyBookingsManagement))
+                return await GetByAgency(bookingId, agencyId);
+
+            return await GetByAgent(bookingId, agentId);
+        }
+        
+        
         public Task<Result<Booking>> GetByAgent(int bookingId, int agentId)
         {
             return Get(booking => booking.Id == bookingId && booking.AgentId == agentId);

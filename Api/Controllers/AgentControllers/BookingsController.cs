@@ -226,7 +226,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         {
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, booking, error) =
-                await _bookingRecordsManager.GetByAgent(bookingId, agent.AgentId);
+                await _bookingRecordsManager.Get(bookingId, agent.AgentId, agent.AgencyId);
 
             if (isFailure)
                 return BadRequest(error);
