@@ -108,9 +108,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents
                 .Select(a => a.InAgencyPermissions)
                 .SingleOrDefaultAsync();
             
-            if (permissions == default)
-                return Result.Failure<(DocumentRegistrationInfo Metadata, BookingInvoiceData Data)>($"Could not find agent {agentId} in agency {agencyId}");
-            
             var getBookingTask = permissions.HasFlag(InAgencyPermissions.AgencyBookingsManagement) 
                 ? _bookingRecordsManager.GetByAgency(bookingId, agencyId) 
                 : _bookingRecordsManager.GetByAgent(bookingId, agentId);
