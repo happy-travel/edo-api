@@ -15,8 +15,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         
         Task<Result<Booking>> Get(int id);
 
-        Task<Result<Booking>> Get(int bookingId, int agentId);
-        
+        Task<Result<Booking>> GetByAgent(int bookingId, int agentId);
+
+        Task<Result<Booking>> GetByAgency(int bookingId, int agencyId);
+
         Task Confirm(EdoContracts.Accommodations.Booking bookingDetails, Booking booking);
         
         Task UpdateBookingDetails(EdoContracts.Accommodations.Booking bookingDetails, Booking booking);

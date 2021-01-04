@@ -54,13 +54,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Mailing
         }
 
 
-        public Task<Result> SendInvoice(int bookingId, string email, int agentId)
+        public Task<Result> SendInvoice(int bookingId, string email, int agentId, int agencyId)
         {
             // TODO: hardcoded to be removed with UEDA-20
             var addresses = new List<string> {email};
             addresses.AddRange(_options.CcNotificationAddresses);
             
-            return _documentsService.GetActualInvoice(bookingId, agentId)
+            return _documentsService.GetActualInvoice(bookingId, agentId, agencyId)
                 .Bind(invoice =>
                 {
                     var (registrationInfo, data) = invoice;

@@ -37,7 +37,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
 
         public async Task<Result<Unit, ProblemDetails>> Cancel(int bookingId, AgentContext agent)
         {
-            var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.Get(bookingId, agent.AgentId);
+            var (_, isGetBookingFailure, booking, getBookingError) = await _bookingRecordsManager.GetByAgent(bookingId, agent.AgentId);
             if (isGetBookingFailure)
                 return ProblemDetailsBuilder.Fail<Unit>(getBookingError);
 

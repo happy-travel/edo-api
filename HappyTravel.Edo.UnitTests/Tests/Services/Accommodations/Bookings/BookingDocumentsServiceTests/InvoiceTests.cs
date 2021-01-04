@@ -17,6 +17,7 @@ using HappyTravel.Edo.Api.Services.Documents;
 using HappyTravel.Edo.Api.Services.Files;
 using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
+using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Documents;
 using HappyTravel.Edo.UnitTests.Utility;
@@ -38,15 +39,65 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 Id = 1,
                 AgentId = 1,
                 Status = BookingStatuses.Pending
+            }, new AgentAgencyRelation
+            {
+                AgencyId = agentContext.AgencyId,
+                AgentId = 1,
+                InAgencyPermissions = default
             }, false);
 
-            var (isSuccess, _) = await bookingDocumentsService.GetActualInvoice(1, agentContext.AgentId);
+            var (isSuccess, _) = await bookingDocumentsService.GetActualInvoice(1, agentContext.AgentId, agentContext.AgencyId);
+
+            Assert.False(isSuccess);
+        }
+        
+        
+        [Fact]
+        public async Task When_agent_has_permissions_should_success()
+        {
+            var agentContext = AgentInfoFactory.GetByAgentId(1);
+            var bookingDocumentsService = CreateBookingDocumentsService(new Booking
+            {
+                Id = 1,
+                AgentId = 2,
+                Status = BookingStatuses.Pending
+            }, new AgentAgencyRelation
+            {
+                AgencyId = agentContext.AgencyId,
+                AgentId = 1,
+                InAgencyPermissions = InAgencyPermissions.AgencyBookingsManagement
+            }, true);
+
+            var (isSuccess, _) = await bookingDocumentsService.GetActualInvoice(1, agentContext.AgentId, agentContext.AgencyId);
+
+            Assert.True(isSuccess);
+        }
+        
+        
+        [Fact]
+        public async Task When_agent_has_not_permissions_should_fail()
+        {
+            var agentContext = AgentInfoFactory.GetByAgentId(1);
+            var bookingDocumentsService = CreateBookingDocumentsService(new Booking
+            {
+                Id = 1,
+                AgentId = 2,
+                Status = BookingStatuses.Pending
+            }, 
+            new AgentAgencyRelation
+            {
+                AgencyId = agentContext.AgencyId,
+                AgentId = 1,
+                InAgencyPermissions =  default
+            }, true);
+
+            var (isSuccess, _) = await bookingDocumentsService.GetActualInvoice(1, agentContext.AgentId, agentContext.AgencyId);
 
             Assert.False(isSuccess);
         }
 
 
-        private static BookingDocumentsService CreateBookingDocumentsService(Booking booking, bool hasInvoices)
+        private static BookingDocumentsService CreateBookingDocumentsService(Booking booking, AgentAgencyRelation relation, bool hasInvoices)
         {
             // If property is not initialized thrown NullReferenceException
             booking.Rooms = new List<BookedRoom>();
@@ -54,6 +105,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
             var edoContext = MockEdoContextFactory.Create();
             edoContext.Setup(c => c.Bookings)
                 .Returns(DbSetMockProvider.GetDbSetMock(new List<Booking>{booking}));
+            edoContext.Setup(c => c.AgentAgencyRelations)
+                .Returns(DbSetMockProvider.GetDbSetMock(new List<AgentAgencyRelation>{relation}));
 
             var bookingRecordManager = new BookingRecordsManager(
                 edoContext.Object,

@@ -101,12 +101,24 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents
         }
 
 
-        public async Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice(int bookingId, int agentId)
+        public async Task<Result<(DocumentRegistrationInfo RegistrationInfo, BookingInvoiceData Data)>> GetActualInvoice(int bookingId, int agentId, int agencyId)
         {
-            var (_, isFailure, booking, _) = await _bookingRecordsManager.Get(bookingId, agentId);
+            var permissions = await _context.AgentAgencyRelations
+                .Where(a => a.AgencyId == agencyId && a.AgentId == agentId)
+                .Select(a => a.InAgencyPermissions)
+                .SingleOrDefaultAsync();
+            
+            if (permissions == default)
+                return Result.Failure<(DocumentRegistrationInfo Metadata, BookingInvoiceData Data)>($"Could not find agent {agentId} in agency {agencyId}");
+            
+            var getBookingTask = permissions.HasFlag(InAgencyPermissions.AgencyBookingsManagement) 
+                ? _bookingRecordsManager.GetByAgency(bookingId, agencyId) 
+                : _bookingRecordsManager.GetByAgent(bookingId, agentId);
+            
+            var (_, isFailure, booking, _) = await getBookingTask;
             if (isFailure)
                 return Result.Failure<(DocumentRegistrationInfo Metadata, BookingInvoiceData Data)>("Could not find booking");
-            
+
             return await GetActualInvoice(booking);
         }
 
