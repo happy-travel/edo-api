@@ -188,13 +188,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
         
         
-        public Task<Result<Booking>> GetByAgent(int bookingId, int agentId)
+        private Task<Result<Booking>> GetByAgent(int bookingId, int agentId)
         {
             return Get(booking => booking.Id == bookingId && booking.AgentId == agentId);
         }
         
         
-        public Task<Result<Booking>> GetByAgency(int bookingId, int agencyId)
+        private Task<Result<Booking>> GetByAgency(int bookingId, int agencyId)
         {
             return Get(booking => booking.Id == bookingId && booking.AgencyId == agencyId);
         }
