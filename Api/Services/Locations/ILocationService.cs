@@ -18,9 +18,5 @@ namespace HappyTravel.Edo.Api.Services.Locations
         ValueTask<Result<List<Prediction>, ProblemDetails>> GetPredictions(string query, string session, AgentContext agent, string languageCode);
 
         Task<List<Region>> GetRegions(string languageCode);
-
-        Task Set(IEnumerable<Models.Locations.Location> locations);
-
-        Task<DateTime> GetLastModifiedDate();
     }
 }

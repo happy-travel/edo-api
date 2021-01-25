@@ -62,7 +62,7 @@ namespace HappyTravel.Edo.Api.Services.Locations
             var locality = place.Components.FirstOrDefault(c => c.Types.Contains("locality")).Name ?? string.Empty;
             var country = place.Components.FirstOrDefault(c => c.Types.Contains("country")).Name ?? string.Empty;
 
-            return Result.Success(new Location(place.Name, locality, country, place.Geometry.Location, distance, PredictionSources.Google,
+            return Result.Success(new Location(place.Id, place.Name, locality, country, string.Empty, place.Geometry.Location, distance, PredictionSources.Google,
                 searchLocation.PredictionResult.Type, null));
         }
 

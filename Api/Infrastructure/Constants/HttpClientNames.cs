@@ -7,5 +7,6 @@
         public const string CurrencyService = "CurrencyConverter";
         public const string Identity = "Identity";
         public const string Connectors = "Connectors";
+        public const string Locations = "Locations";
     }
 }

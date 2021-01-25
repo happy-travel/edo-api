@@ -38,7 +38,6 @@ namespace HappyTravel.Edo.Data
         public virtual DbSet<Counterparty> Counterparties { get; set; }
         public virtual DbSet<Agent> Agents { get; set; }
         public virtual DbSet<AgentAgencyRelation> AgentAgencyRelations { get; set; }
-        public DbSet<Location> Locations { get; set; }
         public DbSet<Region> Regions { get; set; }
         public virtual DbSet<Bookings.Booking> Bookings { get; set; }
         
@@ -185,21 +184,6 @@ namespace HappyTravel.Edo.Data
         }
 
 
-        public IQueryable<Location> SearchLocations(string query, int take)
-        {
-            var sb = new StringBuilder();
-            foreach (int locationType in Enum.GetValues(typeof(LocationTypes)))
-            {
-                sb.Append(sb.Length == 0 ? "SELECT * FROM search_locations({0}," : "UNION ALL SELECT * FROM search_locations({0},");
-
-                sb.Append(locationType);
-                sb.Append(", {1}) ");
-            }
-
-            return Locations.FromSqlRaw(sb.ToString(), query, take);
-        }
-
-
         public virtual void Detach(object entity)
         {
             Entry(entity).State = EntityState.Detached;
@@ -215,7 +199,6 @@ namespace HappyTravel.Edo.Data
                 .StartsAt(1)
                 .IncrementsBy(1);
 
-            BuildLocation(builder);
             BuildCountry(builder);
             BuildRegion(builder);
             BuildAgent(builder);

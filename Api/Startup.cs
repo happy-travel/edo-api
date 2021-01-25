@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using CacheFlow.Json.Extensions;
 using FloxDc.CacheFlow.Extensions;
 using HappyTravel.Edo.Api.Conventions;
@@ -50,7 +52,7 @@ namespace HappyTravel.Edo.Api
                 Formatting = Formatting.None
             };
             JsonConvert.DefaultSettings = () => serializationSettings;
-
+            
             using var vaultClient = new VaultClient.VaultClient(new VaultOptions
             {
                 BaseUrl = new Uri(EnvironmentVariableHelper.Get("Vault:Endpoint", Configuration)),
@@ -69,12 +71,12 @@ namespace HappyTravel.Edo.Api
                 .AddCacheFlowJsonSerialization()
                 .AddTracing(HostingEnvironment, Configuration)
                 .AddUserEventLogging(Configuration, vaultClient);
-            
+
             services.ConfigureServiceOptions(Configuration, HostingEnvironment, vaultClient)
                 .ConfigureHttpClients(Configuration, HostingEnvironment, vaultClient)
                 .ConfigureAuthentication(Configuration, HostingEnvironment, vaultClient)
                 .AddServices();
-
+            
             services.AddHealthChecks()
                 .AddDbContextCheck<EdoContext>()
                 .AddRedis(EnvironmentVariableHelper.Get("Redis:Endpoint", Configuration))
@@ -141,7 +143,15 @@ namespace HappyTravel.Edo.Api
                 .AddNewtonsoftJson(options => options.SerializerSettings.Converters.Add(new StringEnumConverter()))
                 .AddApiExplorer()
                 .AddCacheTagHelper()
-                .AddDataAnnotations();
+                .AddDataAnnotations()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.WriteIndented = false;
+                    options.JsonSerializerOptions.IgnoreNullValues = true;
+                    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+                    options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals | JsonNumberHandling.AllowReadingFromString;
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
+                });
         }
 
 

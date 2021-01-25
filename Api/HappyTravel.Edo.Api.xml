@@ -902,25 +902,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.LocationsController.SetPredictions(System.Collections.Generic.IEnumerable{HappyTravel.Edo.Api.Models.Locations.Location})">
-            <summary>
-                Internal. Sets locations, gathered from booking sources, to make predictions.
-            </summary>
-            <param name="locations"></param>
-            <returns></returns>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.LocationsController.GetLastModifiedDate">
-            <summary>
-                Internal. Gets date of last modified location. This can be treated as last locations update date.
-            </summary>
-            <returns>Last changed location modified date</returns>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.LocationsController.Normalize">
-            <summary>
-            Starts a locations normalization process
-            </summary>
-            <returns></returns>
-        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.PaymentLinksController.GetSupportedDesktopAppVersion">
             <summary>
                 Gets supported desktop client versions.

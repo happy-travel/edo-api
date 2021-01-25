@@ -80,6 +80,7 @@ using Elasticsearch.Net;
 using HappyTravel.CurrencyConverter.Extensions;
 using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Analytics;
+using HappyTravel.Edo.Api.Infrastructure.Locations;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.Flows;
@@ -143,6 +144,9 @@ namespace HappyTravel.Edo.Api.Infrastructure
                 .SetHandlerLifetime(TimeSpan.FromMinutes(ConnectorClientHandlerLifeTimeMinutes))
                 .UseHttpClientMetrics();
 
+            var locationOptions = vaultClient.Get(configuration["Edo:Locations"]).GetAwaiter().GetResult();
+            services.AddHttpClient(HttpClientNames.Locations, client => client.BaseAddress = new Uri(locationOptions["endpoint"]));
+            
             return services;
         }
 
@@ -442,7 +446,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<ICountryService, CountryService>();
             services.AddTransient<IGeoCoder, GoogleGeoCoder>();
             services.AddTransient<IGeoCoder, InteriorGeoCoder>();
-
+            services.AddTransient<ILocationClient, LocationClient>();
+            
             services.AddSingleton<IVersionService, VersionService>();
 
             services.AddTransient<ILocationService, LocationService>();
@@ -571,7 +576,6 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<WebhookResponseService>();
 
             services.AddNameNormalizationServices();
-            services.AddScoped<ILocationNormalizer, LocationNormalizer>();
 
             services.AddTransient<IMultiProviderAvailabilityStorage, MultiProviderAvailabilityStorage>();
             services.AddTransient<IWideAvailabilityStorage, WideAvailabilityStorage>();
