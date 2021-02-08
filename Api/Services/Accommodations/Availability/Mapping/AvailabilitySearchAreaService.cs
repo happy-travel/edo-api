@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Availabilities.Mapping;
@@ -20,6 +21,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Mapping
             var (_, isFailure, mappings, error) = await _client.GetMappings(htIds, languageCode);
             if (isFailure)
                 return Result.Failure<SearchArea>(error.Detail);
+            
+            if (!mappings.Any())
+                return Result.Failure<SearchArea>("Could not find requested search locations");
 
             var locations = new List<Location>();
             var codes = new Dictionary<Suppliers, List<SupplierCodeMapping>>();
