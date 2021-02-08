@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
@@ -35,7 +36,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
         {
             var service = CreateProcessingService(Mock.Of<IBookingManagementService>());
 
-            var (_, isFailure, _, _) = await service.Cancel(new List<int> {3, 4}, new ServiceAccount() {ClientId = "ClientId", Id = 12});
+            var (_, isFailure, _, _) = await service.Cancel(new List<int> {3, 4, 5}, new ServiceAccount() {ClientId = "ClientId", Id = 12});
 
             Assert.True(isFailure);
         }
@@ -63,6 +64,9 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
             context.Setup(c => c.Bookings)
                 .Returns(DbSetMockProvider.GetDbSetMock(Bookings));
 
+            var dateTimeProviderMock = new Mock<IDateTimeProvider>();
+            dateTimeProviderMock.Setup(d => d.UtcNow()).Returns(new DateTime(2020, 1, 1));
+
             var service = new BookingsProcessingService(Mock.Of<IBookingAccountPaymentService>(),
                 Mock.Of<IBookingCreditCardPaymentService>(), 
                bookingManagementService, 
@@ -70,7 +74,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 Mock.Of<IBookingReportsService>(),
                 context.Object,
                 Mock.Of<IBookingRecordManager>(),
-                Mock.Of<IDateTimeProvider>());
+                dateTimeProviderMock.Object);
             return service;
         }
 
@@ -79,15 +83,19 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
         {
             new Booking
             {
-                Id = 1, PaymentStatus = BookingPaymentStatuses.NotPaid, ReferenceCode = "NNN-222", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard
+                Id = 1, PaymentStatus = BookingPaymentStatuses.NotPaid, ReferenceCode = "NNN-222", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard, CheckInDate = new DateTime(2020, 1, 2)
             },
             new Booking
             {
-                Id = 2, PaymentStatus = BookingPaymentStatuses.Refunded, ReferenceCode = "NNN-223", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard
+                Id = 2, PaymentStatus = BookingPaymentStatuses.Refunded, ReferenceCode = "NNN-223", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard, CheckInDate = new DateTime(2020, 1, 2)
             },
             new Booking
             {
-                Id = 3, PaymentStatus = BookingPaymentStatuses.Authorized, ReferenceCode = "NNN-224", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard
+                Id = 3, PaymentStatus = BookingPaymentStatuses.Authorized, ReferenceCode = "NNN-224", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard, CheckInDate = new DateTime(2020, 1, 2)
+            },
+            new Booking
+            {
+                Id = 4, PaymentStatus = BookingPaymentStatuses.NotPaid, ReferenceCode = "NNN-225", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard, CheckInDate = new DateTime(2020, 1, 1)
             }
         };
     }
