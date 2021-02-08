@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Filters.Authorization.CounterpartyStatesFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Metrics;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Availabilities;
@@ -112,7 +113,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         {
             var (_, isFailure, response, error) = await _roomSelectionService.GetState(searchId, resultId, await _agentContextService.GetAgent());
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(response);
         }
@@ -138,7 +139,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             
             var (_, isFailure, response, error) = await _roomSelectionService.Get(searchId, resultId, await _agentContextService.GetAgent(), LanguageCode);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(response);
         }

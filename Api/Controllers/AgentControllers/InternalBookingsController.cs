@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Filters.Authorization.ServiceAccountFilters;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Models.Users;
@@ -78,7 +79,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> GetBookingsForCapture(DateTime? date)
         {
             if (!date.HasValue)
-                return BadRequest($"Date should be specified");
+                return BadRequest(ProblemDetailsBuilder.Build($"Date should be specified"));
             
             return Ok(await _bookingsProcessingService.GetForCapture(date.Value));
         }
@@ -112,7 +113,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> GetBookingsForCharge(DateTime? date)
         {
             if (!date.HasValue)
-                return BadRequest($"Date should be specified");
+                return BadRequest(ProblemDetailsBuilder.Build($"Date should be specified"));
             
             return Ok(await _bookingsProcessingService.GetForCharge(date.Value));
         }
@@ -146,7 +147,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> GetBookingsToNotify(DateTime? date)
         {
             if (!date.HasValue)
-                return BadRequest($"Date should be specified");
+                return BadRequest(ProblemDetailsBuilder.Build($"Date should be specified"));
             
             return Ok(await _bookingsProcessingService.GetForNotification(date.Value));
         }
@@ -220,7 +221,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> GetAppliedMarkupsForMaterialization(DateTime? date)
         {
             if (!date.HasValue)
-                return BadRequest($"Date should be specified");
+                return BadRequest(ProblemDetailsBuilder.Build($"Date should be specified"));
             
             return Ok(await _markupBonusMaterializationService.GetForMaterialize(date.Value));
         }

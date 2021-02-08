@@ -146,7 +146,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
 
 
         private const string FrontendClientName = "matsumoto";
-        private const string TravelGateConnectorClientName = "travelgate_connector";
+        private const string TravelGateConnectorClientName = "travelgate_channel";
 
         private static readonly TimeSpan AgentContextCacheLifeTime = TimeSpan.FromMinutes(2);
         

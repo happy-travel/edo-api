@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Services.Payments.External;
 using Microsoft.AspNetCore.Authorization;
@@ -31,7 +32,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         public async Task<IActionResult> PaymentCallback([FromForm] IFormCollection form)
         {
             if (form is null)
-                return BadRequest("Payment data is required");
+                return BadRequest(ProblemDetailsBuilder.Build("Payment data is required"));
 
             var dictionary = form.ToDictionary(k => k.Key, k => WebUtility.UrlDecode(k.Value.ToString()));
             var value = JObject.FromObject(dictionary);

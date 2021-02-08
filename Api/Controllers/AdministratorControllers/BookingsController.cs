@@ -99,7 +99,7 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
             var (_, _, admin, _) = await _administratorContext.GetCurrent();
             var (_, isFailure, error) = await _bookingManagementService.Discard(bookingId, admin);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return NoContent();
         } 
@@ -120,7 +120,7 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
             var (_, _, admin, _) = await _administratorContext.GetCurrent();
             var (_, isFailure, error) = await _bookingManagementService.Cancel(bookingId, admin, requireSupplierConfirmation);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return NoContent();
         }

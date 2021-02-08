@@ -139,7 +139,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, error) = await _agentInvitationService.Resend(invitationCode, agent);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return NoContent();
         }
@@ -413,7 +413,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [HttpGet("all-permissions-list")]
         [ProducesResponseType(typeof(IEnumerable<InAgencyPermissions>), (int) HttpStatusCode.OK)]
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]
-        public IActionResult GetAllPermissionsList() => Ok(InAgencyPermissions.All.ToList().Where(p => p != InAgencyPermissions.All));
+        public IActionResult GetAllPermissionsList() 
+            => Ok(InAgencyPermissions.All.ToList().Where(p => p != InAgencyPermissions.All));
 
 
         private async Task<string> GetUserEmail()
@@ -438,7 +439,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [ProducesResponseType((int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [InAgencyPermissions(InAgencyPermissions.AgentStatusManagement)]
-        public async Task<IActionResult> Enable(int agentId) => OkOrBadRequest(await _agentStatusManagementService.Enable(agentId, await _agentContextService.GetAgent()));
+        public async Task<IActionResult> Enable(int agentId) 
+            => OkOrBadRequest(await _agentStatusManagementService.Enable(agentId, await _agentContextService.GetAgent()));
         
 
         /// <summary>
@@ -448,7 +450,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [ProducesResponseType((int)HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
         [InAgencyPermissions(InAgencyPermissions.AgentStatusManagement)]
-        public async Task<IActionResult> Disable(int agentId) => OkOrBadRequest(await _agentStatusManagementService.Disable(agentId, await _agentContextService.GetAgent()));
+        public async Task<IActionResult> Disable(int agentId) 
+            => OkOrBadRequest(await _agentStatusManagementService.Disable(agentId, await _agentContextService.GetAgent()));
 
 
         private readonly IAgentContextService _agentContextService;

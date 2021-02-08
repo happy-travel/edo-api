@@ -51,7 +51,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             return Id.Equals(other.Id) && Timestamp == other.Timestamp && AvailabilityId == other.AvailabilityId &&
                 Accommodation.Equals(other.Accommodation) && Equals(RoomContractSets, other.RoomContractSets) &&
                 DuplicateReportId == other.DuplicateReportId && MinPrice == other.MinPrice && MaxPrice == other.MaxPrice &&
-                HtId.Equals(other.HtId);
+                HtId == other.HtId;
         }
 
 

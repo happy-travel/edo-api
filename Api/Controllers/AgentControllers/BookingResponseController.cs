@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Http;
 using HappyTravel.Edo.Api.Services.SupplierResponses;
 using HappyTravel.Edo.Common.Enums;
@@ -42,8 +43,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             
             var (_, isFailure, error) = await _netstormingResponseService.ProcessBookingDetailsResponse(xmlRequestData);
             if (isFailure)
-                return BadRequest(error);
-            
+                return BadRequest(ProblemDetailsBuilder.Build(error));
+
             return Ok();
         }
 

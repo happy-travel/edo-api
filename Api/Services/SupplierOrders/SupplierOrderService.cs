@@ -16,7 +16,7 @@ namespace HappyTravel.Edo.Api.Services.SupplierOrders
         }
 
 
-        public Task Add(string referenceCode, ServiceTypes serviceType, decimal supplierPrice, Suppliers supplier)
+        public async Task Add(string referenceCode, ServiceTypes serviceType, decimal supplierPrice, Suppliers supplier)
         {
             var now = _dateTimeProvider.UtcNow();
             var supplierOrder = new SupplierOrder
@@ -31,7 +31,9 @@ namespace HappyTravel.Edo.Api.Services.SupplierOrders
             };
 
             _context.SupplierOrders.Add(supplierOrder);
-            return _context.SaveChangesAsync();
+            
+            await _context.SaveChangesAsync();
+            _context.Detach(supplierOrder);
         }
 
 

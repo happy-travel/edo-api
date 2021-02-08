@@ -66,7 +66,7 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
 
             return isSuccess
                 ? NoContent()
-                : (IActionResult) BadRequest(error);
+                : (IActionResult) BadRequest(ProblemDetailsBuilder.Build(error));
         }
 
 

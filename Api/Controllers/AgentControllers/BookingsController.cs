@@ -62,7 +62,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         {
             var (_, isFailure, refCode, error) = await _bankCreditCardBookingFlow.Register(request, await _agentContextService.GetAgent(), LanguageCode);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(refCode);
         }
@@ -74,18 +74,18 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("book-by-account")]
-        [ProducesResponseType(typeof(string), (int) HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(AccommodationBookingInfo), (int) HttpStatusCode.OK)]
         [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationBooking)]
         public async Task<IActionResult> Book([FromBody] AccommodationBookingRequest request)
         {
-            var (_, isFailure, refCode, error) = await _financialAccountBookingFlow.BookByAccount(request, await _agentContextService.GetAgent(),
+            var (_, isFailure, bookingInfo, error) = await _financialAccountBookingFlow.BookByAccount(request, await _agentContextService.GetAgent(),
                 LanguageCode, ClientIp);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
-            return Ok(refCode);
+            return Ok(bookingInfo);
         }
 
 
@@ -105,7 +105,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, bookingDetails, error) = await _bankCreditCardBookingFlow.Finalize(referenceCode, agent, LanguageCode);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(bookingDetails);
         }
@@ -126,7 +126,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, error) = await _bookingManagementService.RefreshStatus(bookingId, agent);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok();
         }
@@ -147,7 +147,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, error) = await _bookingManagementService.Cancel(bookingId, agent);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return NoContent();
         }
@@ -168,7 +168,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             var agent = await _agentContextService.GetAgent();
             var (_, isFailure, error) = await _bookingManagementService.Cancel(referenceCode, agent);
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return NoContent();
         }
@@ -189,7 +189,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
                 await _bookingInfoService.GetAgentAccommodationBookingInfo(bookingId, await _agentContextService.GetAgent(), LanguageCode);
 
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(bookingData);
         }
@@ -210,7 +210,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
                 await _bookingInfoService.GetAgentAccommodationBookingInfo(referenceCode, await _agentContextService.GetAgent(), LanguageCode);
 
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(bookingData);
         }
@@ -229,7 +229,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
             var (_, isFailure, error) = await _creditCardPaymentService.PayForAccountBooking(referenceCode, await _agentContextService.GetAgent());
             
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return NoContent();
         }
@@ -251,7 +251,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
                 await _bookingRecordManager.Get(bookingId, agent.AgentId);
 
             if (isFailure)
-                return BadRequest(error);
+                return BadRequest(ProblemDetailsBuilder.Build(error));
 
             return Ok(BookingCancellationPenaltyCalculator.Calculate(booking, _dateTimeProvider.UtcNow()));
         }
