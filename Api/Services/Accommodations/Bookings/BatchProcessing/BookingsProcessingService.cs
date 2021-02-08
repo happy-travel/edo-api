@@ -187,8 +187,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
 
         public Task<List<int>> GetForCancellation()
         {
+            var checkInLimit = _dateTimeProvider.UtcNow();
+
             return _context.Bookings
                 .Where(IsBookingValidForCancelPredicate)
+                .Where(booking => booking.CheckInDate > checkInLimit)
                 .Select(booking => booking.Id)
                 .ToListAsync();
         }
@@ -196,10 +199,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
 
         public Task<Result<BatchOperationResult>> Cancel(List<int> bookingIds, ServiceAccount serviceAccount)
         {
+            var checkInLimit = _dateTimeProvider.UtcNow();
+
             return ExecuteBatchAction(bookingIds,
                 IsBookingValidForCancelPredicate,
                 ProcessBooking,
-                serviceAccount);
+                serviceAccount,
+                checkInLimit);
 
 
             Task<Result<string>> ProcessBooking(Booking booking, UserInfo _)
@@ -242,9 +248,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
         private async Task<Result<BatchOperationResult>> ExecuteBatchAction(List<int> bookingIds,
             Expression<Func<Booking, bool>> predicate,
             Func<Booking, UserInfo, Task<Result<string>>> action,
-            ServiceAccount serviceAccount)
+            ServiceAccount serviceAccount, DateTime? checkInLimit = null)
         {
-            var bookings = await GetBookings();
+            var bookings = checkInLimit.HasValue 
+                ? await GetBookingsBeforeCheckIn() 
+                : await GetBookings();
 
             return await ValidateCount()
                 .Map(ProcessBookings);
@@ -254,6 +262,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
                 => _context.Bookings
                     .Where(booking => bookingIds.Contains(booking.Id))
                     .Where(predicate)
+                    .ToListAsync();
+
+
+            Task<List<Booking>> GetBookingsBeforeCheckIn()
+                => _context.Bookings
+                    .Where(booking => bookingIds.Contains(booking.Id))
+                    .Where(predicate)
+                    .Where(booking => booking.CheckInDate > checkInLimit.Value)
                     .ToListAsync();
 
 
@@ -289,7 +305,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
 
 
         private static readonly Expression<Func<Booking, bool>> IsBookingValidForCancelPredicate = booking
-            => BookingStatusesForCancellation.Contains(booking.Status) && 
+            => BookingStatusesForCancellation.Contains(booking.Status) &&
             PaymentStatusesForCancellation.Contains(booking.PaymentStatus) &&
             booking.PaymentMethod == PaymentMethods.CreditCard;
         
