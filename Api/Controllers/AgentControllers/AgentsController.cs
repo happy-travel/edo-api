@@ -287,6 +287,8 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         {
             var agentRegistrationInfo = await _agentService.UpdateCurrentAgent(newInfo, await _agentContextService.GetAgent());
 
+            await _agentContextInternal.RefreshAgentContext();
+
             return Ok(agentRegistrationInfo);
         }
 
