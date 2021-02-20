@@ -658,6 +658,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
 
             services.AddTransient<IApiClientService, ApiClientService>();
 
+            services.AddTransient<ICounterpartyVerificationService, CounterpartyVerificationService>();
+
             //TODO: move to Consul when it will be ready
             services.AddCurrencyConversionFactory(new List<BufferPair>
             {
