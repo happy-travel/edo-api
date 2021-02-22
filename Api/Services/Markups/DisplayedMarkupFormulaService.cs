@@ -18,26 +18,26 @@ namespace HappyTravel.Edo.Api.Services.Markups
         }
 
 
-        public async Task<Result> Update(int agentId)
+        public async Task<Result> Update(int agentId, int agencyId)
         {
-            var agent = await _context.Agents
-                .SingleOrDefaultAsync(a => a.Id == agentId);
+            var relation = await _context.AgentAgencyRelations
+                .SingleOrDefaultAsync(r => r.AgentId == agentId && r.AgencyId == agencyId);
 
-            if (agent is null)
-                return Result.Failure<Agent>($"Agent with id {agentId} not found");
+            if (relation is null)
+                return Result.Failure<Agent>($"Agent with id {agentId} not found in agency with id {agencyId}");
 
-            agent.DisplayedMarkupFormula = await GetAgentMarkupFormula(agent.Id);
-            _context.Agents.Update(agent);
+            relation.DisplayedMarkupFormula = await GetAgentMarkupFormula(relation.AgentId, relation.AgencyId);
+            _context.AgentAgencyRelations.Update(relation);
             await _context.SaveChangesAsync();
 
             return Result.Success();
         }
 
 
-        private async Task<string> GetAgentMarkupFormula(int agentId)
+        private async Task<string> GetAgentMarkupFormula(int agentId, int agencyId)
         {
             var policies = await _context.MarkupPolicies
-                .Where(p => p.AgentId == agentId && p.ScopeType == MarkupPolicyScopeType.Agent)
+                .Where(p => p.AgentId == agentId && p.AgencyId == agencyId && p.ScopeType == MarkupPolicyScopeType.Agent)
                 .OrderBy(p => p.Order)
                 .ToListAsync();
 

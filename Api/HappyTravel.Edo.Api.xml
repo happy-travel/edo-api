@@ -309,7 +309,7 @@
             <param name="policySettings">Updated settings.</param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.MarkupsController.GetPolicies(HappyTravel.Edo.Common.Enums.Markup.MarkupPolicyScopeType,System.Nullable{System.Int32})">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.MarkupsController.GetPolicies(HappyTravel.Edo.Common.Enums.Markup.MarkupPolicyScopeType,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Int32})">
             <summary>
                 Gets policies for specified scope.
             </summary>
@@ -2143,9 +2143,19 @@
                 Scope type.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Markups.MarkupPolicyScope.ScopeId">
+        <member name="P:HappyTravel.Edo.Api.Models.Markups.MarkupPolicyScope.CounterpartyId">
             <summary>
-                Scope entity Id, can be null for global policies.
+                Counterparty id for counterparty scope type
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Markups.MarkupPolicyScope.AgencyId">
+            <summary>
+                Agency id for agency scope type or agent scope type
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Markups.MarkupPolicyScope.AgentId">
+            <summary>
+                Agent id for agent scope type
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Markups.MarkupPolicySettings.Description">

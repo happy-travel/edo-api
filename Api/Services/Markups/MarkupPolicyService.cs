@@ -77,7 +77,7 @@ namespace HappyTravel.Edo.Api.Services.Markups
                     p.ScopeType == MarkupPolicyScopeType.Global ||
                     p.ScopeType == MarkupPolicyScopeType.Counterparty && p.CounterpartyId == counterpartyId ||
                     p.ScopeType == MarkupPolicyScopeType.Agency && p.AgencyId == agencyId ||
-                    p.ScopeType == MarkupPolicyScopeType.Agent && p.AgentId == agentId ||
+                    p.ScopeType == MarkupPolicyScopeType.Agent && p.AgentId == agentId && p.AgencyId == agencyId ||
                     p.ScopeType == MarkupPolicyScopeType.EndClient && p.AgentId == agentId
                 )
                 .Where(p => p.ScopeType != MarkupPolicyScopeType.EndClient || userSettings.IsEndClientMarkupsEnabled)

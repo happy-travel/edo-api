@@ -5,6 +5,6 @@ namespace HappyTravel.Edo.Api.Services.Markups
 {
     public interface IDisplayedMarkupFormulaService
     {
-        public Task<Result> Update(int agentId);
+        public Task<Result> Update(int agentId, int agencyId);
     }
 }

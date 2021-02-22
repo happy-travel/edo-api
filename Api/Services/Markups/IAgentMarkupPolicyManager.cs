@@ -14,6 +14,6 @@ namespace HappyTravel.Edo.Api.Services.Markups
 
         Task<Result> Modify(int agentId, int policyId, MarkupPolicySettings settings, AgentContext agent);
 
-        Task<List<MarkupInfo>> Get(int agentId);
+        Task<List<MarkupInfo>> Get(int agentId, int agencyId);
     }
 }

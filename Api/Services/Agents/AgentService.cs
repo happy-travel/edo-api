@@ -80,6 +80,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
             return newInfo;
         }
 
+
         public  IQueryable<SlimAgentInfo> GetAgents(AgentContext agentContext)
         {
             var relations = _context.AgentAgencyRelations
@@ -97,8 +98,8 @@ namespace HappyTravel.Edo.Api.Services.Agents
                     Name = name,
                     Created = created,
                     IsActive = relation.IsActive,
-                    MarkupSettings = canObserveMarkups && agent.DisplayedMarkupFormula != null
-                        ? agent.DisplayedMarkupFormula
+                    MarkupSettings = canObserveMarkups && !string.IsNullOrWhiteSpace(relation.DisplayedMarkupFormula)
+                        ? relation.DisplayedMarkupFormula
                         : string.Empty
                 };
         }

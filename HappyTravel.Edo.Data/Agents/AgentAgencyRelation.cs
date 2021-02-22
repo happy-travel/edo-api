@@ -8,6 +8,7 @@ namespace HappyTravel.Edo.Data.Agents
         public InAgencyPermissions InAgencyPermissions { get; set; }
         public int AgencyId { get; set; }
         public AgentAgencyRelationTypes Type { get; set; }
+        public string DisplayedMarkupFormula { get; set; }
         public bool IsActive { get; set; }
 
 
@@ -19,6 +20,6 @@ namespace HappyTravel.Edo.Data.Agents
                 (other.AgentId, other.InAgencyPermissions, other.AgencyId, other.Type));
 
 
-        public override int GetHashCode() => (AgentId, InCounterpartyPermissions: InAgencyPermissions, AgencyId, Type).GetHashCode();
+        public override int GetHashCode() => (AgentId, InAgencyPermissions, AgencyId, Type).GetHashCode();
     }
 }

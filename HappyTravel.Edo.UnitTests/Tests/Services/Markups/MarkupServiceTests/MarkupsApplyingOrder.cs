@@ -142,6 +142,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
             {
                 Id = 1,
                 AgentId = AgentContext.AgentId,
+                AgencyId = AgentContext.AgencyId,
                 Order = 21,
                 Target = MarkupPolicyTarget.AccommodationAvailability,
                 ScopeType = MarkupPolicyScopeType.Agent,
@@ -152,6 +153,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Markups.MarkupServiceTests
             {
                 Id = 2,
                 AgentId = AgentContext.AgentId,
+                AgencyId = AgentContext.AgencyId,
                 Order = 1,
                 Target = MarkupPolicyTarget.AccommodationAvailability,
                 ScopeType = MarkupPolicyScopeType.Agent,

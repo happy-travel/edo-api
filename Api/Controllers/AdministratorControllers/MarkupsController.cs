@@ -91,12 +91,25 @@ namespace HappyTravel.Edo.Api.Controllers.AdministratorControllers
         ///     Gets policies for specified scope.
         /// </summary>
         /// <returns>Policies.</returns>
-        [HttpGet("{scopeType}/{scopeId}")]
+        [HttpGet("{scopeType}")]
         [ProducesResponseType(typeof(List<MarkupPolicyData>), (int) HttpStatusCode.NoContent)]
         [AdministratorPermissions(AdministratorPermissions.MarkupManagement)]
-        public async Task<IActionResult> GetPolicies(MarkupPolicyScopeType scopeType, int? scopeId)
+        public async Task<IActionResult> GetPolicies(MarkupPolicyScopeType scopeType, [FromQuery] int? counterpartyId, [FromQuery] int? agencyId,
+            [FromQuery] int? agentId)
         {
-            var scope = new MarkupPolicyScope(scopeType, scopeId);
+            var scope = scopeType switch
+            {
+                MarkupPolicyScopeType.Global => new MarkupPolicyScope(scopeType),
+                MarkupPolicyScopeType.Counterparty => new MarkupPolicyScope(scopeType, counterpartyId: counterpartyId),
+                MarkupPolicyScopeType.Agency => new MarkupPolicyScope(scopeType, agencyId: agencyId),
+                MarkupPolicyScopeType.Agent => new MarkupPolicyScope(scopeType, agencyId: agencyId, agentId: agentId),
+                _ => default,
+            };
+
+            var (_, isValidationFailure, validationError) = scope.Validate();
+            if (isValidationFailure)
+                return BadRequest(ProblemDetailsBuilder.Build(validationError));
+
             return Ok(await _policyManager.Get(scope));
         }
 

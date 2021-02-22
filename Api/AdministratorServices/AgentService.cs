@@ -37,8 +37,8 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                        Name = name,
                        Created = created,
                        IsActive = relation.IsActive,
-                       MarkupSettings = (agent.DisplayedMarkupFormula != null)
-                           ? agent.DisplayedMarkupFormula
+                       MarkupSettings = !string.IsNullOrWhiteSpace(relation.DisplayedMarkupFormula)
+                           ? relation.DisplayedMarkupFormula
                            : string.Empty
                    };
 
