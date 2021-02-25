@@ -46,7 +46,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
 
         public Task<List<int>> GetForCapture(DateTime date)
         {
-            date = date.Date;
             var daysBeforeDeadline = BookingConstants.DaysBeforeDeadlineWhenToPay;
 
             return _context.Bookings
