@@ -21,25 +21,25 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         public NGeniusPaymentService(IHttpClientFactory httpClientFactory, 
             IBookingRecordManager bookingRecordManager,
             EdoContext context,
-            IOptions<NGeniusOptions> options)
+            NGeniusHttpClient client)
         {
             _httpClientFactory = httpClientFactory;
             _bookingRecordManager = bookingRecordManager;
             _context = context;
-            _options = options.Value;
+            _client = client;
         }
 
 
-        public async Task<Result> Authorize(string referenceCode, PaymentInformation paymentInformation)
+        public async Task<Result<string>> Authorize(string referenceCode, PaymentInformation paymentInformation)
         {
             var (isSuccess, _, state) = await _bookingRecordManager.Get(referenceCode)
                 .Bind(b => CreateOrder(b, OrderTypes.Auth, paymentInformation));
             
             // TODO: update booking payment status
 
-            return isSuccess && state == StateTypes.Authorized 
-                ? Result.Success() 
-                : Result.Failure("Payment authorization failed");
+            return isSuccess
+                ? state 
+                : Result.Failure<string>("Payment authorization failed");
         }
 
 
@@ -50,9 +50,9 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
 
             // TODO: update booking payment status
             
-            return isSuccess && state == StateTypes.Captured 
-                ? Result.Success() 
-                : Result.Failure("Payment failed");
+            return isSuccess
+                ? state 
+                : Result.Failure<string>("Payment failed");
         }
 
 
@@ -63,45 +63,21 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
                 CurrencyCode = amount.Currency.ToString(),
                 Value = amount.Amount
             };
-            
-            // TODO: add authorization
-            var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{referenceCode}/{paymentId}/captures";
-            using var client = _httpClientFactory.CreateClient("");
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, endpoint)
-            {
-                Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")
-            });
-            
-            response.EnsureSuccessStatusCode();
-            
-            // TODO: get and store captureId
 
+            var captureId = await _client.Capture(paymentId, referenceCode, data);
+            
+            // TODO: store captureId
+            
             return Result.Success();
         }
 
 
-        public async Task<Result> Void(Guid paymentId, string referenceCode)
-        {
-            var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{referenceCode}/{paymentId}/cancel";
-            using var client = _httpClientFactory.CreateClient("");
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint));
-            
-            response.EnsureSuccessStatusCode();
+        public Task<Result> Void(Guid paymentId, string referenceCode) 
+            => _client.Void(paymentId, referenceCode);
 
-            return Result.Success();
-        }
-        
-        
-        public async Task<Result> Refund(Guid paymentId, Guid captureId, string referenceCode)
-        {
-            var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{referenceCode}/{paymentId}/captures/{captureId}/refund";
-            using var client = _httpClientFactory.CreateClient("");
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint));
-            
-            response.EnsureSuccessStatusCode();
 
-            return Result.Success();
-        }
+        public Task<Result> Refund(Guid paymentId, Guid captureId, string referenceCode) 
+            => _client.Refund(paymentId, captureId, referenceCode);
         
         
         private async Task<Result<string>> CreateOrder(Booking booking, string actionType, PaymentInformation paymentInformation)
@@ -120,7 +96,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
             }
 
 
-            async Task<Result<Guid>> MakeOrder(Agent agent)
+            Task<Result<Guid>> MakeOrder(Agent agent)
             {
                 var data = new OrderRequest
                 {
@@ -137,67 +113,21 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
                         LastName = agent.LastName
                     },
                     Language = booking.LanguageCode,
-                    MerchantOrderReference = booking.ReferenceCode,
-                    MerchantAttributes = new MerchantAttributes
-                    {
-                        Skip3DS = true
-                    }
+                    MerchantOrderReference = booking.ReferenceCode
                 };
 
-                // TODO: add authorization
-                var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders";
-                using var client = _httpClientFactory.CreateClient("");
-                var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, endpoint)
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")
-                });
-
-                response.EnsureSuccessStatusCode();
-
-                var json = await response.Content.ReadAsStreamAsync();
-                using var document = await JsonDocument.ParseAsync(json);
-                var paymentId =  document.RootElement
-                    .GetProperty("_embedded")
-                    .GetProperty("payments")
-                    .EnumerateArray()
-                    .Take(1)
-                    .FirstOrDefault()
-                    .GetProperty("_id")
-                    .GetString()
-                    ?.Split(":")
-                    .LastOrDefault();
-
-                if (string.IsNullOrEmpty(paymentId) || Guid.TryParse(paymentId, out var _))
-                    return Result.Failure<Guid>("Failed to get payment id");
-
-                return new Guid(paymentId);
+                return _client.CreateOrder(data);
             }
-            
-            
-            async Task<Result<string>> AddPaymentInformation(Guid paymentId)
-            {
-                // TODO: add authorization
-                var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{booking.ReferenceCode}/{paymentId}/card";
-                using var client = _httpClientFactory.CreateClient("");
-                var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint)
-                {
-                    Content = new StringContent(JsonSerializer.Serialize(paymentInformation), Encoding.UTF8, "application/json")
-                });
 
-                response.EnsureSuccessStatusCode();
-            
-                var json = await response.Content.ReadAsStreamAsync();
-                using var document = await JsonDocument.ParseAsync(json);
-                return document.RootElement
-                    .GetProperty("state")
-                    .GetString();
-            }
+
+            Task<Result<string>> AddPaymentInformation(Guid paymentId)
+                => _client.AddPaymentInformation(booking.ReferenceCode, paymentId, paymentInformation);
         }
 
 
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBookingRecordManager _bookingRecordManager;
         private readonly EdoContext _context;
-        private readonly NGeniusOptions _options;
+        private readonly NGeniusHttpClient _client;
     }
 }

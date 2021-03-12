@@ -93,6 +93,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessing;
 using HappyTravel.Edo.Api.Services.ApiClients;
 using HappyTravel.Edo.Api.Services.Files;
 using HappyTravel.Edo.Api.Services.Invitations;
+using HappyTravel.Edo.Api.Services.Payments.NGenius;
 using HappyTravel.Edo.Api.Services.SupplierResponses;
 using IdentityModel.Client;
 using Prometheus;
@@ -177,6 +178,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
             {
                 client.BaseAddress = new Uri(mapperClientOptions["address"]);
             });
+
+            services.AddHttpClient<NGeniusHttpClient>();
 
             return services;
         }

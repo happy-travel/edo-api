@@ -8,6 +8,5 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         public BillingAddress BillingAddress { get; init; }
         public string Language { get; init; }
         public string MerchantOrderReference { get; init; }
-        public MerchantAttributes MerchantAttributes { get; init; }
     }
 }
