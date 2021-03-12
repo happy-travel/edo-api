@@ -5,12 +5,14 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
+using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Money.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace HappyTravel.Edo.Api.Services.Payments.NGenius
 {
@@ -18,11 +20,13 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
     {
         public NGeniusPaymentService(IHttpClientFactory httpClientFactory, 
             IBookingRecordManager bookingRecordManager,
-            EdoContext context)
+            EdoContext context,
+            IOptions<NGeniusOptions> options)
         {
             _httpClientFactory = httpClientFactory;
             _bookingRecordManager = bookingRecordManager;
             _context = context;
+            _options = options.Value;
         }
 
 
@@ -61,7 +65,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
             };
             
             // TODO: add authorization
-            var endpoint = $"{Endpoint}/{_outletId}/orders/{referenceCode}/{paymentId}/captures";
+            var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{referenceCode}/{paymentId}/captures";
             using var client = _httpClientFactory.CreateClient("");
             var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, endpoint)
             {
@@ -78,7 +82,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
 
         public async Task<Result> Void(Guid paymentId, string referenceCode)
         {
-            var endpoint = $"{Endpoint}/{_outletId}/orders/{referenceCode}/{paymentId}/cancel";
+            var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{referenceCode}/{paymentId}/cancel";
             using var client = _httpClientFactory.CreateClient("");
             var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint));
             
@@ -90,7 +94,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         
         public async Task<Result> Refund(Guid paymentId, Guid captureId, string referenceCode)
         {
-            var endpoint = $"{Endpoint}/{_outletId}/orders/{referenceCode}/{paymentId}/captures/{captureId}/refund";
+            var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{referenceCode}/{paymentId}/captures/{captureId}/refund";
             using var client = _httpClientFactory.CreateClient("");
             var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint));
             
@@ -141,7 +145,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
                 };
 
                 // TODO: add authorization
-                var endpoint = $"{Endpoint}/{_outletId}/orders";
+                var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders";
                 using var client = _httpClientFactory.CreateClient("");
                 var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, endpoint)
                 {
@@ -173,7 +177,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
             async Task<Result<string>> AddPaymentInformation(Guid paymentId)
             {
                 // TODO: add authorization
-                var endpoint = $"{Endpoint}/{_outletId}/orders/{booking.ReferenceCode}/{paymentId}/card";
+                var endpoint = $"{_options.Endpoint}/{_options.OutletId}/orders/{booking.ReferenceCode}/{paymentId}/card";
                 using var client = _httpClientFactory.CreateClient("");
                 var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint)
                 {
@@ -191,11 +195,9 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         }
 
 
-        private readonly Guid _outletId = Guid.NewGuid(); // TODO: change to outlet id from NGenius
-        private const string Endpoint = "https://api-gateway.sandbox.ngenius-payments.com/transactions/outlets/";
-
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBookingRecordManager _bookingRecordManager;
         private readonly EdoContext _context;
+        private readonly NGeniusOptions _options;
     }
 }

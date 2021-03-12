@@ -462,6 +462,18 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.Configure<CounterpartyBillingNotificationServiceOptions>(options =>
                 options.CounterpartyAccountAddedTemplateId = counterpartyAccountAddedTemplateId);
 
+            #region Configure NGenius
+
+            var nGeniusOptions = vaultClient.Get(configuration["Edo:NGenius"]).GetAwaiter().GetResult();
+            services.Configure<NGeniusOptions>(options =>
+            {
+                options.Token = nGeniusOptions["token"];
+                options.Endpoint = nGeniusOptions["endpoint"];
+                options.OutletId = nGeniusOptions["outletId"];
+            });
+            
+            #endregion
+
             return services;
         }
 
