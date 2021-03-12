@@ -30,6 +30,8 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
             var (isSuccess, _, state) = await _bookingRecordManager.Get(referenceCode)
                 .Bind(b => CreateOrder(b, OrderTypes.Auth))
                 .Bind(p => AddPaymentInformation(p, referenceCode, paymentInformation));
+            
+            // TODO: update booking payment status
 
             return isSuccess && state == StateTypes.Authorized 
                 ? Result.Success() 
@@ -42,10 +44,12 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
             var (isSuccess, _, state) = await _bookingRecordManager.Get(referenceCode)
                 .Bind(b => CreateOrder(b, OrderTypes.Sale))
                 .Bind(p => AddPaymentInformation(p, referenceCode, paymentInformation));
+
+            // TODO: update booking payment status
             
             return isSuccess && state == StateTypes.Captured 
                 ? Result.Success() 
-                : Result.Failure("Payment authorization failed");
+                : Result.Failure("Payment failed");
         }
 
 
