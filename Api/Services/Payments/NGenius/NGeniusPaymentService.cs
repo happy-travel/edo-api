@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Data;
+using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Money.Models;
 using Microsoft.EntityFrameworkCore;
@@ -28,8 +29,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         public async Task<Result> Authorize(string referenceCode, PaymentInformation paymentInformation)
         {
             var (isSuccess, _, state) = await _bookingRecordManager.Get(referenceCode)
-                .Bind(b => CreateOrder(b, OrderTypes.Auth))
-                .Bind(p => AddPaymentInformation(p, referenceCode, paymentInformation));
+                .Bind(b => CreateOrder(b, OrderTypes.Auth, paymentInformation));
             
             // TODO: update booking payment status
 
@@ -42,8 +42,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         public async Task<Result> Pay(string referenceCode, PaymentInformation paymentInformation)
         {
             var (isSuccess, _, state) = await _bookingRecordManager.Get(referenceCode)
-                .Bind(b => CreateOrder(b, OrderTypes.Sale))
-                .Bind(p => AddPaymentInformation(p, referenceCode, paymentInformation));
+                .Bind(b => CreateOrder(b, OrderTypes.Sale, paymentInformation));
 
             // TODO: update booking payment status
             
@@ -101,84 +100,94 @@ namespace HappyTravel.Edo.Api.Services.Payments.NGenius
         }
         
         
-        private async Task<Result<Guid>> CreateOrder(Booking booking, string actionType)
+        private async Task<Result<string>> CreateOrder(Booking booking, string actionType, PaymentInformation paymentInformation)
         {
-            var billingAddress = await _context.Agents
-                .Where(a => a.Id == booking.AgentId)
-                .Select(a => new {a.FirstName, a.LastName})
-                .SingleOrDefaultAsync();
+            return await GetAgent(booking.AgentId)
+                .Bind(MakeOrder)
+                .Bind(AddPaymentInformation);
 
-            if (billingAddress is null)
-                return Result.Failure<Guid>($"Agent not found");
-            
-            var data = new OrderRequest
+
+            async Task<Result<Agent>> GetAgent(int id)
             {
-                Action = actionType,
-                Amount = new Amount
-                {
-                    CurrencyCode = booking.Currency.ToString(),
-                    Value = booking.TotalPrice
-                },
-                EmailAddress = "",
-                BillingAddress = new BillingAddress
-                {
-                    FirstName = billingAddress.FirstName,
-                    LastName = billingAddress.LastName
-                },
-                Language = booking.LanguageCode,
-                MerchantOrderReference = booking.ReferenceCode,
-                MerchantAttributes = new MerchantAttributes
-                {
-                    Skip3DS = true
-                }
-            };
+                var agent = await _context.Agents
+                    .SingleOrDefaultAsync(a => a.Id == booking.AgentId);
 
-            // TODO: add authorization
-            var endpoint = $"{Endpoint}/{_outletId}/orders";
-            using var client = _httpClientFactory.CreateClient("");
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, endpoint)
+                return agent ?? Result.Failure<Agent>("Agent not found");
+            }
+
+
+            async Task<Result<Guid>> MakeOrder(Agent agent)
             {
-                Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")
-            });
+                var data = new OrderRequest
+                {
+                    Action = actionType,
+                    Amount = new Amount
+                    {
+                        CurrencyCode = booking.Currency.ToString(),
+                        Value = booking.TotalPrice
+                    },
+                    EmailAddress = "",
+                    BillingAddress = new BillingAddress
+                    {
+                        FirstName = agent.FirstName,
+                        LastName = agent.LastName
+                    },
+                    Language = booking.LanguageCode,
+                    MerchantOrderReference = booking.ReferenceCode,
+                    MerchantAttributes = new MerchantAttributes
+                    {
+                        Skip3DS = true
+                    }
+                };
 
-            response.EnsureSuccessStatusCode();
+                // TODO: add authorization
+                var endpoint = $"{Endpoint}/{_outletId}/orders";
+                using var client = _httpClientFactory.CreateClient("");
+                var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Post, endpoint)
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")
+                });
 
-            var json = await response.Content.ReadAsStreamAsync();
-            using var document = await JsonDocument.ParseAsync(json);
-            var paymentId =  new Guid(document.RootElement
-                .GetProperty("_embedded")
-                .GetProperty("payments")
-                .EnumerateArray()
-                .Take(1)
-                .FirstOrDefault()
-                .GetProperty("_id")
-                .GetString()
-                ?.Split(":")
-                .LastOrDefault() ?? string.Empty);
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStreamAsync();
+                using var document = await JsonDocument.ParseAsync(json);
+                var paymentId =  document.RootElement
+                    .GetProperty("_embedded")
+                    .GetProperty("payments")
+                    .EnumerateArray()
+                    .Take(1)
+                    .FirstOrDefault()
+                    .GetProperty("_id")
+                    .GetString()
+                    ?.Split(":")
+                    .LastOrDefault();
+
+                if (string.IsNullOrEmpty(paymentId) || Guid.TryParse(paymentId, out var _))
+                    return Result.Failure<Guid>("Failed to get payment id");
+
+                return new Guid(paymentId);
+            }
             
-            // TODO: store payment id
             
-            return paymentId;
-        }
-
-
-        private async Task<Result<string>> AddPaymentInformation(Guid paymentId, string referenceCode, PaymentInformation paymentInformation)
-        {
-            // TODO: add authorization
-            var endpoint = $"{Endpoint}/{_outletId}/orders/{referenceCode}/{paymentId}/card";
-            using var client = _httpClientFactory.CreateClient("");
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint)
+            async Task<Result<string>> AddPaymentInformation(Guid paymentId)
             {
-                Content = new StringContent(JsonSerializer.Serialize(paymentInformation), Encoding.UTF8, "application/json")
-            });
+                // TODO: add authorization
+                var endpoint = $"{Endpoint}/{_outletId}/orders/{booking.ReferenceCode}/{paymentId}/card";
+                using var client = _httpClientFactory.CreateClient("");
+                var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Put, endpoint)
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(paymentInformation), Encoding.UTF8, "application/json")
+                });
 
-            response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode();
             
-            var json = await response.Content.ReadAsStreamAsync();
-            using var document = await JsonDocument.ParseAsync(json);
-            return document.RootElement
-                .GetProperty("state")
-                .GetString();
+                var json = await response.Content.ReadAsStreamAsync();
+                using var document = await JsonDocument.ParseAsync(json);
+                return document.RootElement
+                    .GetProperty("state")
+                    .GetString();
+            }
         }
 
 
