@@ -94,6 +94,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessing;
 using HappyTravel.Edo.Api.Services.ApiClients;
 using HappyTravel.Edo.Api.Services.Files;
 using HappyTravel.Edo.Api.Services.Invitations;
+using HappyTravel.Edo.Api.Services.Payments.NGenius;
 using HappyTravel.Edo.Api.Services.SupplierResponses;
 using IdentityModel.Client;
 using Prometheus;
@@ -178,6 +179,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
             {
                 client.BaseAddress = new Uri(mapperClientOptions["address"]);
             });
+
+            services.AddHttpClient<NGeniusHttpClient>();
 
             return services;
         }
@@ -462,6 +465,18 @@ namespace HappyTravel.Edo.Api.Infrastructure
 
             services.Configure<CounterpartyBillingNotificationServiceOptions>(options =>
                 options.CounterpartyAccountAddedTemplateId = counterpartyAccountAddedTemplateId);
+
+            #region Configure NGenius
+
+            var nGeniusOptions = vaultClient.Get(configuration["Edo:NGenius"]).GetAwaiter().GetResult();
+            services.Configure<NGeniusOptions>(options =>
+            {
+                options.Token = nGeniusOptions["token"];
+                options.Endpoint = nGeniusOptions["endpoint"];
+                options.OutletId = nGeniusOptions["outletId"];
+            });
+            
+            #endregion
 
             return services;
         }
