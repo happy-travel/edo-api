@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace HappyTravel.Edo.NotificationCenter.Services.Hub
 {
-    public class SignalRSender : Hub<INotificationCenter>
+    public class SignalRSender : Hub<IHub>
     {
         public Task FireNotificationAddedEvent(int userId, int messageId, string message)
             => Clients.Group(BuildUserGroupName(userId)).NotificationAdded(messageId, message);
