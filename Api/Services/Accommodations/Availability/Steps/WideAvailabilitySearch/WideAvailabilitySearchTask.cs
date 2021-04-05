@@ -15,6 +15,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Mappings;
 using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.AccommodationMappings;
+using HappyTravel.Edo.NotificationCenter.Services.Hub;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             IAccommodationDuplicatesService duplicatesService,
             ISupplierConnectorManager supplierConnectorManager,
             IDateTimeProvider dateTimeProvider,
-            ILogger<WideAvailabilitySearchTask> logger)
+            ILogger<WideAvailabilitySearchTask> logger,
+            SignalRSender signalRSender)
         {
             _storage = storage;
             _priceProcessor = priceProcessor;
@@ -39,6 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             _supplierConnectorManager = supplierConnectorManager;
             _dateTimeProvider = dateTimeProvider;
             _logger = logger;
+            _signalRSender = signalRSender;
         }
 
 
@@ -50,7 +53,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 serviceProvider.GetRequiredService<IAccommodationDuplicatesService>(),
                 serviceProvider.GetRequiredService<ISupplierConnectorManager>(),
                 serviceProvider.GetRequiredService<IDateTimeProvider>(),
-                serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>()
+                serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>(),
+                serviceProvider.GetRequiredService<SignalRSender>()
             );
         }
 
@@ -160,7 +164,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 => _storage.SaveResults(searchId, supplier, results);
 
 
-            Task SaveState(Result<List<AccommodationAvailabilityResult>, ProblemDetails> result)
+            async Task SaveState(Result<List<AccommodationAvailabilityResult>, ProblemDetails> result)
             {
                 var state = result.IsSuccess
                     ? SupplierAvailabilitySearchState.Completed(searchId, result.Value.Select(r => r.DuplicateReportId).ToList(), result.Value.Count)
@@ -177,7 +181,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                         $"Availability search with id '{searchId}' on supplier '{supplier}' finished with state '{state.TaskState}', error '{state.Error}'");
                 }
 
-                return _storage.SaveState(searchId, state, supplier);
+                await _signalRSender.FireSearchStateChangedEvent(searchId);
+                await _storage.SaveState(searchId, state, supplier);
             }
         }
         
@@ -257,5 +262,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ILogger<WideAvailabilitySearchTask> _logger;
         private readonly IWideAvailabilityStorage _storage;
+        private readonly SignalRSender _signalRSender;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
@@ -7,6 +8,10 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Hub
     {
         public Task FireNotificationAddedEvent(int userId, int messageId, string message)
             => Clients.Group(BuildUserGroupName(userId)).NotificationAdded(messageId, message);
+
+
+        public Task FireSearchStateChangedEvent(Guid searchId) 
+            => Clients.Group($"search-{searchId}").SearchStateChanged();
 
 
         public Task Join(string roomName) 
