@@ -33,7 +33,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             ISupplierConnectorManager supplierConnectorManager,
             IDateTimeProvider dateTimeProvider,
             ILogger<WideAvailabilitySearchTask> logger,
-            SignalRSender signalRSender)
+            SignalRHub signalRHub)
         {
             _storage = storage;
             _priceProcessor = priceProcessor;
@@ -41,7 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             _supplierConnectorManager = supplierConnectorManager;
             _dateTimeProvider = dateTimeProvider;
             _logger = logger;
-            _signalRSender = signalRSender;
+            _signalRHub = signalRHub;
         }
 
 
@@ -54,7 +54,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 serviceProvider.GetRequiredService<ISupplierConnectorManager>(),
                 serviceProvider.GetRequiredService<IDateTimeProvider>(),
                 serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>(),
-                serviceProvider.GetRequiredService<SignalRSender>()
+                serviceProvider.GetRequiredService<SignalRHub>()
             );
         }
 
@@ -181,7 +181,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                         $"Availability search with id '{searchId}' on supplier '{supplier}' finished with state '{state.TaskState}', error '{state.Error}'");
                 }
 
-                await _signalRSender.FireSearchStateChangedEvent(searchId);
+                await _signalRHub.SendEventToGroup($"search-{searchId}", "SearchStateChanged");
                 await _storage.SaveState(searchId, state, supplier);
             }
         }
@@ -262,6 +262,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ILogger<WideAvailabilitySearchTask> _logger;
         private readonly IWideAvailabilityStorage _storage;
-        private readonly SignalRSender _signalRSender;
+        private readonly SignalRHub _signalRHub;
     }
 }

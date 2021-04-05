@@ -13,10 +13,10 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Notification
 {
     public class NotificationService : INotificationService
     {
-        public NotificationService(EdoContext context, Hub.SignalRSender signalRSender)
+        public NotificationService(EdoContext context, Hub.SignalRHub signalRHub)
         {
             _context = context;
-            _signalRSender = signalRSender;
+            _signalRHub = signalRHub;
         }
         
         public async Task Add(Models.Notification notification)
@@ -40,7 +40,7 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Notification
                         => SendEmail(emailSettings),
                     
                     ProtocolTypes.WebSocket when settings is WebSocketSettings webSocketSettings 
-                        => _signalRSender.FireNotificationAddedEvent(notification.UserId, entry.Entity.Id, notification.Message),
+                        => SendWebSocket(notification.UserId, entry.Entity.Id, notification.Message),
                     
                     _ => throw new ArgumentException($"Unsupported protocol '{protocol}' or incorrect settings type")
                 };
@@ -91,7 +91,13 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Notification
         }
 
 
-        private readonly Hub.SignalRSender _signalRSender;
+        private Task SendWebSocket(int userId, int messageId, string message)
+        {
+            return _signalRHub.SendEventToGroup($"notifications-{userId}", "NotificationAdded", message);
+        }
+
+
+        private readonly Hub.SignalRHub _signalRHub;
         private readonly EdoContext _context;
     }
 }
