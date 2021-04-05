@@ -181,7 +181,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                         $"Availability search with id '{searchId}' on supplier '{supplier}' finished with state '{state.TaskState}', error '{state.Error}'");
                 }
 
-                await _signalRHub.SendEventToGroup($"search-{searchId}", "SearchStateChanged");
+                await _signalRHub.SendEventToGroup($"{SignalRGroupNamePrefix}-{searchId}", SignalREventName);
                 await _storage.SaveState(searchId, state, supplier);
             }
         }
@@ -255,6 +255,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             }
         }
 
+        
+        private const string SignalRGroupNamePrefix = "search";
+        private const string SignalREventName = "SearchStateChanged";
+        
 
         private readonly IWideAvailabilityPriceProcessor _priceProcessor;
         private readonly IAccommodationDuplicatesService _duplicatesService;

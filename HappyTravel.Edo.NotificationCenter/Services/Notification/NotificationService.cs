@@ -91,10 +91,12 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Notification
         }
 
 
-        private Task SendWebSocket(int userId, int messageId, string message)
-        {
-            return _signalRHub.SendEventToGroup($"notifications-{userId}", "NotificationAdded", message);
-        }
+        private Task SendWebSocket(int userId, int messageId, string message) 
+            => _signalRHub.SendEventToGroup($"{SignalRGroupNamePrefix}-{userId}", SignalREventName, messageId.ToString(), message);
+
+
+        private const string SignalRGroupNamePrefix = "notifications";
+        private const string SignalREventName = "NotificationAdded";
 
 
         private readonly Hub.SignalRHub _signalRHub;
