@@ -15,7 +15,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Mappings;
 using HappyTravel.Edo.Api.Services.Connectors;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.AccommodationMappings;
-using HappyTravel.Edo.NotificationCenter.Services.Hub;
+using HappyTravel.Edo.NotificationCenter.Services.Hubs;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +33,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             ISupplierConnectorManager supplierConnectorManager,
             IDateTimeProvider dateTimeProvider,
             ILogger<WideAvailabilitySearchTask> logger,
-            SignalRHub signalRHub)
+            SearchHub searchHub)
         {
             _storage = storage;
             _priceProcessor = priceProcessor;
@@ -41,7 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             _supplierConnectorManager = supplierConnectorManager;
             _dateTimeProvider = dateTimeProvider;
             _logger = logger;
-            _signalRHub = signalRHub;
+            _searchHub = _searchHub;
         }
 
 
@@ -54,7 +54,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 serviceProvider.GetRequiredService<ISupplierConnectorManager>(),
                 serviceProvider.GetRequiredService<IDateTimeProvider>(),
                 serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>(),
-                serviceProvider.GetRequiredService<SignalRHub>()
+                serviceProvider.GetRequiredService<SearchHub>()
             );
         }
 
@@ -181,7 +181,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                         $"Availability search with id '{searchId}' on supplier '{supplier}' finished with state '{state.TaskState}', error '{state.Error}'");
                 }
 
-                await _signalRHub.SendEventToGroup($"{SignalRGroupNamePrefix}-{searchId}", SignalREventName);
+                await _searchHub.FireSearchStateChangedEvent(searchId);
                 await _storage.SaveState(searchId, state, supplier);
             }
         }
@@ -254,10 +254,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 return resultedFilter;
             }
         }
-
-        
-        private const string SignalRGroupNamePrefix = "search";
-        private const string SignalREventName = "SearchStateChanged";
         
 
         private readonly IWideAvailabilityPriceProcessor _priceProcessor;
@@ -266,6 +262,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly ILogger<WideAvailabilitySearchTask> _logger;
         private readonly IWideAvailabilityStorage _storage;
-        private readonly SignalRHub _signalRHub;
+        private readonly SearchHub _searchHub;
     }
 }

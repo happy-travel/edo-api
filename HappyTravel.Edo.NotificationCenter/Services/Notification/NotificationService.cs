@@ -7,16 +7,17 @@ using HappyTravel.Edo.Common.Enums.Notifications;
 using HappyTravel.Edo.Common.Models.Notifications;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.NotificationCenter.Models;
+using HappyTravel.Edo.NotificationCenter.Services.Hubs;
 using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.NotificationCenter.Services.Notification
 {
     public class NotificationService : INotificationService
     {
-        public NotificationService(EdoContext context, Hub.SignalRHub signalRHub)
+        public NotificationService(EdoContext context, NotificationCenterHub notificationCenterHub)
         {
             _context = context;
-            _signalRHub = signalRHub;
+            _notificationCenterHub = notificationCenterHub;
         }
         
         public async Task Add(Models.Notification notification)
@@ -92,14 +93,10 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Notification
 
 
         private Task SendWebSocket(int userId, int messageId, string message) 
-            => _signalRHub.SendEventToGroup($"{SignalRGroupNamePrefix}-{userId}", SignalREventName, messageId.ToString(), message);
+            => _notificationCenterHub.FireNotificationAddedEvent(userId, messageId, message);
 
 
-        private const string SignalRGroupNamePrefix = "notifications";
-        private const string SignalREventName = "NotificationAdded";
-
-
-        private readonly Hub.SignalRHub _signalRHub;
+        private readonly NotificationCenterHub _notificationCenterHub;
         private readonly EdoContext _context;
     }
 }

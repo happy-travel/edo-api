@@ -2,12 +2,12 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 
-namespace HappyTravel.Edo.NotificationCenter.Services.Hub
+namespace HappyTravel.Edo.NotificationCenter.Services.Hubs
 {
-    public class SignalRHub : Microsoft.AspNetCore.SignalR.Hub
+    public class SearchHub : Hub<ISearchHub>
     {
-        public Task SendEventToGroup(string groupName, string eventName, params string[] args) 
-            => Clients.Group(groupName).SendAsync(eventName, args);
+        public Task FireSearchStateChangedEvent(Guid searchId) 
+            => Clients.Group($"{GroupNamePrefix}-{searchId}").SearchStateChanged();
 
 
         public Task Join(string groupName) 
@@ -16,5 +16,8 @@ namespace HappyTravel.Edo.NotificationCenter.Services.Hub
 
         public Task Leave(string groupName) 
             => Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        
+        
+        private const string GroupNamePrefix = "search";
     }
 }
