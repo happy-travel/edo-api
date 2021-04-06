@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Users;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
@@ -10,8 +11,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
     /// </summary>
     public interface IBookingManagementService
     {
-        Task<Result> Cancel(Booking booking, UserInfo user, BookingChangeReason changeReason);
+        Task<Result> Cancel(Booking booking, UserInfo user, BookingChangeEvents eventType, BookingChangeInitiators initiator);
         
-        Task<Result> RefreshStatus(Booking booking, UserInfo user, BookingChangeReason changeReason);
+        Task<Result> RefreshStatus(Booking booking, UserInfo user, BookingChangeEvents eventType, BookingChangeInitiators initiator);
     }
 }

@@ -23,13 +23,10 @@ namespace HappyTravel.Edo.Api.Services.SupplierResponses
             var (_, isGettingBookingDetailsFailure, bookingDetails, gettingBookingDetailsError) = await _supplierConnectorManager.Get(supplier).ProcessAsyncResponse(stream);
             if (isGettingBookingDetailsFailure)
                 return Result.Failure(gettingBookingDetailsError.Detail);
+
+            await _responseProcessor.ProcessResponse(bookingDetails, UserInfo.InternalServiceAccount, BookingChangeEvents.SupplierWebHook,
+                BookingChangeInitiators.Supplier); 
             
-            await _responseProcessor.ProcessResponse(bookingDetails, UserInfo.InternalServiceAccount, new Data.Bookings.BookingChangeReason 
-            { 
-                Initiator = BookingChangeInitiators.Supplier,
-                Source = BookingChangeSources.Supplier,
-                Event = BookingChangeEvents.ResponseFromSupplier
-            });
             return Result.Success();
         }
 

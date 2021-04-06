@@ -58,6 +58,9 @@ namespace HappyTravel.Edo.Api.AdministratorServices
 
             async Task<Result> SetSettings()
             {
+                if (settings.CustomDeadlineShift.HasValue && settings.CustomDeadlineShift >= 0) 
+                    return Result.Failure("Deadline shift must be less than zero");
+                
                 var existingSettings = await _context.AgencySystemSettings.SingleOrDefaultAsync(s => s.AgencyId == agencyId);
                 if (existingSettings == default)
                 {

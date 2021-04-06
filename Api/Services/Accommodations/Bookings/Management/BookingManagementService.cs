@@ -29,7 +29,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
         
         
-        public async Task<Result> Cancel(Booking booking, UserInfo user, BookingChangeReason changeReason)
+        public async Task<Result> Cancel(Booking booking, UserInfo user, BookingChangeEvents eventType, BookingChangeInitiators initiator)
         {
             if (booking.Status == BookingStatuses.Cancelled)
             {
@@ -68,10 +68,17 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             
             async Task<Result> ProcessCancellation(Booking b)
             {
+                var changeReason = new BookingChangeReason
+                {
+                    Event = eventType,
+                    Initiator = initiator,
+                    Source = BookingChangeSources.Supplier
+                };
+                
                 await _bookingRecordsUpdater.ChangeStatus(b, BookingStatuses.PendingCancellation, _dateTimeProvider.UtcNow(), user, changeReason);
-
+                
                 return b.UpdateMode == BookingUpdateModes.Synchronous
-                    ? await RefreshStatus(b, user, changeReason)
+                    ? await RefreshStatus(b, user, eventType, initiator)
                     : Result.Success();
             }
 
@@ -85,7 +92,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
 
 
 
-        public async Task<Result> RefreshStatus(Booking booking, UserInfo user, BookingChangeReason changeReason)
+        public async Task<Result> RefreshStatus(Booking booking, UserInfo user, BookingChangeEvents eventType, BookingChangeInitiators initiator)
         {
             var oldStatus = booking.Status;
             var referenceCode = booking.ReferenceCode;
@@ -101,7 +108,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
                 return Result.Failure(getDetailsError.Detail);
             }
 
-            await _responseProcessor.ProcessResponse(newDetails, user, changeReason);
+            await _responseProcessor.ProcessResponse(newDetails, user, eventType, initiator);
 
             _logger.LogBookingRefreshStatusSuccess($"Successfully refreshed status for a booking with reference code: '{referenceCode}'. " +
                 $"Old status: {oldStatus}. New status: {newDetails.Status}");

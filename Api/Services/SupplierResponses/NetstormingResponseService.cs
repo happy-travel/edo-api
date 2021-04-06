@@ -39,13 +39,9 @@ namespace HappyTravel.Edo.Api.Services.SupplierResponses
                 return Result.Failure(bookingDetailsError);
             }
 
-            await _responseProcessor.ProcessResponse(bookingDetails, UserInfo.InternalServiceAccount, new Data.Bookings.BookingChangeReason 
-            { 
-                Initiator = Common.Enums.BookingChangeInitiators.Supplier,
-                Source = Common.Enums.BookingChangeSources.Supplier,
-                Event = Common.Enums.BookingChangeEvents.ResponseFromSupplier,
-                Reason = "Received a response from Netstorming"
-            });
+            await _responseProcessor.ProcessResponse(bookingDetails, UserInfo.InternalServiceAccount, Common.Enums.BookingChangeEvents.SupplierWebHook,
+                Common.Enums.BookingChangeInitiators.Supplier);
+
             return Result.Success();
         }
         

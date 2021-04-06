@@ -5,7 +5,6 @@ using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
 
@@ -45,16 +44,10 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         {
             return GetBooking(bookingId)
                 .Bind(ProcessRefresh);
-            
-            
-            Task<Result> ProcessRefresh(Booking booking) 
-                => _managementService.RefreshStatus(booking, admin.ToUserInfo(), new BookingChangeReason 
-                { 
-                    Initiator = BookingChangeInitiators.Administrator,
-                    Source = BookingChangeSources.Supplier,
-                    Event = BookingChangeEvents.Refresh,
-                    Reason = "Updated on request to the supplier by an administrator"
-                });
+
+
+            Task<Result> ProcessRefresh(Booking booking)
+                => _managementService.RefreshStatus(booking, admin.ToUserInfo(), BookingChangeEvents.Refresh, BookingChangeInitiators.Administrator);
         }
 
 
@@ -65,13 +58,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 
             
             Task<Result> Cancel(Booking booking) 
-                => _managementService.Cancel(booking, admin.ToUserInfo(), new BookingChangeReason 
-                { 
-                    Initiator = BookingChangeInitiators.Administrator,
-                    Source = BookingChangeSources.Supplier,
-                    Event = BookingChangeEvents.Cancel,
-                    Reason = "Canceled on request from administrator"
-                });
+                => _managementService.Cancel(booking, admin.ToUserInfo(), BookingChangeEvents.Cancel, BookingChangeInitiators.Administrator);
         }
 
 

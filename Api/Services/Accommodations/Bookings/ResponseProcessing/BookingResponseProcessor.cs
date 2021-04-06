@@ -7,6 +7,7 @@ using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
+using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.EdoContracts.Accommodations.Enums;
 using Microsoft.Extensions.Logging;
 using Booking = HappyTravel.EdoContracts.Accommodations.Booking;
@@ -31,7 +32,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
         }
         
         
-        public async Task ProcessResponse(Booking bookingResponse, UserInfo user, Data.Bookings.BookingChangeReason changeReason)
+        public async Task ProcessResponse(Booking bookingResponse, UserInfo user, BookingChangeEvents eventType, BookingChangeInitiators initiator)
         {
             var (_, isFailure, booking, error) = await _bookingRecordManager.Get(bookingResponse.ReferenceCode);
             if (isFailure)
@@ -48,7 +49,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
 
             if (bookingResponse.Status == BookingStatusCodes.NotFound)
             {
-                await ProcessBookingNotFound(booking, bookingResponse);
+                await ProcessBookingNotFound(booking, bookingResponse, eventType, initiator);
                 return;
             }
 
@@ -62,8 +63,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
                 return;
             }
 
-            var (_, isUpdateFailure, updateError) 
-                = await _recordsUpdater.ChangeStatus(booking, bookingResponse.Status.ToInternalStatus(), _dateTimeProvider.UtcNow(), user, changeReason);
+            var changeReason = new BookingChangeReason
+            {
+                Event = eventType,
+                Initiator = initiator,
+                Source = BookingChangeSources.Supplier
+            };
+            
+            var (_, isUpdateFailure, updateError) = await _recordsUpdater.ChangeStatus(booking,
+                bookingResponse.Status.ToInternalStatus(),
+                _dateTimeProvider.UtcNow(),
+                user, 
+                changeReason);
+            
             if (isUpdateFailure)
             {
                 _logger.LogBookingResponseProcessFailure(updateError);
@@ -74,9 +86,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
                 $"The booking response with the reference code '{bookingResponse.ReferenceCode}' has been successfully processed. " +
                 $"New status: {bookingResponse.Status}");
         }
-        
-        
-        private async Task ProcessBookingNotFound(Edo.Data.Bookings.Booking booking, EdoContracts.Accommodations.Booking bookingResponse)
+
+
+        private async Task ProcessBookingNotFound(Data.Bookings.Booking booking, Booking bookingResponse, BookingChangeEvents eventType, BookingChangeInitiators initiator)
         {
             if (_dateTimeProvider.UtcNow() < booking.Created + BookingCheckTimeout)
             {
@@ -87,15 +99,15 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
             {
                 await _recordsUpdater.ChangeStatus(booking, BookingStatuses.ManualCorrectionNeeded, _dateTimeProvider.UtcNow(), UserInfo.InternalServiceAccount, new Data.Bookings.BookingChangeReason 
                 { 
-                    Initiator = BookingChangeInitiators.System,
-                    Source = BookingChangeSources.Supplier,  
-                    Event = BookingChangeEvents.ResponseFromSupplier
+                    Initiator = initiator,
+                    Source = BookingChangeSources.System,  
+                    Event = eventType
                 });
                 _logger.LogBookingResponseProcessSuccess(
                     $"The booking response with the reference code '{bookingResponse.ReferenceCode}' set as needed manual processing.");
             }
         }
-        
+
         
         private static readonly TimeSpan BookingCheckTimeout = TimeSpan.FromMinutes(30);
         
