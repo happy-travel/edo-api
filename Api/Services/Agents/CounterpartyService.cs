@@ -134,24 +134,35 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        private async Task<Result<CounterpartyInfo>> GetCounterpartyInfo(int counterpartyId)
+        public Task<Result<CounterpartyContractKind>> GetContractKind(int counterpartyId)
+            => GetCounterpartyRecord(counterpartyId)
+                .Ensure(cp => cp.ContractKind.HasValue, "Counterparty contract kind unknown")
+                .Map(cp => cp.ContractKind.Value);
+
+
+        private Task<Result<CounterpartyInfo>> GetCounterpartyInfo(int counterpartyId)
+            => GetCounterpartyRecord(counterpartyId)
+                .Map(c => new CounterpartyInfo(
+                    c.Id,
+                    c.Name,
+                    c.LegalAddress,
+                    c.PreferredPaymentMethod,
+                    c.IsContractUploaded,
+                    c.State,
+                    c.Verified,
+                    c.IsActive));
+
+
+        private async Task<Result<Counterparty>> GetCounterpartyRecord(int counterpartyId)
         {
             var result = await _context.Counterparties
                 .Where(cp => cp.Id == counterpartyId)
                 .SingleOrDefaultAsync();
 
             if (result == default)
-                return Result.Failure<CounterpartyInfo>("Could not find counterparty with specified id");
-            
-            return new CounterpartyInfo(
-                result.Id,
-                result.Name,
-                result.LegalAddress,
-                result.PreferredPaymentMethod,
-                result.IsContractUploaded,
-                result.State,
-                result.Verified,
-                result.IsActive);
+                return Result.Failure<Counterparty>("Could not find counterparty with specified id");
+
+            return result;
         }
 
         

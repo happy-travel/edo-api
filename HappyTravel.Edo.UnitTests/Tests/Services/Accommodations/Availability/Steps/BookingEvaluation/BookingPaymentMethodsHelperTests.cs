@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEvaluation;
 using HappyTravel.Edo.Common.Enums.AgencySettings;
+using HappyTravel.Edo.Data.Agents;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.Accommodations.Internals;
 using HappyTravel.EdoContracts.General.Enums;
@@ -21,7 +22,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.Hide);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,11));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,11));
             
             Assert.Equal(new List<PaymentMethods>(), availablePaymentMethods);
         }
@@ -36,7 +38,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.DisplayOnly);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,11));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,11));
             
             Assert.Equal(new List<PaymentMethods>(), availablePaymentMethods);
         }
@@ -51,8 +54,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardPurchasesOnly);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,15));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,15));
             
             Assert.Equal(new List<PaymentMethods> {PaymentMethods.CreditCard}, availablePaymentMethods);
         }
@@ -67,8 +70,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardPurchasesOnly);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,23));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,23));
             
             Assert.Equal(new List<PaymentMethods>(), availablePaymentMethods);
         }
@@ -83,8 +86,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardAndAccountPurchases);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,23));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                    CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,23));
             
             Assert.Equal(new List<PaymentMethods>(), availablePaymentMethods);
         }
@@ -99,8 +102,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardAndAccountPurchases);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,15));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,15));
             
             Assert.Equal(new List<PaymentMethods> {PaymentMethods.BankTransfer, PaymentMethods.CreditCard}, availablePaymentMethods);
         }
@@ -115,8 +118,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.Hide, deadlineOffersMode: PassedDeadlineOffersMode.Hide);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,22));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,22));
             
             Assert.Equal(new List<PaymentMethods>(), availablePaymentMethods);
         }
@@ -131,13 +134,13 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.Hide, deadlineOffersMode: PassedDeadlineOffersMode.CardPurchasesOnly);
             
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,22));
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11 ,22));
             
             Assert.Equal(new List<PaymentMethods> {PaymentMethods.CreditCard}, availablePaymentMethods);
         }
-        
-        
+
+
         [Fact]
         public void Allowed_apr_should_return_all_payment_methods_when_deadline_is_reached_and_allowed()
         {
@@ -146,13 +149,61 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Availability.S
                 deadlineDate: new DateTime(2020, 11, 22),
                 checkInDate: new DateTime(2020, 11, 25));
             var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardAndAccountPurchases, deadlineOffersMode: PassedDeadlineOffersMode.CardAndAccountPurchases);
-            
-            var availablePaymentMethods = BookingPaymentMethodsHelper
-                .GetAvailablePaymentMethods(availability, settingsWithHiddenApr, new DateTime(2020, 11 ,22));
-            
-            Assert.Equal(new List<PaymentMethods> {PaymentMethods.BankTransfer, PaymentMethods.CreditCard}, availablePaymentMethods);
+
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11, 22));
+
+            Assert.Equal(new List<PaymentMethods> { PaymentMethods.BankTransfer, PaymentMethods.CreditCard }, availablePaymentMethods);
         }
-        
+
+
+        [Fact]
+        public void Contract_kind_card_payments_should_match()
+        {
+            var availability = CreateAvailability(
+                isApr: false,
+                deadlineDate: new DateTime(2020, 11, 22),
+                checkInDate: new DateTime(2020, 11, 25));
+            var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardAndAccountPurchases, deadlineOffersMode: PassedDeadlineOffersMode.CardAndAccountPurchases);
+
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditCardPayments, new DateTime(2020, 11, 20));
+
+            Assert.Equal(new List<PaymentMethods> { PaymentMethods.CreditCard, PaymentMethods.Offline }, availablePaymentMethods);
+        }
+
+
+        [Fact]
+        public void Contract_kind_cash_payments_should_match()
+        {
+            var availability = CreateAvailability(
+                isApr: false,
+                deadlineDate: new DateTime(2020, 11, 22),
+                checkInDate: new DateTime(2020, 11, 25));
+            var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardAndAccountPurchases, deadlineOffersMode: PassedDeadlineOffersMode.CardAndAccountPurchases);
+
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CashPayments, new DateTime(2020, 11, 20));
+
+            Assert.Equal(new List<PaymentMethods> { PaymentMethods.CreditCard, PaymentMethods.Offline }, availablePaymentMethods);
+        }
+
+
+        [Fact]
+        public void Contract_kind_credit_payments_should_match()
+        {
+            var availability = CreateAvailability(
+                isApr: false,
+                deadlineDate: new DateTime(2020, 11, 22),
+                checkInDate: new DateTime(2020, 11, 25));
+            var settingsWithHiddenApr = CreateSettings(aprMode: AprMode.CardAndAccountPurchases, deadlineOffersMode: PassedDeadlineOffersMode.CardAndAccountPurchases);
+
+            var availablePaymentMethods = BookingPaymentMethodsHelper.GetAvailablePaymentMethods(availability, settingsWithHiddenApr,
+                CounterpartyContractKind.CreditPayments, new DateTime(2020, 11, 20));
+
+            Assert.Equal(new List<PaymentMethods> { PaymentMethods.BankTransfer, PaymentMethods.CreditCard }, availablePaymentMethods);
+        }
+
 
         private static AccommodationBookingSettings CreateSettings(AprMode aprMode = default, PassedDeadlineOffersMode deadlineOffersMode = default)
             => new(default, aprMode, deadlineOffersMode, isMarkupDisabled: default, 

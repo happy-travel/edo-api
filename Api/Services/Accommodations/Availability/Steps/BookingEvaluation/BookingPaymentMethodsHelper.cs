@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HappyTravel.Edo.Common.Enums.AgencySettings;
+using HappyTravel.Edo.Data.Agents;
 using HappyTravel.EdoContracts.General.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEvaluation
@@ -9,10 +10,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
     public static class BookingPaymentMethodsHelper
     {
         public static List<PaymentMethods> GetAvailablePaymentMethods(in EdoContracts.Accommodations.RoomContractSetAvailability availability,
-            AccommodationBookingSettings settings, DateTime date)
+            AccommodationBookingSettings settings, CounterpartyContractKind contractKind, DateTime date)
             => AllAvailablePaymentMethods
                 .Intersect(GetAprPaymentMethods(availability, settings))
                 .Intersect(GetPassedDeadlinePaymentMethods(availability, settings, date))
+                .Intersect(GetContractKindPaymentMethods(contractKind))
                 .ToList();
 
 
@@ -51,10 +53,23 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
         }
 
 
+        private static List<PaymentMethods> GetContractKindPaymentMethods(CounterpartyContractKind contractKind)
+        {
+            return contractKind switch
+            {
+                CounterpartyContractKind.CashPayments => new List<PaymentMethods> { PaymentMethods.Offline, PaymentMethods.CreditCard },
+                CounterpartyContractKind.CreditCardPayments => new List<PaymentMethods> { PaymentMethods.Offline, PaymentMethods.CreditCard },
+                CounterpartyContractKind.CreditPayments => new List<PaymentMethods> { PaymentMethods.BankTransfer, PaymentMethods.CreditCard },
+                _ => throw new ArgumentOutOfRangeException(nameof(contractKind), $"Invalid value {contractKind}")
+            };
+        }
+
+
         private static readonly List<PaymentMethods> AllAvailablePaymentMethods = new()
         {
             PaymentMethods.BankTransfer,
-            PaymentMethods.CreditCard
+            PaymentMethods.CreditCard,
+            PaymentMethods.Offline
         };
 
         private static readonly List<PaymentMethods> EmptyPaymentMethodsList = new(0);
