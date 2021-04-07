@@ -16,7 +16,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations
         void Count_cancellation_policies_should_be_equal()
         {
             var sourceContractSet = GetRoomContractSet();
-            var resultContractSet = sourceContractSet.ToRoomContractSet(null, isDirectContract: false, 1);
+            var resultContractSet = sourceContractSet.ToRoomContractSet(null, isDirectContract: false, creditCardPaymentCommission: default);
             
             Assert.Equal(5, resultContractSet.Deadline.Policies.Count);
         }
@@ -26,7 +26,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations
         void Date_of_deadline_should_be_minimal()
         {
             var sourceContractSet = GetRoomContractSet();
-            var resultContractSet = sourceContractSet.ToRoomContractSet(null, isDirectContract: false, 1);
+            var resultContractSet = sourceContractSet.ToRoomContractSet(null, isDirectContract: false, creditCardPaymentCommission: default);
             
             Assert.Equal(new DateTime(1, 1, 1), resultContractSet.Deadline.Date);
         }
@@ -36,7 +36,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations
         void Percent_in_cancellation_policies_should_be_equal()
         {
             var sourceContractSet = GetRoomContractSet();
-            var resultContractSet = sourceContractSet.ToRoomContractSet(null, isDirectContract: false, 1);
+            var resultContractSet = sourceContractSet.ToRoomContractSet(null, isDirectContract: false, creditCardPaymentCommission: default);
 
             // totalAmount = 3818
             // 5 jan - ((279 * 50) + (3483 * 50)) / 3818 = 49.2666317444
