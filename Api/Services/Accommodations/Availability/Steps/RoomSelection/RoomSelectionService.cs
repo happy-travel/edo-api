@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Availabilities;
@@ -16,6 +17,7 @@ using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.EdoContracts.Accommodations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using IDateTimeProvider = HappyTravel.Edo.Api.Infrastructure.IDateTimeProvider;
 using RoomContractSet = HappyTravel.Edo.Api.Models.Accommodations.RoomContractSet;
 
@@ -29,7 +31,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
             IAccommodationBookingSettingsService accommodationBookingSettingsService,
             IDateTimeProvider dateTimeProvider,
             IServiceScopeFactory serviceScopeFactory,
-            AvailabilityAnalyticsService analyticsService)
+            AvailabilityAnalyticsService analyticsService,
+            IOptions<BookingOptions> bookingOptions)
         {
             _accommodationBookingSettingsService = accommodationBookingSettingsService;
             _dateTimeProvider = dateTimeProvider;
@@ -38,6 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
             _analyticsService = analyticsService;
             _supplierConnectorManager = supplierConnectorManager;
             _wideAvailabilityStorage = wideAvailabilityStorage;
+            _bookingOptions = bookingOptions.Value;
         }
 
 
@@ -152,7 +156,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
 
                         var isDirectContractFlag = searchSettings.IsDirectContractFlagVisible && rs.IsDirectContract;
 
-                        return rs.ToRoomContractSet(supplier, isDirectContractFlag);
+                        return rs.ToRoomContractSet(supplier, isDirectContractFlag, _bookingOptions.CreditCardPaymentsCommission);
                     });
             }
 
@@ -189,5 +193,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
         private readonly AvailabilityAnalyticsService _analyticsService;
         private readonly ISupplierConnectorManager _supplierConnectorManager;
         private readonly IWideAvailabilityStorage _wideAvailabilityStorage;
+        private readonly BookingOptions _bookingOptions;
     }
 }

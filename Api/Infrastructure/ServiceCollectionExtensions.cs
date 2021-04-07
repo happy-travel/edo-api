@@ -289,6 +289,7 @@ namespace HappyTravel.Edo.Api.Infrastructure
                     .Where(c => !string.IsNullOrWhiteSpace(c))
                     .Select(Enum.Parse<Suppliers>)
                     .ToList();
+                options.CreditCardPaymentsCommission = configuration.GetValue<decimal>("Edo:Booking:CreditCardPaymentsCommission");
             });
 
             #endregion

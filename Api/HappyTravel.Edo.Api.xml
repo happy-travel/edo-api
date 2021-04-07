@@ -1389,6 +1389,11 @@
                 The final and total net price of a service. This is <b>the actual</b> value of a price.
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.CreditCardPrice">
+            <summary>
+                The final price for credit card payments.
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.Type">
             <summary>
                 The price type.
@@ -3017,7 +3022,7 @@
             </summary>
             <returns>List of the slim booking models </returns>
         </member>
-        <member name="T:HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management.IBookingManagementService">
+        <member name="T:HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management.ISupplierBookingManagementService">
             <summary>
             Common booking management service to be used by agents, administrators, service accounts
             </summary>
