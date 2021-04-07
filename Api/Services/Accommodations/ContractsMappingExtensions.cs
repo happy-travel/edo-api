@@ -50,10 +50,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
         
         
-        private static Rate ToRate(this EdoContracts.General.Rate rate, decimal creditCardPaymentsCommission)
+        private static Rate ToRate(this EdoContracts.General.Rate rate, decimal creditCardPaymentCommission)
         {
             return new(rate.FinalPrice,
-                new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentsCommission, rate.FinalPrice.Currency),
+                new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentCommission, rate.FinalPrice.Currency),
                 rate.Gross,
                 rate.Discounts,
                 rate.Type,

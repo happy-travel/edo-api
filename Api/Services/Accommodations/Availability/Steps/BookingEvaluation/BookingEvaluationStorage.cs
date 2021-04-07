@@ -32,7 +32,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             
             var location = roomSetAvailability.Accommodation.Location;
             var roomContractSet = roomSetAvailability.RoomContractSet.ToRoomContractSet(result.Source,
-                roomSetAvailability.RoomContractSet.IsDirectContract, _bookingOptions.CreditCardPaymentsCommission);
+                roomSetAvailability.RoomContractSet.IsDirectContract, _bookingOptions.CreditCardPaymentCommission);
             
             var dataWithMarkup = result.Data;
             

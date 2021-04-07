@@ -465,7 +465,7 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<decimal>("CreditCardPayPaymentPrice")
+                    b.Property<decimal>("CreditCardPaymentPrice")
                         .HasColumnType("numeric");
 
                     b.Property<int>("Currency")

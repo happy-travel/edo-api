@@ -7,7 +7,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
 {
     public static class RoomContractSetAvailabilityExtensions
     {
-        public static RoomContractSetAvailability? ToRoomContractSetAvailability(this in EdoContracts.Accommodations.RoomContractSetAvailability? availability, Suppliers? supplier, bool isDirectContract, List<PaymentMethods> paymentMethods, decimal commission)
+        public static RoomContractSetAvailability? ToRoomContractSetAvailability(this in EdoContracts.Accommodations.RoomContractSetAvailability? availability, 
+            Suppliers? supplier, bool isDirectContract, List<PaymentMethods> paymentMethods, decimal creditCardPaymentCommission)
         {
             if (availability is null)
                 return null;
@@ -18,7 +19,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                 availabilityValue.CheckOutDate,
                 availabilityValue.NumberOfNights,
                 availabilityValue.Accommodation,
-                availabilityValue.RoomContractSet.ToRoomContractSet(supplier, isDirectContract, commission),
+                availabilityValue.RoomContractSet.ToRoomContractSet(supplier, isDirectContract, creditCardPaymentCommission),
                 paymentMethods);
         }
     }

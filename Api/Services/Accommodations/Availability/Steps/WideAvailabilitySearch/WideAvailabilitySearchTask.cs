@@ -137,7 +137,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                             : string.Empty;
 
                         var roomContractSets = accommodationAvailability.RoomContractSets
-                            .Select(rs => rs.ToRoomContractSet(supplier, rs.IsDirectContract, _bookingOptions.CreditCardPaymentsCommission))
+                            .Select(rs => rs.ToRoomContractSet(supplier, rs.IsDirectContract, _bookingOptions.CreditCardPaymentCommission))
                             .Where(roomSet => RoomContractSetSettingsChecker.IsDisplayAllowed(roomSet, connectorRequest.CheckInDate, searchSettings,
                                 _dateTimeProvider))
                             .ToList();

@@ -156,7 +156,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
 
                         var isDirectContractFlag = searchSettings.IsDirectContractFlagVisible && rs.IsDirectContract;
 
-                        return rs.ToRoomContractSet(supplier, isDirectContractFlag, _bookingOptions.CreditCardPaymentsCommission);
+                        return rs.ToRoomContractSet(supplier, isDirectContractFlag, _bookingOptions.CreditCardPaymentCommission);
                     });
             }
 

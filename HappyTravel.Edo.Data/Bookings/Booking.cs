@@ -23,7 +23,7 @@ namespace HappyTravel.Edo.Data.Bookings
         
         public DateTime? DeadlineDate { get; set; }
         public decimal TotalPrice { get; set; }
-        public decimal CreditCardPayPaymentPrice { get; set; }
+        public decimal CreditCardPaymentPrice { get; set; }
         
         public Currencies Currency { get; set; }
 

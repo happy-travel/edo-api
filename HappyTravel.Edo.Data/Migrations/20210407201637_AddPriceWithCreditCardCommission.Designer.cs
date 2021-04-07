@@ -18,7 +18,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace HappyTravel.Edo.Data.Migrations
 {
     [DbContext(typeof(EdoContext))]
-    [Migration("20210407195621_AddPriceWithCreditCardCommission")]
+    [Migration("20210407201637_AddPriceWithCreditCardCommission")]
     partial class AddPriceWithCreditCardCommission
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -467,7 +467,7 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<decimal>("CreditCardPayPaymentPrice")
+                    b.Property<decimal>("CreditCardPaymentPrice")
                         .HasColumnType("numeric");
 
                     b.Property<int>("Currency")

@@ -7,19 +7,19 @@ namespace HappyTravel.Edo.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<decimal>(
-                name: "CreditCardPayPaymentPrice",
+                name: "CreditCardPaymentPrice",
                 table: "Bookings",
                 type: "numeric",
                 nullable: false,
                 defaultValue: 0m);
-
-            migrationBuilder.Sql("UPDATE \"Bookings\" SET \"CreditCardPayPaymentPrice\" = \"TotalPrice\"");
+            
+            migrationBuilder.Sql("UPDATE \"Bookings\" SET \"CreditCardPaymentPrice\" = \"TotalPrice\"");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "CreditCardPayPaymentPrice",
+                name: "CreditCardPaymentPrice",
                 table: "Bookings");
         }
     }

@@ -168,7 +168,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
             {
                 var rate = availabilityInfo.RoomContractSet.Rate;
                 booking.TotalPrice = rate.FinalPrice.Amount;
-                booking.CreditCardPayPaymentPrice = rate.CreditCardPrice.Amount;
+                booking.CreditCardPaymentPrice = rate.CreditCardPrice.Amount;
                 booking.Currency = rate.Currency;
                 booking.Location = new AccommodationLocation(availabilityInfo.CountryName,
                     availabilityInfo.LocalityName,
