@@ -167,9 +167,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
             void AddServiceDetails()
             {
                 var rate = availabilityInfo.RoomContractSet.Rate;
-                booking.TotalPrice = rate.FinalPrice.Amount;
-                booking.CreditCardPaymentPrice = rate.CreditCardPrice.Amount;
-                booking.Currency = rate.Currency;
+                booking.TotalPrice = rate.FinalPrice[paymentMethod].Amount;
+                booking.Currency = rate.FinalPrice[paymentMethod].Currency;
                 booking.Location = new AccommodationLocation(availabilityInfo.CountryName,
                     availabilityInfo.LocalityName,
                     availabilityInfo.ZoneName,
@@ -193,7 +192,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
                     .Select((r, number) =>
                         new BookedRoom(r.Type,
                             r.IsExtraBedNeeded,
-                            r.Rate.FinalPrice, 
+                            r.Rate.FinalPrice[booking.PaymentMethod], 
                             r.BoardBasis,
                             r.MealPlan,
                             r.Deadline.Date,

@@ -4,6 +4,7 @@ using System.Linq;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
+using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Models;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations
@@ -52,8 +53,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         
         private static Rate ToRate(this EdoContracts.General.Rate rate, decimal creditCardPaymentCommission)
         {
-            return new(rate.FinalPrice,
-                new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentCommission, rate.FinalPrice.Currency),
+            var finalPrice = new Dictionary<PaymentMethods, MoneyAmount>
+            {
+                {PaymentMethods.Offline, rate.FinalPrice},
+                {PaymentMethods.BankTransfer, rate.FinalPrice},
+                {PaymentMethods.CreditCard, new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentCommission, rate.FinalPrice.Currency)},
+            };
+            
+            return new(finalPrice,
                 rate.Gross,
                 rate.Discounts,
                 rate.Type,
@@ -98,7 +105,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             if (!contractsWithDeadline.Any())
                 return default;
             
-            var totalAmount = Convert.ToDouble(roomContracts.Sum(r => r.Rate.FinalPrice.Amount));
+            var totalAmount = Convert.ToDouble(roomContracts.Sum(r => r.Rate.FinalPrice.Values.First().Amount));
             var deadlineDate = contractsWithDeadline
                 .Select(contract => contract.Deadline.Date.Value)
                 .OrderByDescending(d => d)
@@ -114,7 +121,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                         => contract.Deadline.Policies
                             .Where(p => p.FromDate <= date)
                             .OrderByDescending(p => p.FromDate)
-                            .Select(p => p.Percentage * Convert.ToDouble(contract.Rate.FinalPrice.Amount))
+                            .Select(p => p.Percentage * Convert.ToDouble(contract.Rate.FinalPrice.Values.First().Amount))
                             .FirstOrDefault()
                         );
 
