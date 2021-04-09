@@ -1364,11 +1364,6 @@
                 The price type.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.Currency">
-            <summary>
-                The price currency.
-            </summary>
-        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.Description">
             <summary>
                 The price description.
@@ -1387,11 +1382,6 @@
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.FinalPrice">
             <summary>
                 The final and total net price of a service. This is <b>the actual</b> value of a price.
-            </summary>
-        </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.CreditCardPrice">
-            <summary>
-                The final price for credit card payments.
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.Type">
