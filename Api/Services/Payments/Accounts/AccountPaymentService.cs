@@ -71,7 +71,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> Refund(string referenceCode, UserInfo user, DateTime operationDate, IPaymentCallbackService paymentCallbackService,
+        public async Task<Result> Refund(string referenceCode, ApiCaller apiCaller, DateTime operationDate, IPaymentCallbackService paymentCallbackService,
             string reason)
         {
             return await GetChargingAccountId()
@@ -109,7 +109,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                             refundableAmount.Currency,
                             reason: reason,
                             referenceCode: referenceCode),
-                        user);
+                        apiCaller);
 
 
                 async Task<Payment> UpdatePaymentStatus(Payment payment)
@@ -128,7 +128,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result<PaymentResponse>> Charge(string referenceCode, UserInfo user, IPaymentCallbackService paymentCallbackService)
+        public async Task<Result<PaymentResponse>> Charge(string referenceCode, ApiCaller apiCaller, IPaymentCallbackService paymentCallbackService)
         {
             return await GetChargingAccount()
                 .Bind(GetChargingAmount)
@@ -160,7 +160,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                         amount: amount.Amount,
                         reason: $"Charge money for service '{referenceCode}'",
                         referenceCode: referenceCode),
-                    user);
+                    apiCaller);
             }
 
 

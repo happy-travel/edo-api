@@ -25,7 +25,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> IncreaseManually(int agencyAccountId, PaymentData paymentData, UserInfo userInfo)
+        public async Task<Result> IncreaseManually(int agencyAccountId, PaymentData paymentData, ApiCaller apiCaller)
         {
             return await GetAgencyAccount(agencyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
@@ -47,7 +47,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.ManualIncrease,
                     account.Id,
                     paymentData.Amount,
-                    userInfo,
+                    apiCaller,
                     eventData,
                     null);
 
@@ -65,7 +65,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> DecreaseManually(int agencyAccountId, PaymentData paymentData, UserInfo userInfo)
+        public async Task<Result> DecreaseManually(int agencyAccountId, PaymentData paymentData, ApiCaller apiCaller)
         {
             return await GetAgencyAccount(agencyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, paymentData), "Account and payment currency mismatch")
@@ -87,7 +87,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.ManualDecrease,
                     account.Id,
                     paymentData.Amount,
-                    userInfo,
+                    apiCaller,
                     eventData,
                     null);
 

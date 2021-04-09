@@ -7,7 +7,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
 {
     public interface ICreditCardAuditService
     {
-        Task Write<TEventData>(CreditCardEventType eventType, string maskedNumber, decimal amount, UserInfo user, TEventData eventData, string referenceCode,
+        Task Write<TEventData>(CreditCardEventType eventType, string maskedNumber, decimal amount, ApiCaller apiCaller, TEventData eventData, string referenceCode,
             int agentId, Currencies currency);
     }
 }

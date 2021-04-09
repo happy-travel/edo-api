@@ -15,13 +15,13 @@ namespace HappyTravel.Edo.Api.Services.Payments.Offline
             _dateTimeProvider = dateTimeProvider;
         }
 
-        public async Task Write(UserInfo user, string referenceCode)
+        public async Task Write(ApiCaller apiCaller, string referenceCode)
         {
             var logEntry = new OfflinePaymentAuditLogEntry
             {
                 Created = _dateTimeProvider.UtcNow(),
-                UserId = user.Id,
-                UserType = user.Type,
+                UserId = apiCaller.Id,
+                ApiCallerType = apiCaller.Type,
                 ReferenceCode = referenceCode
             };
 

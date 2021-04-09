@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 namespace HappyTravel.Edo.Common.Enums
 {
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum UserTypes
+    public enum ApiCallerTypes
     {
         NotSpecified = 0,
         Admin = 1,

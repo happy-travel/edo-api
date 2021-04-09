@@ -9,11 +9,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 {
     public interface IBookingCreditCardPaymentService
     {
-        Task<Result<string>> Capture(Booking booking, UserInfo toUserInfo);
+        Task<Result<string>> Capture(Booking booking, ApiCaller apiCaller);
 
-        Task<Result> Void(Booking booking, UserInfo user);
+        Task<Result> Void(Booking booking, ApiCaller apiCaller);
 
-        Task<Result> Refund(Booking booking, DateTime operationDate, UserInfo user);
+        Task<Result> Refund(Booking booking, DateTime operationDate, ApiCaller apiCaller);
 
         Task<Result> PayForAccountBooking(string referenceCode, AgentContext agent);
     }

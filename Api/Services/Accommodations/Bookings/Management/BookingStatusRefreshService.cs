@@ -34,9 +34,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        public async Task<Result> RefreshStatus(int bookingId, UserInfo userInfo)
+        public async Task<Result> RefreshStatus(int bookingId, ApiCaller apiCaller)
         {
-            var (_, _, batchOperationResult) = await RefreshStatuses(new List<int> { bookingId }, userInfo);
+            var (_, _, batchOperationResult) = await RefreshStatuses(new List<int> { bookingId }, apiCaller);
 
             return batchOperationResult.HasErrors
                 ? Result.Failure(batchOperationResult.Message)
@@ -44,7 +44,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        public async Task<Result<BatchOperationResult>> RefreshStatuses(List<int> bookingIds, UserInfo userInfo)
+        public async Task<Result<BatchOperationResult>> RefreshStatuses(List<int> bookingIds, ApiCaller apiCaller)
         {
             var states = await GetStates();
             var bookings = await _context.Bookings
@@ -69,7 +69,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
                 foreach (var booking in bookings)
                 {
                     var state = states.SingleOrDefault(s => s.BookingId == booking.Id);
-                    var (_, isFailure, updatedState, error) = await RefreshStatus(booking, userInfo, state);
+                    var (_, isFailure, updatedState, error) = await RefreshStatus(booking, apiCaller, state);
 
                     if (isFailure)
                     {
@@ -126,7 +126,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        private async Task<Result<BookingStatusRefreshState>> RefreshStatus(Booking booking, UserInfo userInfo, BookingStatusRefreshState state)
+        private async Task<Result<BookingStatusRefreshState>> RefreshStatus(Booking booking, ApiCaller apiCaller, BookingStatusRefreshState state)
         {
             return await ValidateBooking()
                 .Bind(CheckIsRefreshStatusNeeded)
@@ -155,7 +155,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
 
 
             Task<Result> RefreshBookingStatus() 
-                => _supplierBookingManagement.RefreshStatus(booking, userInfo, BookingChangeEvents.Refresh);
+                => _supplierBookingManagement.RefreshStatus(booking, apiCaller, BookingChangeEvents.Refresh);
 
 
             BookingStatusRefreshState GetUpdatedState()

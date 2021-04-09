@@ -48,7 +48,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             SetupInitialData();
 
             var (_, isFailure, error) = await _counterpartyAccountService.TransferToDefaultAgency(
-                3, new MoneyAmount(1, Currencies.EUR), _user);
+                3, new MoneyAmount(1, Currencies.EUR), _apiCaller);
 
             Assert.True(isFailure);
         }
@@ -59,7 +59,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             SetupInitialData();
 
             var (_, isFailure, error) = await _counterpartyAccountService.TransferToDefaultAgency(
-                1, new MoneyAmount(1, Currencies.USD), _user);
+                1, new MoneyAmount(1, Currencies.USD), _apiCaller);
 
             Assert.True(isFailure);
         }
@@ -70,7 +70,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             SetupInitialData();
 
             var (_, isFailure, error) = await _counterpartyAccountService.TransferToDefaultAgency(
-                2, new MoneyAmount(1, Currencies.USD), _user);
+                2, new MoneyAmount(1, Currencies.USD), _apiCaller);
 
             Assert.True(isFailure);
         }
@@ -81,7 +81,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             SetupInitialData();
 
             var (_, isFailure, error) = await _counterpartyAccountService.TransferToDefaultAgency(
-                4, new MoneyAmount(1, Currencies.USD), _user);
+                4, new MoneyAmount(1, Currencies.USD), _apiCaller);
 
             Assert.True(isFailure);
         }
@@ -92,7 +92,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             SetupInitialData();
 
             var (_, isFailure, error) = await _counterpartyAccountService.TransferToDefaultAgency(
-                3, new MoneyAmount(-1, Currencies.USD), _user);
+                3, new MoneyAmount(-1, Currencies.USD), _apiCaller);
 
             Assert.True(isFailure);
         }
@@ -105,7 +105,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var agencyAccount = _mockedEdoContext.AgencyAccounts.Single(a => a.Id == 3);
 
             var (isSuccess, _, error) = await _counterpartyAccountService.TransferToDefaultAgency(
-                3, new MoneyAmount(1, Currencies.USD), _user);
+                3, new MoneyAmount(1, Currencies.USD), _apiCaller);
 
             Assert.True(isSuccess);
             Assert.Equal(999, counterpartyAccount.Balance);
@@ -231,7 +231,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
 
         private readonly Mock<EdoContext> _edoContextMock;
         private readonly EdoContext _mockedEdoContext;
-        private readonly UserInfo _user = new UserInfo(1, UserTypes.Admin);
+        private readonly ApiCaller _apiCaller = new ApiCaller(1, ApiCallerTypes.Admin);
         private readonly ICounterpartyAccountService _counterpartyAccountService;
     }
 }

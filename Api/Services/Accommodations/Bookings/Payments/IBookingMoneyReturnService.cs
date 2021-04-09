@@ -8,6 +8,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 {
     public interface IBookingMoneyReturnService
     {
-        Task<Result> ReturnMoney(Booking booking, DateTime operationDate, UserInfo user);
+        Task<Result> ReturnMoney(Booking booking, DateTime operationDate, ApiCaller apiCaller);
     }
 }

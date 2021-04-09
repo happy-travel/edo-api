@@ -29,7 +29,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> ChargeMoney(int accountId, ChargedMoneyData paymentData, UserInfo user)
+        public async Task<Result> ChargeMoney(int accountId, ChargedMoneyData paymentData, ApiCaller apiCaller)
         {
             return await GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
@@ -61,7 +61,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 await _auditService.Write(AccountEventType.Charge,
                     account.Id,
                     paymentData.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     paymentData.ReferenceCode);
 
@@ -70,7 +70,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task<Result> RefundMoney(int accountId, ChargedMoneyData paymentData, UserInfo user)
+        public async Task<Result> RefundMoney(int accountId, ChargedMoneyData paymentData, ApiCaller apiCaller)
         {
             return await GetAccount(accountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
@@ -94,7 +94,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
 
             Task<AgencyAccount> WriteAuditLog(AgencyAccount account) 
-                => WriteAuditLogWithReferenceCode(account, paymentData, AccountEventType.Refund, user);
+                => WriteAuditLogWithReferenceCode(account, paymentData, AccountEventType.Refund, apiCaller);
         }
 
 
@@ -211,7 +211,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
 
         private async Task<AgencyAccount> WriteAuditLogWithReferenceCode(AgencyAccount account, ChargedMoneyData paymentData, AccountEventType eventType,
-            UserInfo user)
+            ApiCaller user)
         {
             var eventData = new AccountBalanceLogEventData(paymentData.Reason, account.Balance);
             await _auditService.Write(eventType,

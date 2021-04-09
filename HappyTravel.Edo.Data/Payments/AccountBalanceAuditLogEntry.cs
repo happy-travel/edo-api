@@ -9,7 +9,7 @@ namespace HappyTravel.Edo.Data.Payments
         public AccountEventType Type { get; set; }
         public DateTime Created { get; set; }
         public int UserId { get; set; }
-        public UserTypes UserType { get; set; }
+        public ApiCallerTypes ApiCallerType { get; set; }
         public int AccountId { get; set; }
         public decimal Amount { get; set; }
         public string EventData { get; set; }

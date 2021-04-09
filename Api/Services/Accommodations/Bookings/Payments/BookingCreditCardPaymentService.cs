@@ -33,7 +33,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
         }
         
 
-        public async Task<Result<string>> Capture(Booking booking, UserInfo user)
+        public async Task<Result<string>> Capture(Booking booking, ApiCaller apiCaller)
         {
             if (booking.PaymentMethod != PaymentMethods.CreditCard)
             {
@@ -43,25 +43,25 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
             }
 
             _logger.LogCaptureMoneyForBookingSuccess($"Successfully captured money for a booking with reference code: '{booking.ReferenceCode}'");
-            return await _creditCardPaymentProcessingService.CaptureMoney(booking.ReferenceCode, user, _paymentCallbackService);
+            return await _creditCardPaymentProcessingService.CaptureMoney(booking.ReferenceCode, apiCaller, _paymentCallbackService);
         }
         
         
-        public async Task<Result> Void(Booking booking, UserInfo user)
+        public async Task<Result> Void(Booking booking, ApiCaller apiCaller)
         {
             if (booking.PaymentStatus != BookingPaymentStatuses.Authorized)
                 return Result.Failure($"Void is only available for payments with '{BookingPaymentStatuses.Authorized}' status");
 
-            return await _creditCardPaymentProcessingService.VoidMoney(booking.ReferenceCode, user, _paymentCallbackService);
+            return await _creditCardPaymentProcessingService.VoidMoney(booking.ReferenceCode, apiCaller, _paymentCallbackService);
         }
 
 
-        public async Task<Result> Refund(Booking booking, DateTime operationDate, UserInfo user)
+        public async Task<Result> Refund(Booking booking, DateTime operationDate, ApiCaller apiCaller)
         {
             if (booking.PaymentStatus != BookingPaymentStatuses.Captured)
                 return Result.Failure($"Refund is only available for payments with '{BookingPaymentStatuses.Captured}' status");
             
-            return await _creditCardPaymentProcessingService.RefundMoney(booking.ReferenceCode, user, operationDate, _paymentCallbackService);
+            return await _creditCardPaymentProcessingService.RefundMoney(booking.ReferenceCode, apiCaller, operationDate, _paymentCallbackService);
         }
 
 

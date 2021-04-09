@@ -52,7 +52,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
 
             bookingServiceMock
                 .Verify(
-                    b => b.Cancel(It.IsAny<Booking>(), It.IsAny<UserInfo>(), It.IsAny<BookingChangeEvents>()),
+                    b => b.Cancel(It.IsAny<Booking>(), It.IsAny<ApiCaller>(), It.IsAny<BookingChangeEvents>()),
                     Times.Exactly(2)
                 );
         }

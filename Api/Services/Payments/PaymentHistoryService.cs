@@ -44,9 +44,9 @@ namespace HappyTravel.Edo.Api.Services.Payments
                 from cardAuditLogEntry in cardAuditLogEntries.DefaultIfEmpty()
                 where
                     accountAuditLogEntry.UserId == agentId &&
-                    accountAuditLogEntry.UserType == UserTypes.Agent ||
+                    accountAuditLogEntry.ApiCallerType == ApiCallerTypes.Agent ||
                     cardAuditLogEntry.UserId == agentId &&
-                    cardAuditLogEntry.UserType == UserTypes.Agent
+                    cardAuditLogEntry.ApiCallerType == ApiCallerTypes.Agent
                 let isAccountLogEntry = accountAuditLogEntry != null && cardAuditLogEntry == null
                 let eventType = isAccountLogEntry ? ToPaymentHistoryType(accountAuditLogEntry.Type) : ToPaymentHistoryType(cardAuditLogEntry.Type)
                 select new PaymentHistoryData

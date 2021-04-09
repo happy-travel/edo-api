@@ -8,8 +8,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 {
     public interface IBookingAccountPaymentService
     {
-        Task<Result<string>> Charge(Booking booking, UserInfo user);
+        Task<Result<string>> Charge(Booking booking, ApiCaller apiCaller);
 
-        Task<Result> Refund(Booking booking, DateTime operationDate, UserInfo user);
+        Task<Result> Refund(Booking booking, DateTime operationDate, ApiCaller apiCaller);
     }
 }

@@ -19,14 +19,14 @@ namespace HappyTravel.Edo.Api.Services.Markups
         }
 
 
-        public async Task Write<TEventData>(MarkupPolicyEventType eventType, TEventData eventData, UserInfo user)
+        public async Task Write<TEventData>(MarkupPolicyEventType eventType, TEventData eventData, ApiCaller apiCaller)
         {
             var logEntry = new MarkupPolicyAuditLogEntry
             {
                 Created = _dateTimeProvider.UtcNow(),
                 Type = eventType,
-                UserId = user.Id,
-                UserType = user.Type,
+                UserId = apiCaller.Id,
+                ApiCallerType = apiCaller.Type,
                 EventData = JsonConvert.SerializeObject(eventData)
             };
 

@@ -26,7 +26,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             CreditCardPaymentInfo paymentInfo,
             string maskedNumber,
             Currencies currency,
-            UserInfo user,
+            ApiCaller apiCaller,
             int agentId)
         {
             return await CaptureInPayfort()
@@ -44,7 +44,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 return _creditCardAuditService.Write(CreditCardEventType.Capture,
                     maskedNumber,
                     request.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     request.MerchantReference,
                     agentId,
@@ -58,7 +58,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             string maskedNumber,
             MoneyAmount moneyAmount,
             string referenceCode,
-            UserInfo user,
+            ApiCaller apiCaller,
             int agentId)
         {
             return await VoidInPayfort()
@@ -76,7 +76,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 return _creditCardAuditService.Write(CreditCardEventType.Void,
                     maskedNumber,
                     moneyAmount.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     referenceCode,
                     agentId,

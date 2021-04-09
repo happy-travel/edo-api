@@ -3,14 +3,12 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using HappyTravel.Edo.Api.Extensions;
 using HappyTravel.Edo.Api.Filters.Authorization.AgentExistingFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.CounterpartyStatesFilters;
 using HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Bookings;
-using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.Flows;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
@@ -31,6 +29,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
     {
         public BookingsController(IFinancialAccountBookingFlow financialAccountBookingFlow,
             IBankCreditCardBookingFlow bankCreditCardBookingFlow,
+            IOfflinePaymentBookingFlow offlinePaymentBookingFlow,
             IAgentContextService agentContextService,
             IAgentBookingManagementService bookingManagementService,
             IBookingRecordManager bookingRecordManager,
@@ -40,6 +39,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         {
             _financialAccountBookingFlow = financialAccountBookingFlow;
             _bankCreditCardBookingFlow = bankCreditCardBookingFlow;
+            _offlinePaymentBookingFlow = offlinePaymentBookingFlow;
             _agentContextService = agentContextService;
             _bookingManagementService = bookingManagementService;
             _bookingRecordManager = bookingRecordManager;
@@ -76,13 +76,34 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("book-by-account")]
-        [ProducesResponseType(typeof(AccommodationBookingInfo), (int) HttpStatusCode.OK)]
-        [ProducesResponseType(typeof(ProblemDetails), (int) HttpStatusCode.BadRequest)]
+        [ProducesResponseType(typeof(AccommodationBookingInfo), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
         [MinCounterpartyState(CounterpartyStates.FullAccess)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationBooking)]
         public async Task<IActionResult> Book([FromBody] AccommodationBookingRequest request)
         {
             var (_, isFailure, bookingInfo, error) = await _financialAccountBookingFlow.BookByAccount(request, await _agentContextService.GetAgent(),
+                LanguageCode, ClientIp);
+            if (isFailure)
+                return BadRequest(ProblemDetailsBuilder.Build(error));
+
+            return Ok(bookingInfo);
+        }
+
+
+        /// <summary>
+        ///     Creates booking in one step. Must be payed offline before deadline.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost("book-for-offline")]
+        [ProducesResponseType(typeof(AccommodationBookingInfo), (int)HttpStatusCode.OK)]
+        [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+        [MinCounterpartyState(CounterpartyStates.FullAccess)]
+        [InAgencyPermissions(InAgencyPermissions.AccommodationBooking)]
+        public async Task<IActionResult> BookByOffline([FromBody] AccommodationBookingRequest request)
+        {
+            var (_, isFailure, bookingInfo, error) = await _offlinePaymentBookingFlow.Book(request, await _agentContextService.GetAgent(),
                 LanguageCode, ClientIp);
             if (isFailure)
                 return BadRequest(ProblemDetailsBuilder.Build(error));
@@ -319,6 +340,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
 
         private readonly IFinancialAccountBookingFlow _financialAccountBookingFlow;
         private readonly IBankCreditCardBookingFlow _bankCreditCardBookingFlow;
+        private readonly IOfflinePaymentBookingFlow _offlinePaymentBookingFlow;
         private readonly IAgentContextService _agentContextService;
         private readonly IAgentBookingManagementService _bookingManagementService;
         private readonly IBookingRecordManager _bookingRecordManager;

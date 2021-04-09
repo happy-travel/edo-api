@@ -30,7 +30,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var agencyAccountService = GetAgencyAccountServiceMock(context);
 
             var (_, isFailure, error) = await agencyAccountService.IncreaseManually(
-                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _apiCaller);
             Assert.True(isFailure);
         }
 
@@ -42,7 +42,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var agencyAccountService = GetAgencyAccountServiceMock(context);
 
             var (_, isFailure, error) = await agencyAccountService.IncreaseManually(
-                0, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                0, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
             Assert.True(isFailure);
         }
 
@@ -54,7 +54,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var agencyAccountService = GetAgencyAccountServiceMock(context);
 
             var (_, isFailure, error) = await agencyAccountService.IncreaseManually(
-                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _apiCaller);
             Assert.True(isFailure);
         }
 
@@ -67,7 +67,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var affectedAccount = context.AgencyAccounts.Single(a => a.Id == 1);
 
             var (isSuccess, _, error) = await agencyAccountService.IncreaseManually(
-                1, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
 
             Assert.True(isSuccess);
             Assert.Equal(121, affectedAccount.Balance);
@@ -81,7 +81,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var agencyAccountService = GetAgencyAccountServiceMock(context);
 
             var (_, isFailure, error) = await agencyAccountService.DecreaseManually(
-                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _apiCaller);
             Assert.True(isFailure);
         }
 
@@ -93,7 +93,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var agencyAccountService = GetAgencyAccountServiceMock(context);
 
             var (_, isFailure, error) = await agencyAccountService.DecreaseManually(
-                0, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                0, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
             Assert.True(isFailure);
         }
 
@@ -105,7 +105,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var agencyAccountService = GetAgencyAccountServiceMock(context);
 
             var (_, isFailure, error) = await agencyAccountService.DecreaseManually(
-                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _apiCaller);
             Assert.True(isFailure);
         }
 
@@ -118,7 +118,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
             var affectedAccount = context.AgencyAccounts.Single(a => a.Id == 1);
 
             var (isSuccess, _, error) = await agencyAccountService.DecreaseManually(
-                1, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
 
             Assert.True(isSuccess);
             Assert.Equal(119, affectedAccount.Balance);
@@ -226,6 +226,6 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.AgencyAccountSer
         }
 
 
-        private readonly UserInfo _user = new UserInfo(1, UserTypes.Admin);
+        private readonly ApiCaller _apiCaller = new ApiCaller(1, ApiCallerTypes.Admin);
     }
 }

@@ -33,17 +33,17 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
         }
 
 
-        public async Task<Result> Refund(Booking booking, DateTime operationDate, UserInfo user)
+        public async Task<Result> Refund(Booking booking, DateTime operationDate, ApiCaller apiCaller)
         {
             if (booking.PaymentStatus != BookingPaymentStatuses.Captured)
                 return Result.Success();
 
             var reason = $"Refunding money for booking {booking.ReferenceCode}";
-            return await _accountPaymentService.Refund(booking.ReferenceCode, user, operationDate, _paymentCallbackService, reason);
+            return await _accountPaymentService.Refund(booking.ReferenceCode, apiCaller, operationDate, _paymentCallbackService, reason);
         }
 
         
-        public async Task<Result<string>> Charge(Booking booking, UserInfo user)
+        public async Task<Result<string>> Charge(Booking booking, ApiCaller apiCaller)
         {
             return await CheckPaymentMethod()
                 .Bind(Charge)
@@ -60,7 +60,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 
             async Task<Result<string>> Charge()
             {
-                var (_, isFailure, _, error) = await _accountPaymentService.Charge(booking.ReferenceCode, user, _paymentCallbackService);
+                var (_, isFailure, _, error) = await _accountPaymentService.Charge(booking.ReferenceCode, apiCaller, _paymentCallbackService);
                 if (isFailure)
                     return Result.Failure<string>($"Unable to charge payment for a booking with reference code: '{booking.ReferenceCode}'. " +
                         $"Error while charging: {error}");

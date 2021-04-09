@@ -45,23 +45,23 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
         
 
-        public async Task<Result> ChangeStatus(Booking booking, BookingStatuses status, DateTime date, UserInfo user, BookingChangeReason reason) 
+        public async Task<Result> ChangeStatus(Booking booking, BookingStatuses status, DateTime date, ApiCaller apiCaller, BookingChangeReason reason) 
         {
             if (booking.Status == status)
                 return Result.Success();
 
             await SetStatus(booking, status);
 
-            await _bookingChangeLogService.Write(booking, status, date, user, reason);
+            await _bookingChangeLogService.Write(booking, status, date, apiCaller, reason);
             
             return status switch
             {
                 BookingStatuses.Confirmed => await ProcessConfirmation(booking, date),
-                BookingStatuses.Cancelled => await ProcessCancellation(booking, date, user),
-                BookingStatuses.Rejected => await ProcessDiscarding(booking, user),
-                BookingStatuses.Invalid => await ProcessDiscarding(booking, user),
-                BookingStatuses.Discarded => await ProcessDiscarding(booking, user),
-                BookingStatuses.ManualCorrectionNeeded => await ProcessManualCorrectionNeeding(booking, user),
+                BookingStatuses.Cancelled => await ProcessCancellation(booking, date, apiCaller),
+                BookingStatuses.Rejected => await ProcessDiscarding(booking, apiCaller),
+                BookingStatuses.Invalid => await ProcessDiscarding(booking, apiCaller),
+                BookingStatuses.Discarded => await ProcessDiscarding(booking, apiCaller),
+                BookingStatuses.ManualCorrectionNeeded => await ProcessManualCorrectionNeeding(booking, apiCaller),
                 BookingStatuses.PendingCancellation => Result.Success(),
                 BookingStatuses.WaitingForResponse => Result.Success(),
                 BookingStatuses.Pending => Result.Success(),
@@ -135,7 +135,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
         
         
-        private Task<Result> ProcessCancellation(Booking booking, DateTime cancellationDate, UserInfo user)
+        private Task<Result> ProcessCancellation(Booking booking, DateTime cancellationDate, ApiCaller user)
         {
             return SendNotifications()
                 .Tap(CancelSupplierOrder)
@@ -165,7 +165,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        private Task<Result> ProcessDiscarding(Booking booking, UserInfo user)
+        private Task<Result> ProcessDiscarding(Booking booking, ApiCaller user)
         {
             return CancelSupplierOrder()
                 .Bind(() => ReturnMoney(booking, _dateTimeProvider.UtcNow(), user));
@@ -179,7 +179,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        private async Task<Result> ProcessManualCorrectionNeeding(Booking booking, UserInfo user)
+        private async Task<Result> ProcessManualCorrectionNeeding(Booking booking, ApiCaller user)
         {
             var additionalInfo = await 
                 (from bookings in _context.Bookings
@@ -201,7 +201,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
         
-        private Task<Result> ReturnMoney(Booking booking, DateTime operationDate, UserInfo user) 
+        private Task<Result> ReturnMoney(Booking booking, DateTime operationDate, ApiCaller user) 
             => _moneyReturnService.ReturnMoney(booking, operationDate, user);
         
         

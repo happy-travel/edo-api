@@ -6,6 +6,6 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 {
     public interface IAccountBalanceAuditService
     {
-        Task Write<TEventData>(AccountEventType eventType, int accountId, decimal amount, UserInfo user, TEventData eventData, string referenceCode);
+        Task Write<TEventData>(AccountEventType eventType, int accountId, decimal amount, ApiCaller apiCaller, TEventData eventData, string referenceCode);
     }
 }

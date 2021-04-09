@@ -29,7 +29,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Payme
                 PaymentMethod = PaymentMethods.CreditCard
             };
 
-            var (_, isFailure, _) = await accountPaymentService.Charge(invalidPaymentMethodBooking, It.IsAny<UserInfo>());
+            var (_, isFailure, _) = await accountPaymentService.Charge(invalidPaymentMethodBooking, It.IsAny<ApiCaller>());
 
             Assert.True(isFailure);
 
@@ -67,7 +67,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Payme
             var bookingAccountPaymentService = CreateBookingAccountPaymentService(documentsService: documentsServiceMock.Object,
                 documentsMailingService: documentsMailingServiceMock.Object);
 
-            await bookingAccountPaymentService.Charge(Booking, It.IsAny<UserInfo>());
+            await bookingAccountPaymentService.Charge(Booking, It.IsAny<ApiCaller>());
 
             documentsServiceMock
                 .Verify(d => d.GenerateReceipt(It.IsAny<Booking>()), Times.Once);

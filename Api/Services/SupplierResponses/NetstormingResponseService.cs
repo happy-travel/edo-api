@@ -40,7 +40,7 @@ namespace HappyTravel.Edo.Api.Services.SupplierResponses
                 return Result.Failure(bookingDetailsError);
             }
 
-            await _responseProcessor.ProcessResponse(bookingDetails, UserInfo.FromSupplier(Suppliers.Netstorming), Common.Enums.BookingChangeEvents.SupplierWebHook);
+            await _responseProcessor.ProcessResponse(bookingDetails, ApiCaller.FromSupplier(Suppliers.Netstorming), Common.Enums.BookingChangeEvents.SupplierWebHook);
 
             return Result.Success();
         }

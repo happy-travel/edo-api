@@ -5,6 +5,6 @@ namespace HappyTravel.Edo.Api.Services.Payments.Offline
 {
     public interface IOfflinePaymentAuditService
     {
-        Task Write(UserInfo user, string referenceCode);
+        Task Write(ApiCaller apiCaller, string referenceCode);
     }
 }

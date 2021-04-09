@@ -13,15 +13,15 @@ namespace HappyTravel.Edo.Api.AdministratorServices
     {
         Task<Result<CounterpartyBalanceInfo>> GetBalance(int counterpartyId, Currencies currency);
 
-        Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, UserInfo user);
+        Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, ApiCaller apiCaller);
 
-        Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, UserInfo user);
+        Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, ApiCaller apiCaller);
 
-        Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, UserInfo user);
+        Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, ApiCaller apiCaller);
 
-        Task<Result> IncreaseManually(int counterpartyAccountId, PaymentData data, UserInfo user);
+        Task<Result> IncreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller);
 
-        Task<Result> DecreaseManually(int counterpartyAccountId, PaymentData data, UserInfo user);
+        Task<Result> DecreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller);
         
         Task<List<CounterpartyAccountInfo>> GetAccounts(int counterpartyId);
     }

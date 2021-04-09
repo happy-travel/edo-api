@@ -18,7 +18,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
         }
 
 
-        public async Task Write<TEventData>(CreditCardEventType eventType, string maskedNumber, decimal amount, UserInfo user, TEventData eventData,
+        public async Task Write<TEventData>(CreditCardEventType eventType, string maskedNumber, decimal amount, ApiCaller apiCaller, TEventData eventData,
             string referenceCode, int agentId, Currencies currency)
         {
             var logEntry = new CreditCardAuditLogEntry()
@@ -27,8 +27,8 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 Type = eventType,
                 MaskedNumber = maskedNumber,
                 Amount = amount,
-                UserId = user.Id,
-                UserType = user.Type,
+                UserId = apiCaller.Id,
+                ApiCallerType = apiCaller.Type,
                 EventData = JsonConvert.SerializeObject(eventData),
                 ReferenceCode = referenceCode,
                 AgentId = agentId,

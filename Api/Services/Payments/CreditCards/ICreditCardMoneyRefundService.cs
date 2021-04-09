@@ -12,7 +12,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             CreditCardPaymentInfo paymentInfo,
             string maskedNumber,
             string referenceCode,
-            UserInfo user,
+            ApiCaller apiCaller,
             int agentId);
     }
 }

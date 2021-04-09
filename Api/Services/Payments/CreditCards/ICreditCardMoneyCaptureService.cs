@@ -14,7 +14,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             CreditCardPaymentInfo paymentInfo,
             string maskedNumber,
             Currencies currency,
-            UserInfo user,
+            ApiCaller apiCaller,
             int agentId);
 
 
@@ -23,7 +23,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             string maskedNumber,
             MoneyAmount moneyAmount,
             string referenceCode,
-            UserInfo user,
+            ApiCaller apiCaller,
             int agentId);
     }
 }

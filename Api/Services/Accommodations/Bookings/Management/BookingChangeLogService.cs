@@ -15,22 +15,22 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        public async Task Write(Booking booking, BookingStatuses status, DateTime date, UserInfo user, BookingChangeReason reason)
+        public async Task Write(Booking booking, BookingStatuses status, DateTime date, ApiCaller apiCaller, BookingChangeReason reason)
         {
             var bookingStatusHistoryEntry = new BookingStatusHistoryEntry
             {
                 BookingId = booking.Id,
-                UserId = user.Id,
-                UserType = user.Type,
+                UserId = apiCaller.Id,
+                ApiCallerType = apiCaller.Type,
                 CreatedAt = date,
                 Status = status,
-                Initiator = GetInitiatorType(user),
+                Initiator = GetInitiatorType(apiCaller),
                 Source = reason.Source,
                 Event = reason.Event,
                 Reason = reason.Reason
             };
             
-            if (user.Type == UserTypes.Agent)
+            if (apiCaller.Type == ApiCallerTypes.Agent)
                 bookingStatusHistoryEntry.AgencyId = booking.AgencyId;
 
             var entry = _context.BookingStatusHistory.Add(bookingStatusHistoryEntry);
@@ -38,14 +38,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             _context.Detach(entry.Entity);
 
 
-            static BookingChangeInitiators GetInitiatorType(UserInfo userInfo)
+            static BookingChangeInitiators GetInitiatorType(ApiCaller userInfo)
                 => userInfo.Type switch
                 {
-                    UserTypes.Admin => BookingChangeInitiators.Administrator,
-                    UserTypes.Agent => BookingChangeInitiators.Agent,
-                    UserTypes.ServiceAccount => BookingChangeInitiators.System,
-                    UserTypes.InternalServiceAccount => BookingChangeInitiators.System,
-                    UserTypes.Supplier => BookingChangeInitiators.Supplier,
+                    ApiCallerTypes.Admin => BookingChangeInitiators.Administrator,
+                    ApiCallerTypes.Agent => BookingChangeInitiators.Agent,
+                    ApiCallerTypes.ServiceAccount => BookingChangeInitiators.System,
+                    ApiCallerTypes.InternalServiceAccount => BookingChangeInitiators.System,
+                    ApiCallerTypes.Supplier => BookingChangeInitiators.Supplier,
                     _ => throw new ArgumentOutOfRangeException()
                 };
         }

@@ -44,7 +44,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, UserInfo user)
+        public async Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, ApiCaller apiCaller)
         {
             return await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(IsReasonProvided, "Payment reason cannot be empty")
@@ -76,7 +76,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.CounterpartyAdd,
                     account.Id,
                     paymentData.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     null);
 
@@ -89,7 +89,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, UserInfo user)
+        public async Task<Result> SubtractMoney(int counterpartyAccountId, PaymentCancellationData data, ApiCaller apiCaller)
         {
             return await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, data), "Account and payment currency mismatch")
@@ -117,7 +117,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.CounterpartySubtract,
                     account.Id,
                     data.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     null);
 
@@ -126,7 +126,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, UserInfo user)
+        public async Task<Result> TransferToDefaultAgency(int counterpartyAccountId, MoneyAmount amount, ApiCaller apiCaller)
         {
             return await Result.Success(counterpartyAccountId)
                 .Ensure(IsAmountPositive, "Payment amount must be a positive number")
@@ -190,7 +190,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.CounterpartyTransferToAgency,
                     counterpartyAccount.Id,
                     amount.Amount,
-                    user,
+                    apiCaller,
                     counterpartyEventData,
                     null);
 
@@ -198,7 +198,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.CounterpartyTransferToAgency,
                     agencyAccount.Id,
                     amount.Amount,
-                    user,
+                    apiCaller,
                     agencyEventData,
                     null);
 
@@ -207,7 +207,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> DecreaseManually(int counterpartyAccountId, PaymentData data, UserInfo user)
+        public async Task<Result> DecreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller)
         {
             return await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, data), "Account and payment currency mismatch")
@@ -238,7 +238,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.ManualDecrease,
                     account.Id,
                     data.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     null);
 
@@ -265,7 +265,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public async Task<Result> IncreaseManually(int counterpartyAccountId, PaymentData data, UserInfo user)
+        public async Task<Result> IncreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller)
         {
             return await GetCounterpartyAccount(counterpartyAccountId)
                 .Ensure(a => AreCurrenciesMatch(a, data), "Account and payment currency mismatch")
@@ -296,7 +296,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 await _auditService.Write(AccountEventType.ManualIncrease,
                     account.Id,
                     data.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     null);
 

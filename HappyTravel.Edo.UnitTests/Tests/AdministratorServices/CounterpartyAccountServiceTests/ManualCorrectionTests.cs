@@ -30,7 +30,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var counterpartyAccountService = GetAccountService(context);
 
             var (_, isFailure, error) = await counterpartyAccountService.IncreaseManually(
-                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _apiCaller);
             
             Assert.True(isFailure);
         }
@@ -43,7 +43,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var counterpartyAccountService = GetAccountService(context);
 
             var (_, isFailure, error) = await counterpartyAccountService.IncreaseManually(
-                0, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                0, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
             
             Assert.True(isFailure);
         }
@@ -56,7 +56,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var counterpartyAccountService = GetAccountService(context);
 
             var (_, isFailure, error) = await counterpartyAccountService.IncreaseManually(
-                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _apiCaller);
             
             Assert.True(isFailure);
         }
@@ -70,7 +70,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var affectedAccount = context.CounterpartyAccounts.Single(a => a.Id == 1);
 
             var (isSuccess, _, error) = await counterpartyAccountService.IncreaseManually(
-                1, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
 
             Assert.True(isSuccess);
             Assert.Equal(1001, affectedAccount.Balance);
@@ -84,7 +84,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var counterpartyAccountService = GetAccountService(context);
 
             var (_, isFailure, error) = await counterpartyAccountService.DecreaseManually(
-                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.EUR, "not empty reason"), _apiCaller);
             
             Assert.True(isFailure);
         }
@@ -97,7 +97,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var counterpartyAccountService = GetAccountService(context);
 
             var (_, isFailure, error) = await counterpartyAccountService.DecreaseManually(
-                0, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                0, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
             
             Assert.True(isFailure);
         }
@@ -110,7 +110,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var counterpartyAccountService = GetAccountService(context);
 
             var (_, isFailure, error) = await counterpartyAccountService.DecreaseManually(
-                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(-1, Currencies.USD, "not empty reason"), _apiCaller);
             
             Assert.True(isFailure);
         }
@@ -124,7 +124,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var affectedAccount = context.CounterpartyAccounts.Single(a => a.Id == 1);
 
             var (isSuccess, _, error) = await counterpartyAccountService.DecreaseManually(
-                1, new PaymentData(1, Currencies.USD, "not empty reason"), _user);
+                1, new PaymentData(1, Currencies.USD, "not empty reason"), _apiCaller);
 
             Assert.True(isSuccess);
             Assert.Equal(999, affectedAccount.Balance);
@@ -194,6 +194,6 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
         }
 
 
-        private readonly UserInfo _user = new UserInfo(1, UserTypes.Admin);
+        private readonly ApiCaller _apiCaller = new ApiCaller(1, ApiCallerTypes.Admin);
     }
 }

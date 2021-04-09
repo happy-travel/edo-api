@@ -130,7 +130,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
                     };
                     
                     await _bookingRecordsUpdater.ChangeStatus(booking, BookingStatuses.Invalid, _dateTimeProvider.UtcNow(), 
-                        UserInfo.InternalServiceAccount, changeReason);
+                        ApiCaller.InternalServiceAccount, changeReason);
                 }
             }
         }

@@ -639,7 +639,7 @@ namespace HappyTravel.Edo.Data
                 log.Property(l => l.Created).IsRequired();
                 log.Property(l => l.Type).IsRequired();
                 log.Property(l => l.AccountId).IsRequired();
-                log.Property(l => l.UserType).IsRequired();
+                log.Property(l => l.ApiCallerType).IsRequired();
                 log.Property(l => l.UserId).IsRequired();
                 log.Property(l => l.Amount).IsRequired();
                 log.Property(l => l.EventData).IsRequired();
@@ -655,7 +655,7 @@ namespace HappyTravel.Edo.Data
                 log.Property(l => l.Created).IsRequired();
                 log.Property(l => l.Type).IsRequired();
                 log.Property(l => l.MaskedNumber).IsRequired();
-                log.Property(l => l.UserType).IsRequired();
+                log.Property(l => l.ApiCallerType).IsRequired();
                 log.Property(l => l.UserId).IsRequired();
                 log.Property(l => l.AgentId).IsRequired();
                 log.Property(l => l.Amount).IsRequired();
@@ -671,7 +671,7 @@ namespace HappyTravel.Edo.Data
             {
                 log.HasKey(l => l.Id);
                 log.Property(l => l.Created).IsRequired();
-                log.Property(l => l.UserType).IsRequired();
+                log.Property(l => l.ApiCallerType).IsRequired();
                 log.Property(l => l.UserId).IsRequired();
             });
         }
@@ -683,7 +683,7 @@ namespace HappyTravel.Edo.Data
             {
                 log.HasKey(l => l.Id);
                 log.Property(l => l.Created).IsRequired();
-                log.Property(l => l.UserType).IsRequired();
+                log.Property(l => l.ApiCallerType).IsRequired();
                 log.Property(l => l.UserId).IsRequired();
             });
         }
@@ -886,7 +886,7 @@ namespace HappyTravel.Edo.Data
                 e.HasKey(bshe => bshe.Id);
                 e.HasIndex(bshe => bshe.BookingId);
                 e.HasIndex(bshe => bshe.UserId);
-                e.HasIndex(bshe => bshe.UserType);
+                e.HasIndex(bshe => bshe.ApiCallerType);
                 e.Property(bshe => bshe.AgencyId);
                 e.Property(bshe => bshe.CreatedAt).IsRequired();
                 e.Property(bshe => bshe.Status).IsRequired();

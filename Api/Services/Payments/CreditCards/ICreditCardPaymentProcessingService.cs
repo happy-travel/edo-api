@@ -21,10 +21,10 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
 
         Task<Result<PaymentResponse>> ProcessPaymentResponse(JObject rawResponse, IPaymentCallbackService paymentCallbackService);
 
-        Task<Result<string>> CaptureMoney(string referenceCode, UserInfo user, IPaymentCallbackService paymentCallbackService);
+        Task<Result<string>> CaptureMoney(string referenceCode, ApiCaller apiCaller, IPaymentCallbackService paymentCallbackService);
 
-        Task<Result> VoidMoney(string referenceCode, UserInfo user, IPaymentCallbackService paymentCallbackService);
+        Task<Result> VoidMoney(string referenceCode, ApiCaller apiCaller, IPaymentCallbackService paymentCallbackService);
 
-        Task<Result> RefundMoney(string referenceCode, UserInfo user, DateTime operationDate, IPaymentCallbackService paymentCallbackService);
+        Task<Result> RefundMoney(string referenceCode, ApiCaller apiCaller, DateTime operationDate, IPaymentCallbackService paymentCallbackService);
     }
 }

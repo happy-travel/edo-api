@@ -18,7 +18,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
         }
 
 
-        public async Task Write<TEventData>(AccountEventType eventType, int accountId, decimal amount, UserInfo user, TEventData eventData, string referenceCode)
+        public async Task Write<TEventData>(AccountEventType eventType, int accountId, decimal amount, ApiCaller apiCaller, TEventData eventData, string referenceCode)
         {
             var logEntry = new AccountBalanceAuditLogEntry
             {
@@ -26,8 +26,8 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                 Type = eventType,
                 AccountId = accountId,
                 Amount = amount,
-                UserId = user.Id,
-                UserType = user.Type,
+                UserId = apiCaller.Id,
+                ApiCallerType = apiCaller.Type,
                 EventData = JsonConvert.SerializeObject(eventData),
                 ReferenceCode = referenceCode
             };

@@ -23,7 +23,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
             CreditCardPaymentInfo paymentInfo,
             string maskedNumber,
             string referenceCode,
-            UserInfo user,
+            ApiCaller apiCaller,
             int agentId)
         {
             return await RefundInPayfort()
@@ -44,7 +44,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.CreditCards
                 return _creditCardAuditService.Write(CreditCardEventType.Refund,
                     maskedNumber,
                     request.Amount,
-                    user,
+                    apiCaller,
                     eventData,
                     referenceCode,
                     agentId,

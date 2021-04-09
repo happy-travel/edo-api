@@ -11,7 +11,7 @@ namespace HappyTravel.Edo.Data.Payments
         public DateTime Created { get; set; }
         public int AgentId { get; set; }
         public int UserId { get; set; }
-        public UserTypes UserType { get; set; }
+        public ApiCallerTypes ApiCallerType { get; set; }
         public string MaskedNumber { get; set; }
         public decimal Amount { get; set; }
         public string EventData { get; set; }

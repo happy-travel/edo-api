@@ -24,7 +24,7 @@ namespace HappyTravel.Edo.Api.Services.SupplierResponses
             if (isGettingBookingDetailsFailure)
                 return Result.Failure(gettingBookingDetailsError.Detail);
 
-            await _responseProcessor.ProcessResponse(bookingDetails, UserInfo.FromSupplier(supplier), BookingChangeEvents.SupplierWebHook); 
+            await _responseProcessor.ProcessResponse(bookingDetails, ApiCaller.FromSupplier(supplier), BookingChangeEvents.SupplierWebHook); 
             
             return Result.Success();
         }

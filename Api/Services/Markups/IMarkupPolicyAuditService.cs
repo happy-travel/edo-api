@@ -6,6 +6,6 @@ namespace HappyTravel.Edo.Api.Services.Markups
 {
     public interface IMarkupPolicyAuditService
     {
-        Task Write<TEventData>(MarkupPolicyEventType eventType, TEventData eventData, UserInfo user);
+        Task Write<TEventData>(MarkupPolicyEventType eventType, TEventData eventData, ApiCaller apiCaller);
     }
 }

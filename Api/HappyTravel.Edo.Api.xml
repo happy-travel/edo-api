@@ -890,6 +890,13 @@
             <param name="request"></param>
             <returns></returns>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.BookingsController.BookByOffline(HappyTravel.Edo.Api.Models.Bookings.AccommodationBookingRequest)">
+            <summary>
+                Creates booking in one step. Must be payed offline before deadline.
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.BookingsController.FinalizeBooking(System.String)">
             <summary>
                 Sends booking request to supplier and finalize the booking procedure.
