@@ -16,14 +16,15 @@ namespace HappyTravel.Edo.Data.Migrations
                 table: "NotificationOptions",
                 newName: "UserType");
 
-            migrationBuilder.AlterColumn<JsonDocument>(
+            migrationBuilder.DropColumn(
+                name: "Message",
+                table: "Notifications");
+
+            migrationBuilder.AddColumn<JsonDocument>(
                 name: "Message",
                 table: "Notifications",
                 type: "jsonb",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "text",
-                oldNullable: true);
+                nullable: true);
 
             migrationBuilder.AddColumn<int>(
                 name: "AgencyId",
