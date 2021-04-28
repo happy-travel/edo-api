@@ -6,12 +6,16 @@
         private AccommodationInfo() { }
 
 
-        public AccommodationInfo(ImageInfo photo)
+        public AccommodationInfo(string id, string name, ImageInfo photo)
         {
+            Id = id;
+            Name = name;
             Photo = photo;
         }
 
 
+        public string Id { get; set; }
+        public string Name { get; set; }
         public ImageInfo Photo { get; set; }
     }
 }
