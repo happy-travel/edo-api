@@ -9,7 +9,6 @@ using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -52,7 +51,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 
 
             Result CheckPaymentMethod()
-                => booking.PaymentMethod == PaymentMethods.BankTransfer
+                => booking.PaymentMethod == PaymentTypes.VirtualAccount
                     ? Result.Success()
                     : Result.Failure($"Failed to charge money for a booking with reference code: '{booking.ReferenceCode}'. " +
                         $"Error: Invalid payment method: {booking.PaymentMethod}");
@@ -78,7 +77,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
                     return Result.Failure<string>($"Unable to charge payment for a booking with reference code: '{booking.ReferenceCode}'. " +
                         $"Error while sending receipt: {error}");
 
-                await _documentsMailingService.SendReceiptToCustomer(receiptInfo, agent.Email);
+                await _documentsMailingService.SendReceiptToCustomer(receiptInfo, agent.Email, apiCaller);
                 return chargeMessage;
             }
 

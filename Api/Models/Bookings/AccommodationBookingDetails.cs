@@ -13,7 +13,7 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         [JsonConstructor]
         public AccommodationBookingDetails(string referenceCode, string agentReference, BookingStatuses status, int numberOfNights,
             DateTime checkInDate, DateTime checkOutDate, AccommodationLocation location, ContactInfo contactInfo,
-            string accommodationId, string accommodationName, DateTime? deadlineDate,
+            string accommodationId, string accommodationName, AccommodationInfo accommodationInfo, DateTime? deadlineDate,
             List<BookedRoom> roomDetails, int numberOfPassengers, List<CancellationPolicy> cancellationPolicies, DateTime created)
         {
             ReferenceCode = referenceCode;
@@ -26,6 +26,7 @@ namespace HappyTravel.Edo.Api.Models.Bookings
             ContactInfo = contactInfo;
             AccommodationId = accommodationId;
             AccommodationName = accommodationName;
+            AccommodationInfo = accommodationInfo;
             DeadlineDate = deadlineDate;
             NumberOfPassengers = numberOfPassengers;
             CancellationPolicies = cancellationPolicies;
@@ -55,6 +56,7 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         public DateTime CheckOutDate { get; }
         public string AccommodationId { get; }
         public string AccommodationName { get; }
+        public AccommodationInfo AccommodationInfo { get; }
         public AccommodationLocation Location { get; }
         public ContactInfo ContactInfo { get; }
         public DateTime? DeadlineDate { get; }

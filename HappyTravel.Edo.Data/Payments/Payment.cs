@@ -1,6 +1,5 @@
 ﻿using HappyTravel.Edo.Common.Enums;
 using System;
-using HappyTravel.EdoContracts.General.Enums;
 
 namespace HappyTravel.Edo.Data.Payments
 {
@@ -16,7 +15,7 @@ namespace HappyTravel.Edo.Data.Payments
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
         public PaymentStatuses Status { get; set; }
-        public PaymentMethods PaymentMethod { get; set; }
+        public PaymentTypes PaymentMethod { get; set; }
         public string Data { get; set; }
     }
 }

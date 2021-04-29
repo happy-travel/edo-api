@@ -1,6 +1,5 @@
 using System;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.General.Enums;
 
 namespace HappyTravel.Edo.Data.Agents
 {
@@ -9,7 +8,7 @@ namespace HappyTravel.Edo.Data.Agents
         public int Id { get; set; }
         public string Name { get; set; }
         public string LegalAddress { get; set; }
-        public PaymentMethods PreferredPaymentMethod { get; set; }
+        public PaymentTypes PreferredPaymentMethod { get; set; }
         public CounterpartyStates State { get; set; }
         public DateTime Created { get; set; }
         public string VerificationReason { get; set; }

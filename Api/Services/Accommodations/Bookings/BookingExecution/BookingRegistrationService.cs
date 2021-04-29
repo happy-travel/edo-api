@@ -15,7 +15,6 @@ using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
@@ -39,7 +38,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
         
         
         public async Task<Booking> Register(AccommodationBookingRequest bookingRequest,
-            BookingAvailabilityInfo availabilityInfo, PaymentMethods paymentMethod, AgentContext agentContext, string languageCode)
+            BookingAvailabilityInfo availabilityInfo, PaymentTypes paymentMethod, AgentContext agentContext, string languageCode)
         {
             var (_, _, booking, _) = await Result.Success()
                 .Map(GetTags)
@@ -126,7 +125,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
 
 
         private static Booking Create(DateTime created, AgentContext agentContext, string itineraryNumber,
-            string referenceCode, BookingAvailabilityInfo availabilityInfo, PaymentMethods paymentMethod,
+            string referenceCode, BookingAvailabilityInfo availabilityInfo, PaymentTypes paymentMethod,
             in AccommodationBookingRequest bookingRequest, string languageCode, Suppliers supplier,
             DateTime? deadlineDate, DateTime checkInDate, DateTime checkOutDate, string htId, List<string> tags, bool isDirectContract)
         {
@@ -177,6 +176,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
 
                 booking.AccommodationId = availabilityInfo.AccommodationId;
                 booking.AccommodationName = availabilityInfo.AccommodationName;
+                booking.AccommodationInfo = new Data.Bookings.AccommodationInfo(
+                    new ImageInfo(availabilityInfo.AccommodationInfo.Photo.Caption, availabilityInfo.AccommodationInfo.Photo.SourceUrl));
             }
 
             void AddAgentInfo()

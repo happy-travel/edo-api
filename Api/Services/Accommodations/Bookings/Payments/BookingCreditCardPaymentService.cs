@@ -10,7 +10,6 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Api.Services.Payments.CreditCards;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
@@ -35,7 +34,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 
         public async Task<Result<string>> Capture(Booking booking, ApiCaller apiCaller)
         {
-            if (booking.PaymentMethod != PaymentMethods.CreditCard)
+            if (booking.PaymentMethod != PaymentTypes.CreditCard)
             {
                 _logger.LogCaptureMoneyForBookingFailure($"Failed to capture money for a booking with reference code: '{booking.ReferenceCode}'. " +
                     $"Error: Invalid payment method: {booking.PaymentMethod}");

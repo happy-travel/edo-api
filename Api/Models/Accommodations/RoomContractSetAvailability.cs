@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations.Internals;
-using HappyTravel.EdoContracts.General.Enums;
 using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Accommodations
@@ -10,7 +10,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
     {
         [JsonConstructor]
         public RoomContractSetAvailability(string availabilityId, DateTime checkInDate, DateTime checkOutDate, int numberOfNights,
-            in SlimAccommodation accommodation, in RoomContractSet roomContractSet, List<PaymentMethods> availablePaymentMethods)
+            in SlimAccommodation accommodation, in RoomContractSet roomContractSet, List<PaymentTypes> availablePaymentMethods)
         {
             AvailabilityId = availabilityId;
             CheckInDate = checkInDate;
@@ -54,6 +54,6 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         /// <summary>
         /// List of available payment methods
         /// </summary>
-        public List<PaymentMethods> AvailablePaymentMethods { get; }
+        public List<PaymentTypes> AvailablePaymentMethods { get; }
     }
 }

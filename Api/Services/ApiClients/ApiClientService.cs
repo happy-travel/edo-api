@@ -4,6 +4,7 @@ using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.ApiClients;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Data;
+using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.ApiClients
@@ -33,7 +34,8 @@ namespace HappyTravel.Edo.Api.Services.ApiClients
             return new ApiClientInfo
             {
                 CounterpartyName = agent.CounterpartyName,
-                EnabledSuppliers = settings.EnabledConnectors
+                EnabledSuppliers = settings.EnabledConnectors,
+                HasDirectContractsFilter = settings.AdditionalSearchFilters.HasFlag(SearchFilters.DirectContractsOnly)
             };
         }
         

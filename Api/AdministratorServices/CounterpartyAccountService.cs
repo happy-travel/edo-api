@@ -6,9 +6,11 @@ using HappyTravel.Edo.Api.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.FunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Management;
+using HappyTravel.Edo.Api.Models.Management.AuditEvents;
 using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Api.Models.Payments.AuditEvents;
 using HappyTravel.Edo.Api.Models.Users;
+using HappyTravel.Edo.Api.Services.Management;
 using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
@@ -23,12 +25,14 @@ namespace HappyTravel.Edo.Api.AdministratorServices
     {
         public CounterpartyAccountService(EdoContext context,
             IEntityLocker locker,
-            IAccountBalanceAuditService auditService,
+            IManagementAuditService managementAuditService,
+            IAccountBalanceAuditService accountBalanceAuditService,
             ICounterpartyBillingNotificationService counterpartyBillingNotificationService)
         {
             _context = context;
             _locker = locker;
-            _auditService = auditService;
+            _managementAuditService = managementAuditService;
+            _accountBalanceAuditService = accountBalanceAuditService;
             _counterpartyBillingNotificationService = counterpartyBillingNotificationService;
         }
 
@@ -73,7 +77,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
             async Task<CounterpartyAccount> WriteAuditLog(CounterpartyAccount account)
             {
                 var eventData = new CounterpartyAccountBalanceLogEventData(paymentData.Reason, account.Balance);
-                await _auditService.Write(AccountEventType.CounterpartyAdd,
+                await _accountBalanceAuditService.Write(AccountEventType.CounterpartyAdd,
                     account.Id,
                     paymentData.Amount,
                     apiCaller,
@@ -114,7 +118,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
             async Task<CounterpartyAccount> WriteAuditLog(CounterpartyAccount account)
             {
                 var eventData = new CounterpartyAccountBalanceLogEventData(null, account.Balance);
-                await _auditService.Write(AccountEventType.CounterpartySubtract,
+                await _accountBalanceAuditService.Write(AccountEventType.CounterpartySubtract,
                     account.Id,
                     data.Amount,
                     apiCaller,
@@ -187,7 +191,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 var (counterpartyAccount, agencyAccount) = accounts;
 
                 var counterpartyEventData = new CounterpartyAccountBalanceLogEventData(null, counterpartyAccount.Balance);
-                await _auditService.Write(AccountEventType.CounterpartyTransferToAgency,
+                await _accountBalanceAuditService.Write(AccountEventType.CounterpartyTransferToAgency,
                     counterpartyAccount.Id,
                     amount.Amount,
                     apiCaller,
@@ -195,7 +199,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                     null);
 
                 var agencyEventData = new AccountBalanceLogEventData(null, agencyAccount.Balance);
-                await _auditService.Write(AccountEventType.CounterpartyTransferToAgency,
+                await _accountBalanceAuditService.Write(AccountEventType.CounterpartyTransferToAgency,
                     agencyAccount.Id,
                     amount.Amount,
                     apiCaller,
@@ -235,7 +239,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
             async Task<CounterpartyAccount> WriteAuditLog(CounterpartyAccount account)
             {
                 var eventData = new CounterpartyAccountBalanceLogEventData(data.Reason, account.Balance);
-                await _auditService.Write(AccountEventType.ManualDecrease,
+                await _accountBalanceAuditService.Write(AccountEventType.ManualDecrease,
                     account.Id,
                     data.Amount,
                     apiCaller,
@@ -247,9 +251,9 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         }
 
 
-        public Task<List<CounterpartyAccountInfo>> GetAccounts(int counterpartyId)
+        public async Task<List<CounterpartyAccountInfo>> Get(int counterpartyId)
         {
-            return _context.CounterpartyAccounts
+            return await _context.CounterpartyAccounts
                 .Where(c => c.CounterpartyId == counterpartyId)
                 .Select(c => new CounterpartyAccountInfo
                 {
@@ -263,6 +267,14 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 })
                 .ToListAsync();
         }
+
+
+        public async Task<Result> Activate(int counterpartyId, int counterpartyAccountId, string reason)
+            => await ChangeAccountActivity(counterpartyId, counterpartyAccountId, isActive: true, reason);
+
+
+        public async Task<Result> Deactivate(int counterpartyId, int counterpartyAccountId, string reason)
+            => await ChangeAccountActivity(counterpartyId, counterpartyAccountId, isActive: false, reason);
 
 
         public async Task<Result> IncreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller)
@@ -293,7 +305,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
             async Task<CounterpartyAccount> WriteAuditLog(CounterpartyAccount account)
             {
                 var eventData = new CounterpartyAccountBalanceLogEventData(data.Reason, account.Balance);
-                await _auditService.Write(AccountEventType.ManualIncrease,
+                await _accountBalanceAuditService.Write(AccountEventType.ManualIncrease,
                     account.Id,
                     data.Amount,
                     apiCaller,
@@ -301,6 +313,47 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                     null);
 
                 return account;
+            }
+        }
+
+
+        private async Task<Result> ChangeAccountActivity(int counterpartyId, int counterpartyAccountId, bool isActive, string reason)
+        {
+            return await GetCounterpartyAccount(counterpartyId, counterpartyAccountId)
+                .Ensure(_ => !string.IsNullOrWhiteSpace(reason), "Reason must not be empty")
+                .BindWithTransaction(_context, account => SetAccountActivityState(account, isActive)
+                    .Bind(() => WriteToAuditLog(counterpartyId, counterpartyAccountId, isActive, reason)));
+
+
+            async Task<Result<CounterpartyAccount>> GetCounterpartyAccount(int counterpartyId, int counterpartyAccountId)
+            {
+                var account = await _context.CounterpartyAccounts
+                    .SingleOrDefaultAsync(aa => aa.CounterpartyId == counterpartyId && aa.Id == counterpartyAccountId);
+
+                return (account is not null)
+                    ? account
+                    : Result.Failure<CounterpartyAccount>($"Account Id {counterpartyAccountId} not found in counterparty Id {counterpartyId}");
+            }
+
+
+            async Task<Result> SetAccountActivityState(CounterpartyAccount account, bool isActive)
+            {
+                account.IsActive = isActive;
+                _context.CounterpartyAccounts.Update(account);
+                await _context.SaveChangesAsync();
+
+                return Result.Success();
+            }
+
+
+            async Task<Result> WriteToAuditLog(int counterpartyId, int counterpartyAccountId, bool isActive, string reason)
+            {
+                if (isActive)
+                    return await _managementAuditService.Write(ManagementEventType.CounterpartyAccountActivation,
+                        new CounterpartyAccountActivityStatusChangeEventData(counterpartyId, counterpartyAccountId, reason));
+                else
+                    return await _managementAuditService.Write(ManagementEventType.CounterpartyAccountDeactivation,
+                        new CounterpartyAccountActivityStatusChangeEventData(counterpartyId, counterpartyAccountId, reason));
             }
         }
 
@@ -316,12 +369,15 @@ namespace HappyTravel.Edo.Api.AdministratorServices
 
         private bool AreCurrenciesMatch(CounterpartyAccount account, PaymentData paymentData) => account.Currency == paymentData.Currency;
 
+
         private bool AreCurrenciesMatch(CounterpartyAccount account, MoneyAmount amount) => account.Currency == amount.Currency;
+
 
         private bool AreCurrenciesMatch(CounterpartyAccount account, PaymentCancellationData data) => account.Currency == data.Currency;
 
 
-        private readonly IAccountBalanceAuditService _auditService;
+        private readonly IManagementAuditService _managementAuditService;
+        private readonly IAccountBalanceAuditService _accountBalanceAuditService;
         private readonly ICounterpartyBillingNotificationService _counterpartyBillingNotificationService;
         private readonly EdoContext _context;
         private readonly IEntityLocker _locker;

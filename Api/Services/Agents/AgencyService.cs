@@ -37,7 +37,8 @@ namespace HappyTravel.Edo.Api.Services.Agents
                     a.Phone,
                     a.PostalCode,
                     a.Website,
-                    a.VatNumber));
+                    a.VatNumber,
+                    a.DefaultPaymentType));
         }
 
 

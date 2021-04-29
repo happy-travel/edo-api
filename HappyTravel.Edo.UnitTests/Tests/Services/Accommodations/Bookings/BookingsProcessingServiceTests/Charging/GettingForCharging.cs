@@ -10,7 +10,6 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.UnitTests.Utility;
-using HappyTravel.EdoContracts.General.Enums;
 using Moq;
 using Xunit;
 
@@ -45,7 +44,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 Id = id, 
                 PaymentStatus = BookingPaymentStatuses.NotPaid,
                 Status = BookingStatuses.Confirmed,
-                PaymentMethod = PaymentMethods.BankTransfer,
+                PaymentMethod = PaymentTypes.VirtualAccount,
                 DeadlineDate = deadlineDate,
                 CheckInDate = DateTime.MaxValue
             };
@@ -77,7 +76,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 Id = id, 
                 PaymentStatus = BookingPaymentStatuses.NotPaid,
                 Status = BookingStatuses.Confirmed,
-                PaymentMethod = PaymentMethods.BankTransfer,
+                PaymentMethod = PaymentTypes.VirtualAccount,
                 DeadlineDate = null,
                 CheckInDate = checkInDate
             };
@@ -90,10 +89,10 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
             var date = new DateTime(2021, 12, 2);
             var bookings = new []
             {
-                CreateBooking(id: 1, paymentMethod: PaymentMethods.Offline),
-                CreateBooking(id: 2, paymentMethod: PaymentMethods.Other),
-                CreateBooking(id: 3, paymentMethod: PaymentMethods.BankTransfer),
-                CreateBooking(id: 4, paymentMethod: PaymentMethods.CreditCard),
+                CreateBooking(id: 1, paymentMethod: PaymentTypes.Offline),
+                CreateBooking(id: 2, paymentMethod: PaymentTypes.None),
+                CreateBooking(id: 3, paymentMethod: PaymentTypes.VirtualAccount),
+                CreateBooking(id: 4, paymentMethod: PaymentTypes.CreditCard),
             };
             var service = CreateProcessingService(bookings);
 
@@ -104,7 +103,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
             Assert.Contains(3, bookingsToCapture);
             Assert.DoesNotContain(4, bookingsToCapture);
 
-            static Booking CreateBooking(int id, PaymentMethods paymentMethod) => new Booking
+            static Booking CreateBooking(int id, PaymentTypes paymentMethod) => new Booking
             {
                 Id = id, 
                 PaymentStatus = BookingPaymentStatuses.NotPaid,
@@ -143,7 +142,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 Id = id, 
                 PaymentStatus = paymentStatus,
                 Status = BookingStatuses.Confirmed,
-                PaymentMethod = PaymentMethods.BankTransfer,
+                PaymentMethod = PaymentTypes.VirtualAccount,
                 DeadlineDate = DateTime.MinValue,
                 CheckInDate = DateTime.MinValue
             };
@@ -179,7 +178,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 Id = id, 
                 PaymentStatus = BookingPaymentStatuses.NotPaid,
                 Status = statusCode,
-                PaymentMethod = PaymentMethods.BankTransfer,
+                PaymentMethod = PaymentTypes.VirtualAccount,
                 DeadlineDate = DateTime.MinValue,
                 CheckInDate = DateTime.MinValue
             };

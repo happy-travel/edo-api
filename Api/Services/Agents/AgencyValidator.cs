@@ -7,9 +7,9 @@ namespace HappyTravel.Edo.Api.Services.Agents
 {
     public static class AgencyValidator
     {
-        public static Result Validate(in AgencyInfo agencyInfo)
+        public static Result Validate(in RegistrationAgencyInfo agencyInfo)
         {
-            return GenericValidator<AgencyInfo>.Validate(v =>
+            return GenericValidator<RegistrationAgencyInfo>.Validate(v =>
             {
                 v.RuleFor(c => c.Name).NotEmpty();
                 v.RuleFor(c => c.Address).NotEmpty();

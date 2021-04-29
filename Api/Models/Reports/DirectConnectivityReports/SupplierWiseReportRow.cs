@@ -16,8 +16,10 @@ namespace HappyTravel.Edo.Api.Models.Reports.DirectConnectivityReports
         public double LenghtOfStay { get; init; }
         public decimal AmountExclVat { get; init; }
         public decimal VatAmount { get; init; }
-        public decimal Amount { get; init; }
-        public Currencies Currency { get; init; }
+        public decimal OriginalAmount { get; init; }
+        public Currencies OriginalCurrency { get; init; }
+        public decimal ConvertedAmount { get; init; }
+        public Currencies ConvertedCurrency { get; init; }
         public string Supplier { get; init; }
     }
 }

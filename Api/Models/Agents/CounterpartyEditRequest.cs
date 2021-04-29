@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using HappyTravel.EdoContracts.General.Enums;
-using HappyTravel.Money.Enums;
+using HappyTravel.Edo.Common.Enums;
 using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Agents
@@ -8,7 +7,7 @@ namespace HappyTravel.Edo.Api.Models.Agents
     public readonly struct CounterpartyEditRequest
     {
         [JsonConstructor]
-        public CounterpartyEditRequest(string name, PaymentMethods preferredPaymentMethod, string vatNumber)
+        public CounterpartyEditRequest(string name, PaymentTypes preferredPaymentMethod, string vatNumber)
         {
             Name = name;
             PreferredPaymentMethod = preferredPaymentMethod;
@@ -26,7 +25,7 @@ namespace HappyTravel.Edo.Api.Models.Agents
         ///     Preferable way to do payments.
         /// </summary>
         [Required]
-        public PaymentMethods PreferredPaymentMethod { get; }
+        public PaymentTypes PreferredPaymentMethod { get; }
 
         /// <summary>
         /// Value added tax identification number

@@ -8,7 +8,7 @@ namespace HappyTravel.Edo.Api.Models.Agents
     public readonly struct CounterpartyCreateRequest
     {
         [JsonConstructor]
-        public CounterpartyCreateRequest(CounterpartyInfo counterpartyInfo, AgencyInfo rootAgencyInfo)
+        public CounterpartyCreateRequest(RegistrationCounterpartyInfo counterpartyInfo, RegistrationRootAgencyInfo rootAgencyInfo)
         {
             CounterpartyInfo = counterpartyInfo;
             RootAgencyInfo = rootAgencyInfo;
@@ -19,13 +19,13 @@ namespace HappyTravel.Edo.Api.Models.Agents
         /// Information to create a new counterparty.
         /// </summary>
         [Required]
-        public CounterpartyInfo CounterpartyInfo { get; }
+        public RegistrationCounterpartyInfo CounterpartyInfo { get; }
 
 
         /// <summary>
         /// Information to create a root agency for newly created counterparty.
         /// </summary>
         [Required]
-        public AgencyInfo RootAgencyInfo { get; }
+        public RegistrationRootAgencyInfo RootAgencyInfo { get; }
     }
 }

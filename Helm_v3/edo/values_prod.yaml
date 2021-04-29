@@ -1,5 +1,8 @@
 replicaCount: 1
 
+logging:
+  enabled: true
+
 jaeger:
   sidecar: jaeger-production
   collector_host: dns:///jaeger-production-collector-headless.observability:14250
@@ -8,7 +11,7 @@ image:
   repository: registry.happytravel.com/edo
   tag: latest
   pullPolicy: Always
-imagePullSecrets: 
+imagePullSecrets:
   - name: travel-registry
 nameOverride: ""
 fullnameOverride: ""
@@ -40,11 +43,7 @@ service:
 ingress:
   enabled: true
   annotations:
-    projectcontour.io/ingress.class: "contour"
-    projectcontour.io/retry-on: "5xx"
-    projectcontour.io/num-retries: "3"
-    projectcontour.io/per-try-timeout: "120s"
-    projectcontour.io/response-timeout: "120s"
+    kubernetes.io/ingress.class: "nginx"
     ingress.kubernetes.io/force-ssl-redirect: "true"
     kubernetes.io/ingress.allow-http: "false"
     kubernetes.io/tls-acme: "true"
@@ -60,10 +59,10 @@ ingress:
 resources:
   limits:
     cpu: 1
-    memory: 1568Mi
+    memory: 1024Mi
   requests:
     cpu: 1
-    memory: 1568Mi
+    memory: 1024Mi
 
 nodeSelector: {}
 

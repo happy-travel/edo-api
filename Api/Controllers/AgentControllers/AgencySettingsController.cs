@@ -36,20 +36,6 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         }
 
 
-        /// <summary>
-        ///     Gets setting which tells what payment methods to show for booking payment.
-        /// </summary>
-        /// <returns>Displayed payment methods setting</returns>
-        [HttpGet("system-settings/displayed-payment-options")]
-        [ProducesResponseType(typeof(DisplayedPaymentOptionsSettings), (int)HttpStatusCode.OK)]
-        [ProducesResponseType((int)HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> GetDisplayedPaymentOptions()
-        {
-            var agent = await _agentContextService.GetAgent();
-            return OkOrBadRequest(await _agencySystemSettingsService.GetDisplayedPaymentOptions(agent));
-        }
-
-
         private readonly IAgentContextService _agentContextService;
         private readonly IAccommodationBookingSettingsService _accommodationBookingSettingsService;
         private readonly IAgencySystemSettingsService _agencySystemSettingsService;

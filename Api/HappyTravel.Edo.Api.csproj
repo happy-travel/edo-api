@@ -17,13 +17,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="3.1.2" />
-    <PackageReference Include="CSharpFunctionalExtensions" Version="2.13.2" />
+    <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="5.0.2" />
+    <PackageReference Include="CSharpFunctionalExtensions" Version="2.15.1" />
     <PackageReference Include="CsvHelper" Version="25.0.0" />
     <PackageReference Include="Elasticsearch.Net" Version="7.10.0" />
-    <PackageReference Include="FloxDc.CacheFlow" Version="1.7.0" />
-    <PackageReference Include="FloxDc.CacheFlow.Json" Version="1.7.0" />
-    <PackageReference Include="FloxDc.CacheFlow.MessagePack" Version="1.7.0" />
+    <PackageReference Include="FloxDc.CacheFlow" Version="1.9.1" />
+    <PackageReference Include="FloxDc.CacheFlow.Json" Version="1.9.1" />
+    <PackageReference Include="FloxDc.CacheFlow.MessagePack" Version="1.9.1" />
     <PackageReference Include="HappyTravel.AmazonS3Client" Version="0.8.0" />
     <PackageReference Include="HappyTravel.CurrencyConverter" Version="1.0.0" />
     <PackageReference Include="HappyTravel.ErrorHandling" Version="1.0.0" />
@@ -40,7 +40,7 @@
     <PackageReference Include="Imageflow.Net" Version="0.7.10" />
     <PackageReference Include="LocationNameNormalizer" Version="1.4.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="5.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="4.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OData" Version="7.5.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="5.0.1" />
@@ -54,7 +54,7 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.StackExchangeRedis" Version="1.0.0-rc2" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="4.0.0" />
     <PackageReference Include="Sendgrid" Version="9.21.0" />
-    <PackageReference Include="Sentry.AspNetCore" Version="2.1.6" />
+    <PackageReference Include="Sentry.AspNetCore" Version="2.1.8" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="5.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore.Newtonsoft" Version="5.6.3" />
@@ -64,7 +64,6 @@
   <ItemGroup>
     <ProjectReference Include="..\HappyTravel.Edo.Common\HappyTravel.Edo.Common.csproj" />
     <ProjectReference Include="..\HappyTravel.Edo.Data\HappyTravel.Edo.Data.csproj" />
-    <ProjectReference Include="..\HappyTravel.Edo.NotificationCenter\HappyTravel.Edo.NotificationCenter.csproj" />
   </ItemGroup>
 
   <ItemGroup>

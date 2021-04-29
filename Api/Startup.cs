@@ -10,9 +10,10 @@ using HappyTravel.Edo.Api.Conventions;
 using HappyTravel.Edo.Api.Filters;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Environments;
+using HappyTravel.Edo.Api.NotificationCenter.Hubs;
+using HappyTravel.Edo.Api.NotificationCenter.Infrastructure;
+using HappyTravel.Edo.Api.Services.Hubs.Search;
 using HappyTravel.Edo.Data;
-using HappyTravel.Edo.NotificationCenter.Infrastructure;
-using HappyTravel.Edo.NotificationCenter.Services.Hub;
 using HappyTravel.ErrorHandling.Extensions;
 using HappyTravel.StdOutLogger.Extensions;
 using HappyTravel.VaultClient;
@@ -103,7 +104,9 @@ namespace HappyTravel.Edo.Api
 
             services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1.0", new OpenApiInfo {Title = "HappyTravel.com Edo API", Version = "v1.0"});
+                options.SwaggerDoc("agent", new OpenApiInfo {Title = "Happytravel.com Edo API for an agent app", Version = "v1.0"});
+                options.SwaggerDoc("admin", new OpenApiInfo {Title = "Happytravel.com Edo API for an admin app", Version = "v1.0"});
+                options.SwaggerDoc("service", new OpenApiInfo { Title = "Happytravel.com service Edo API", Version = "v1.0" });
 
                 var xmlCommentsFileName = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlCommentsFilePath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFileName);
@@ -132,6 +135,8 @@ namespace HappyTravel.Edo.Api
                         Array.Empty<string>()
                     }
                 });
+                // Use fully qualified object names
+                options.CustomSchemaIds(x => x.FullName);
             });
             services.AddSwaggerGenNewtonsoftSupport();
             
@@ -142,6 +147,7 @@ namespace HappyTravel.Edo.Api
                 {
                     options.Conventions.Insert(0, new LocalizationConvention());
                     options.Conventions.Add(new AuthorizeControllerModelConvention());
+                    options.Conventions.Add(new ApiExplorerGroupPerVersionConvention());
                     options.Filters.Add(new MiddlewareFilterAttribute(typeof(LocalizationPipelineFilter)));
                     options.Filters.Add(typeof(ModelValidationFilter));
                     
@@ -203,7 +209,9 @@ namespace HappyTravel.Edo.Api
             app.UseSwagger()
                 .UseSwaggerUI(options =>
                 {
-                    options.SwaggerEndpoint("/swagger/v1.0/swagger.json", "HappyTravel.com Edo API");
+                    options.SwaggerEndpoint("/swagger/agent/swagger.json", "Happytravel.com Edo API for an agent app");
+                    options.SwaggerEndpoint("/swagger/admin/swagger.json", "Happytravel.com Edo API for an admin app");
+                    options.SwaggerEndpoint("/swagger/service/swagger.json", "Happytravel.com service Edo API");
                     options.RoutePrefix = string.Empty;
                 });
 
@@ -234,7 +242,9 @@ namespace HappyTravel.Edo.Api
                     endpoints.MapControllers();
                     endpoints.EnableDependencyInjection();
                     endpoints.Filter(QueryOptionSetting.Allowed).OrderBy().Expand().Select().MaxTop(100);
-                    endpoints.MapHub<SignalRSender>("notifications");
+                    endpoints.MapHub<AgentNotificationHub>("/signalr/notifications/agents");
+                    endpoints.MapHub<AdminNotificationHub>("/signalr/notifications/admins");
+                    endpoints.MapHub<SearchHub>("/signalr/search");
                 });
         }
 

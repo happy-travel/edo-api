@@ -11,7 +11,6 @@ using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Payments;
-using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.EntityFrameworkCore;
@@ -183,7 +182,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
                     Status = PaymentStatuses.Captured,
                     Data = JsonConvert.SerializeObject(info),
                     AccountId = accountId,
-                    PaymentMethod = PaymentMethods.BankTransfer,
+                    PaymentMethod = PaymentTypes.VirtualAccount,
                     ReferenceCode = referenceCode
                 };
 

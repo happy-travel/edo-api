@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.GeoData.Enums;
 using NetTopologySuite.Geometries;
 

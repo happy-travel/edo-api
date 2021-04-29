@@ -19,11 +19,13 @@ namespace HappyTravel.Edo.Api.Services.Markups
     public class MarkupService : IMarkupService
     {
         public MarkupService(IMarkupPolicyService markupPolicyService,
+            IDiscountFunctionService discountFunctionService,
             IMarkupPolicyTemplateService templateService,
             ICurrencyRateService currencyRateService,
             IMemoryFlow flow)
         {
             _markupPolicyService = markupPolicyService;
+            _discountFunctionService = discountFunctionService;
             _templateService = templateService;
             _currencyRateService = currencyRateService;
             _flow = flow;
@@ -40,8 +42,11 @@ namespace HappyTravel.Edo.Api.Services.Markups
             {
                 var detailsBefore = currentData;
                 
-                var processFunction = GetPriceProcessFunction(policy);
-                currentData = await priceProcessFunc(currentData, processFunction);
+                var markupFunction = GetPriceProcessFunction(policy);
+                currentData = await priceProcessFunc(currentData, markupFunction);
+
+                var discountFunction = await _discountFunctionService.Get(policy, agent);
+                currentData = await priceProcessFunc(currentData, discountFunction);;
 
                 logAction?.Invoke(new MarkupApplicationResult<TDetails>(detailsBefore, policy, currentData));
             }
@@ -94,6 +99,7 @@ namespace HappyTravel.Edo.Api.Services.Markups
         private static readonly TimeSpan MarkupPolicyFunctionCachingTime = TimeSpan.FromDays(1);
         
         private readonly IMarkupPolicyService _markupPolicyService;
+        private readonly IDiscountFunctionService _discountFunctionService;
         private readonly IMemoryFlow _flow;
     }
 }

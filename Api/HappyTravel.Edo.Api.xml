@@ -50,12 +50,11 @@
             <param name="reportId"></param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgenciesController.GetDisplayedPaymentOptions(System.Int32)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AdministratorsController.GetCurrent">
             <summary>
-                Gets setting which tells what payment methods to show for booking payment.
+                Gets current administrator information
             </summary>
-            <param name="agencyId">Id of an agency to get settings for</param>
-            <returns>Displayed payment methods setting</returns>
+            <returns>Current administrator information.</returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgenciesController.GetSystemSettings(System.Int32)">
             <summary>
@@ -63,14 +62,6 @@
             </summary>
             <param name="agencyId">Agency Id</param>
             <returns>Agency availability search settings</returns>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgenciesController.SetDisplayedPaymentOptions(HappyTravel.Edo.Common.Enums.AgencySettings.DisplayedPaymentOptionsSettings,System.Int32)">
-            <summary>
-                Sets setting which tells what payment methods to show for booking payment.
-            </summary>
-            <param name="settings">Settings to set</param>
-            <param name="agencyId">Id of an agency to set settings for</param>
-            <returns></returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgenciesController.SetSystemSettings(HappyTravel.Edo.Data.Agents.AgencyAccommodationBookingSettings,System.Int32)">
             <summary>
@@ -107,6 +98,82 @@
             </summary>
             <param name="agencyId">Id of the agency.</param>
             <param name="request">Request data for activation.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyAccountsController.GetAgencyAccounts(System.Int32)">
+            <summary>
+                Gets agency accounts list
+            </summary>
+            <param name="agencyId">Agency Id</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyAccountsController.ActivateAgencyAccount(System.Int32,System.Int32,HappyTravel.Edo.Api.Models.Management.ActivityStatusChangeRequest)">
+            <summary>
+            Activates specified agency account.
+            </summary>
+            <param name="agencyId">Agency Id.</param>
+            <param name="agencyAccountId">Agency account Id.</param>
+            <param name="activityStatusChangeRequest">Request data for activation.</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyAccountsController.DeactivateAgencyAccount(System.Int32,System.Int32,HappyTravel.Edo.Api.Models.Management.ActivityStatusChangeRequest)">
+            <summary>
+            Deactivates specified agency account.
+            </summary>
+            <param name="agencyId">Agency Id.</param>
+            <param name="agencyAccountId">Agency account Id.</param>
+            <param name="activityStatusChangeRequest">Request data for deactivation.</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyAccountsController.IncreaseMoneyManuallyToAgencyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
+            <summary>
+                Manually Adds money to the agency account
+            </summary>
+            <param name="agencyAccountId">Id of the agency account</param>
+            <param name="paymentData">Details about the payment</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyAccountsController.DecreaseMoneyManuallyFromAgencyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
+            <summary>
+                Manually Subtracts money from the agency account
+            </summary>
+            <param name="agencyAccountId">Id of the agency account</param>
+            <param name="paymentData">Details about the payment</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyDiscountsController.GetAgencyDiscounts(System.Int32)">
+            <summary>
+            Gets discounts for an agency.
+            </summary>
+            <param name="agencyId">Agency id</param>
+            <returns>List of discounts</returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyDiscountsController.AddDiscount(System.Int32,HappyTravel.Edo.Api.AdministratorServices.Models.CreateDiscountRequest)">
+            <summary>
+            Creates discount
+            </summary>
+            <param name="agencyId">Agency id</param>
+            <param name="createDiscountRequest">Discount settings</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyDiscountsController.StopDiscount(System.Int32,System.Int32)">
+            <summary>
+                Deactivates discount
+            </summary>
+            <param name="agencyId">Agency id</param>
+            <param name="discountId">Id of the discount to deactivate.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyDiscountsController.StartDiscount(System.Int32,System.Int32)">
+            <summary>
+                Activates discount
+            </summary>
+            <param name="agencyId">Agency id</param>
+            <param name="discountId">Id of the discount to deactivate.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgencyDiscountsController.UpdateDiscount(System.Int32,System.Int32,HappyTravel.Edo.Api.AdministratorServices.Models.EditDiscountRequest)">
+            <summary>
+                Updates discount settings.
+            </summary>
+            <param name="agencyId">Agency id</param>
+            <param name="discountId">Id of the discount.</param>
+            <param name="editDiscountRequest">Updated settings.</param>
             <returns></returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgentsController.SetSystemSettings(HappyTravel.Edo.Data.Agents.AgentAccommodationBookingSettings,System.Int32,System.Int32)">
@@ -169,6 +236,13 @@
             </summary>
             <param name="agentId">Agent Id</param>
             <returns>List of bookings</returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.BookingsController.GetBookingByReferenceCode(System.String)">
+            <summary>
+                Gets booking data by reference code.
+            </summary>
+            <param name="referenceCode">Booking reference code</param>
+            <returns>Booking Info</returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.BookingsController.Discard(System.Int32)">
             <summary>
@@ -303,21 +377,145 @@
             </summary>
             <param name="counterpartyId">Id of the counterparty to load the contract file for</param>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.ManagementController.InviteAdministrator(HappyTravel.Edo.Api.Models.Users.UserDescriptionInfo)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.GetCounterpartyBalance(System.Int32,HappyTravel.Money.Enums.Currencies)">
+            <summary>
+                Gets balance for a counterparty account
+            </summary>
+            <param name="counterpartyId">Id of the counterparty</param>
+            <param name="currency">Currency</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.ReplenishCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
+            <summary>
+                Appends money to a counterparty account
+            </summary>
+            <param name="counterpartyAccountId">Id of the counterparty account</param>
+            <param name="paymentData">Details about the payment</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.SubtractCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentCancellationData)">
+            <summary>
+                Subtracts money from a counterparty account due to payment cancellation
+            </summary>
+            <param name="counterpartyAccountId">Id of the counterparty account</param>
+            <param name="cancellationData">Details about the payment cancellation</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.TransferToDefaultAgency(System.Int32,HappyTravel.Money.Models.MoneyAmount)">
+            <summary>
+                Transfers money from a counterparty account to the default agency account
+            </summary>
+            <param name="counterpartyAccountId">Id of the counterparty account</param>
+            <param name="amount">Amount of money to transfer</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.IncreaseMoneyManuallyToCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
+            <summary>
+                Manually Adds money to the counterparty account
+            </summary>
+            <param name="counterpartyAccountId">Id of the counterparty account</param>
+            <param name="paymentData">Details about the payment</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.DecreaseMoneyManuallyFromCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
+            <summary>
+                Manually subtracts money from the counterparty account
+            </summary>
+            <param name="counterpartyAccountId">Id of the counterparty account</param>
+            <param name="paymentData">Details about the payment</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.GetAccounts(System.Int32)">
+            <summary>
+            Gets counterparty accounts list
+            </summary>
+            <param name="counterpartyId">Counterparty Id</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.ActivateCounterpartyAccount(System.Int32,System.Int32,HappyTravel.Edo.Api.Models.Management.ActivityStatusChangeRequest)">
+            <summary>
+            Activates specified counterparty account.
+            </summary>
+            <param name="counterpartyId">Counterparty Id.</param>
+            <param name="counterpartyAccountId">Counterparty account Id.</param>
+            <param name="activityStatusChangeRequest">Request data for activation.</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyAccountsController.DeactivateCounterpartyAccount(System.Int32,System.Int32,HappyTravel.Edo.Api.Models.Management.ActivityStatusChangeRequest)">
+            <summary>
+            Deactivates specified counterparty account.
+            </summary>
+            <param name="counterpartyId">Counterparty Id.</param>
+            <param name="counterpartyAccountId">Counterparty account Id.</param>
+            <param name="activityStatusChangeRequest">Request data for deactivation.</param>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyMarkupsController.GetCounterpartyPolicies(System.Int32)">
+            <summary>
+            Gets markup policies for a counterparty.
+            </summary>
+            <param name="counterpartyId">Counterparty id</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyMarkupsController.AddPolicy(System.Int32,HappyTravel.Edo.Api.Models.Markups.MarkupPolicySettings)">
+            <summary>
+            Creates counterparty markup policy.
+            </summary>
+            <param name="counterpartyId">Counterparty id</param>
+            <param name="settings">Markup settings</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyMarkupsController.RemovePolicy(System.Int32,System.Int32)">
+            <summary>
+                Deletes counterparty policy.
+            </summary>
+            <param name="counterpartyId">Counterparty id</param>
+            <param name="policyId">Id of the policy to delete.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.CounterpartyMarkupsController.ModifyPolicy(System.Int32,System.Int32,HappyTravel.Edo.Api.Models.Markups.MarkupPolicySettings)">
+            <summary>
+                Updates policy settings.
+            </summary>
+            <param name="counterpartyId">Counterparty id</param>
+            <param name="policyId">Id of the policy.</param>
+            <param name="policySettings">Updated settings.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.GlobalMarkupsController.GetPolicies">
+            <summary>
+            Gets global markup policies
+            </summary>
+            <returns>List of global markups</returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.GlobalMarkupsController.AddPolicy(HappyTravel.Edo.Api.Models.Markups.MarkupPolicySettings)">
+            <summary>
+            Creates global markup policy.
+            </summary>
+            <param name="settings">Markup settings</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.GlobalMarkupsController.RemovePolicy(System.Int32)">
+            <summary>
+                Deletes global policy.
+            </summary>
+            <param name="policyId">Id of the policy to delete.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.GlobalMarkupsController.ModifyPolicy(System.Int32,HappyTravel.Edo.Api.Models.Markups.MarkupPolicySettings)">
+            <summary>
+                Updates policy settings.
+            </summary>
+            <param name="policyId">Id of the policy.</param>
+            <param name="policySettings">Updated settings.</param>
+            <returns></returns>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.InvitationsController.InviteAdministrator(HappyTravel.Edo.Api.Models.Users.UserDescriptionInfo)">
             <summary>
                 Send invitation to administrator.
             </summary>
             <param name="invitationInfo">Administrator invitation info.</param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.ManagementController.RegisterAdministrator(System.String)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.InvitationsController.RegisterAdministrator(System.String)">
             <summary>
                 Register current user as administrator by invitation code.
             </summary>
             <param name="invitationCode">Invitation code.</param>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.ManagementController.DisableInvitation(System.String)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.InvitationsController.DisableInvitation(System.String)">
             <summary>
                 Disable invitation.
             </summary>
@@ -368,68 +566,6 @@
                 Confirm credit card payment
             </summary>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.GetCounterpartyBalance(System.Int32,HappyTravel.Money.Enums.Currencies)">
-            <summary>
-                Gets balance for a counterparty account
-            </summary>
-            <param name="counterpartyId">Id of the counterparty</param>
-            <param name="currency">Currency</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.ReplenishCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
-            <summary>
-                Appends money to a counterparty account
-            </summary>
-            <param name="counterpartyAccountId">Id of the counterparty account</param>
-            <param name="paymentData">Details about the payment</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.SubtractCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentCancellationData)">
-            <summary>
-                Subtracts money from a counterparty account due to payment cancellation
-            </summary>
-            <param name="counterpartyAccountId">Id of the counterparty account</param>
-            <param name="cancellationData">Details about the payment cancellation</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.TransferToDefaultAgency(System.Int32,HappyTravel.Money.Models.MoneyAmount)">
-            <summary>
-                Transfers money from a counterparty account to the default agency account
-            </summary>
-            <param name="counterpartyAccountId">Id of the counterparty account</param>
-            <param name="amount">Amount of money to transfer</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.IncreaseMoneyManuallyToCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
-            <summary>
-                Manually Adds money to the counterparty account
-            </summary>
-            <param name="counterpartyAccountId">Id of the counterparty account</param>
-            <param name="paymentData">Details about the payment</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.DecreaseMoneyManuallyFromCounterpartyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
-            <summary>
-                Manually subtracts money from the counterparty account
-            </summary>
-            <param name="counterpartyAccountId">Id of the counterparty account</param>
-            <param name="paymentData">Details about the payment</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.IncreaseMoneyManuallyToAgencyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
-            <summary>
-                Manually Adds money to the agency account
-            </summary>
-            <param name="agencyAccountId">Id of the agency account</param>
-            <param name="paymentData">Details about the payment</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.DecreaseMoneyManuallyFromAgencyAccount(System.Int32,HappyTravel.Edo.Api.Models.Payments.PaymentData)">
-            <summary>
-                Manually Subtracts money from the agency account
-            </summary>
-            <param name="agencyAccountId">Id of the agency account</param>
-            <param name="paymentData">Details about the payment</param>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.GetAccounts(System.Int32)">
-            <summary>
-            Gets a list of counterparty accounts
-            </summary>
-            <param name="counterpartyId">Id of the counterparty to load the contract file for</param>
-        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.ReportsController.GetSupplerWiseDirectConnectivityReport(System.DateTime,System.DateTime)">
             <summary>
                 Returns supplier wise direct connectivity report
@@ -443,6 +579,11 @@
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.ReportsController.GetAgenciesProductivityReport(System.DateTime,System.DateTime)">
             <summary>
                 Returns agencies productivity report
+            </summary>
+        </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.ReportsController.GetFullBookingReport(System.DateTime,System.DateTime)">
+            <summary>
+                Returns full bookings report
             </summary>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AccommodationMappingController.AddDuplicateReport(HappyTravel.Edo.Api.Models.Accommodations.ReportAccommodationDuplicateRequest)">
@@ -471,7 +612,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgenciesController.InviteChildAgency(HappyTravel.Edo.Api.Models.Invitations.UserInvitationData)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgenciesController.InviteChildAgency(HappyTravel.Edo.Api.Models.Invitations.CreateChildAgencyInvitationRequest)">
             <summary>
                 Sends an email inviting to create a child agency.
             </summary>
@@ -485,7 +626,7 @@
             <param name="invitationCodeHash">Invitation code hash</param>>
             <returns></returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgenciesController.GenerateChildAgencyInvite(HappyTravel.Edo.Api.Models.Invitations.UserInvitationData)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgenciesController.GenerateChildAgencyInvite(HappyTravel.Edo.Api.Models.Invitations.CreateChildAgencyInvitationRequest)">
             <summary>
                 Invites to create child agency.
             </summary>
@@ -599,12 +740,6 @@
                 Gets Advanced Purchase Rates settings for an agency.
             </summary>
             <returns></returns>
-        </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgencySettingsController.GetDisplayedPaymentOptions">
-            <summary>
-                Gets setting which tells what payment methods to show for booking payment.
-            </summary>
-            <returns>Displayed payment methods setting</returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AgentMarkupsController.AddPolicy(System.Int32,HappyTravel.Edo.Api.Models.Markups.MarkupPolicySettings)">
             <summary>
@@ -1311,6 +1446,12 @@
             2. EDO has valid token and connectors have invalid information about an Identity server certificate (Identity and EDO were restarted but connector did not)
             </summary>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Infrastructure.TokenRetrieval.FromAuthorizationHeaderOrQueryString">
+            <summary>
+            Reads the token from the authorization header and from query string for SignalR hubs.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:HappyTravel.Edo.Api.Infrastructure.Unit">
             <summary>
                 Empty object, used for Result T,E  to provide typed error with no result.
@@ -1334,6 +1475,11 @@
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AccommodationDuplicateReportInfo.Accommodations">
             <summary>
             Reported accommodations
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.AccommodationInfo.Photo">
+            <summary>
+                Accommodation photo.
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.DailyRate.FromDate">
@@ -1712,6 +1858,11 @@
             Value added tax identification number
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.AgencyInfo.DefaultPaymentType">
+            <summary>
+            Default payment type
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Agencies.ChildAgencyInfo.Id">
             <summary>
             Agency id
@@ -1767,6 +1918,126 @@
             E-mail for billing operations
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.FullAgencyAccountInfo.Id">
+            <summary>
+            Account id
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.FullAgencyAccountInfo.Currency">
+            <summary>
+            Currency
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.FullAgencyAccountInfo.Balance">
+            <summary>
+            Balance
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.FullAgencyAccountInfo.Created">
+            <summary>
+            Date and time of adding account
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.FullAgencyAccountInfo.IsActive">
+            <summary>
+            Is the account active
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.Name">
+            <summary>
+                Name of the agency.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.Address">
+            <summary>
+                Agency address.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.CountryCode">
+            <summary>
+                Two-letter international country code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.City">
+            <summary>
+                City name.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.Phone">
+            <summary>
+                Phone number. Only digits, length between 3 and 30.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.Fax">
+            <summary>
+                Fax number. Only digits, length between 3 and 30.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.PostalCode">
+            <summary>
+                Postal code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.Website">
+            <summary>
+                Agency site url.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.BillingEmail">
+            <summary>
+            E-mail for billing operations
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationAgencyInfo.VatNumber">
+            <summary>
+            Value added tax identification number
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.Address">
+            <summary>
+                Agency address.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.CountryCode">
+            <summary>
+                Two-letter international country code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.City">
+            <summary>
+                City name.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.Phone">
+            <summary>
+                Phone number. Only digits, length between 3 and 30.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.Fax">
+            <summary>
+                Fax number. Only digits, length between 3 and 30.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.PostalCode">
+            <summary>
+                Postal code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.Website">
+            <summary>
+                Agency site url.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.BillingEmail">
+            <summary>
+            E-mail for billing operations
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.RegistrationRootAgencyInfo.VatNumber">
+            <summary>
+            Value added tax identification number
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimAgencyInfo.Name">
             <summary>
                 Name of the agency.
@@ -1820,6 +2091,11 @@
         <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimAgencyInfo.VatNumber">
             <summary>
             Value added tax identification number
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimAgencyInfo.DefaultPaymentType">
+            <summary>
+            Default payment type
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Agencies.SlimChildAgencyInfo.Id">
@@ -2172,6 +2448,21 @@
                 Invitation code.
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agents.RegistrationCounterpartyInfo.Name">
+            <summary>
+                Counterparty name.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agents.RegistrationCounterpartyInfo.LegalAddress">
+            <summary>
+                Agency address.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Agents.RegistrationCounterpartyInfo.PreferredPaymentMethod">
+            <summary>
+                Preferable way to do payments.
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Agents.SendAgentInvitationRequest.RegistrationInfo">
             <summary>
                 Regular agent personal information.
@@ -2230,6 +2521,11 @@
         <member name="P:HappyTravel.Edo.Api.Models.ApiClients.ApiClientInfo.EnabledSuppliers">
             <summary>
             Suppliers enabled for the client
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.ApiClients.ApiClientInfo.HasDirectContractsFilter">
+            <summary>
+            Is direct contracts only available for the client
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest.CheckInDate">
@@ -2378,6 +2674,71 @@
                 Indicates if extra cot needed.
             </summary>
         </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.Name">
+            <summary>
+                Name of the agency.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.Address">
+            <summary>
+                Agency address.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.CountryCode">
+            <summary>
+                Two-letter international country code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.CountryName">
+            <summary>
+            Country name.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.City">
+            <summary>
+                City name.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.Phone">
+            <summary>
+                Phone number. Only digits, length between 3 and 30.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.Fax">
+            <summary>
+                Fax number. Only digits, length between 3 and 30.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.PostalCode">
+            <summary>
+                Postal code.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.Website">
+            <summary>
+                Agency site url.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.BillingEmail">
+            <summary>
+            E-mail for billing operations
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.ChildAgencyInvitationInfo.VatNumber">
+            <summary>
+            Value added tax identification number
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.CreateChildAgencyInvitationRequest.UserRegistrationInfo">
+            <summary>
+            Prefilled user registration info.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Invitations.CreateChildAgencyInvitationRequest.ChildAgencyRegistrationInfo">
+            <summary>
+            Prefilled child agency registration info. Used only for child agency invitations.
+            </summary>
+        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Invitations.UserInvitationData.UserRegistrationInfo">
             <summary>
             Prefilled user registration info.
@@ -2436,6 +2797,26 @@
         <member name="P:HappyTravel.Edo.Api.Models.Locations.Region.Name">
             <summary>
                 The dictionary of region names on supported languages.
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Management.Administrators.AdministratorInfo.Id">
+            <summary>
+            Id of administrator
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Management.Administrators.AdministratorInfo.FirstName">
+            <summary>
+            First name
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Management.Administrators.AdministratorInfo.LastName">
+            <summary>
+            Last name
+            </summary>
+        </member>
+        <member name="P:HappyTravel.Edo.Api.Models.Management.Administrators.AdministratorInfo.Position">
+            <summary>
+            Position
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Management.CounterpartyDeclinedVerificationRequest.Reason">
@@ -2710,7 +3091,7 @@
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks.PaymentLinkCreationRequest.Comment">
             <summary>
-                Optional payment comment.
+                Mandatory payment comment.
             </summary>
         </member>
         <member name="P:HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks.PaymentLinkData.Amount">

@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.General.Enums;
 using Newtonsoft.Json;
 
 namespace HappyTravel.Edo.Api.Models.Agents
@@ -9,7 +8,7 @@ namespace HappyTravel.Edo.Api.Models.Agents
     public readonly struct CounterpartyInfo
     {
         [JsonConstructor]
-        public CounterpartyInfo(int id, string name, string legalAddress, PaymentMethods preferredPaymentMethod,
+        public CounterpartyInfo(int id, string name, string legalAddress, PaymentTypes preferredPaymentMethod,
             bool isContractUploaded, CounterpartyStates verificationState, DateTime? verificationDate, bool isActive,
             string markupFormula = null)
         {
@@ -44,7 +43,7 @@ namespace HappyTravel.Edo.Api.Models.Agents
         /// <summary>
         ///     Preferable way to do payments.
         /// </summary>
-        public PaymentMethods PreferredPaymentMethod { get; }
+        public PaymentTypes PreferredPaymentMethod { get; }
 
         /// <summary>
         /// True if contract is loaded to counterparty

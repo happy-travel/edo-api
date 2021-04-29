@@ -1,14 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
+using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Bookings;
 using HappyTravel.Edo.Api.Models.Users;
+using HappyTravel.Edo.Api.NotificationCenter.Models;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Mailing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
+using HappyTravel.Edo.Api.Services.Notifications;
 using HappyTravel.Edo.Api.Services.SupplierOrders;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
@@ -29,6 +33,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             IBookingMoneyReturnService moneyReturnService,
             IBookingDocumentsMailingService documentsMailingService,
             ISupplierOrderService supplierOrderService,
+            ISendingNotificationsService sendingNotificationsService,
             IBookingChangeLogService bookingChangeLogService,
             EdoContext context,
             ILogger<BookingRecordsUpdater> logger)
@@ -39,6 +44,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             _moneyReturnService = moneyReturnService;
             _documentsMailingService = documentsMailingService;
             _supplierOrderService = supplierOrderService;
+            _sendingNotificationsService = sendingNotificationsService;
             _context = context;
             _logger = logger;
             _bookingChangeLogService = bookingChangeLogService;
@@ -51,6 +57,21 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
                 return Result.Success();
 
             await SetStatus(booking, status);
+
+            var message = new BookingStatusChangeInfo
+            {
+                BookingId = booking.Id,
+                ReferenceCode = booking.ReferenceCode,
+                Status = status,
+                ChangeTime = _dateTimeProvider.UtcNow(),
+                AccommodationName = booking.AccommodationName,
+                AccommodationPhoto = booking.AccommodationInfo?.Photo,
+                CheckInDate = booking.CheckInDate,
+                CheckOutDate = booking.CheckOutDate
+            };
+            await _sendingNotificationsService.Send(apiCaller, 
+                JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(message, new(JsonSerializerDefaults.Web))), 
+                Edo.Notifications.Enums.NotificationTypes.BookingStatusChanged);
 
             await _bookingChangeLogService.Write(booking, status, date, apiCaller, reason);
             
@@ -79,7 +100,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             
             _context.Bookings.Update(booking);
             await _context.SaveChangesAsync();
-            _context.Entry(booking).State = EntityState.Detached;
+            _context.Detach(booking);
 
 
             static List<BookedRoom> UpdateSupplierReferenceCodes(List<BookedRoom> existingRooms, List<SlimRoomOccupation> updatedRooms)
@@ -126,7 +147,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             {
                 // Booking was updated so we need to get it again
                 var updatedBooking = await _context.Bookings.FindAsync(bookingInfo.BookingId);
-                return await _documentsMailingService.SendInvoice(updatedBooking, bookingInfo.AgentInformation.AgentEmail, true);
+                return await _documentsMailingService.SendInvoice(updatedBooking, bookingInfo.AgentInformation.AgentEmail, true, new SlimAgentContext(booking.AgentId, booking.AgencyId));
             }
 
 
@@ -229,6 +250,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         private readonly IBookingMoneyReturnService _moneyReturnService;
         private readonly IBookingDocumentsMailingService _documentsMailingService;
         private readonly ISupplierOrderService _supplierOrderService;
+        private readonly ISendingNotificationsService _sendingNotificationsService;
         private readonly EdoContext _context;
         private readonly ILogger<BookingRecordsUpdater> _logger;
         private readonly IBookingChangeLogService _bookingChangeLogService;

@@ -10,7 +10,6 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.UnitTests.Utility;
-using HappyTravel.EdoContracts.General.Enums;
 using Moq;
 using Xunit;
 
@@ -114,22 +113,22 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
         
         private static readonly Booking[] Bookings = 
         {
-            new Booking {Id = 1, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Pending, PaymentMethod = PaymentMethods.BankTransfer},
-            new Booking {Id = 2, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.BankTransfer},
-            new Booking {Id = 3, PaymentStatus = BookingPaymentStatuses.Captured, Status = BookingStatuses.Pending, PaymentMethod = PaymentMethods.BankTransfer},
-            new Booking {Id = 4, PaymentStatus = BookingPaymentStatuses.Refunded, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard},
-            new Booking {Id = 5, PaymentStatus = BookingPaymentStatuses.Voided, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard},
-            new Booking {Id = 6, PaymentStatus = BookingPaymentStatuses.Voided, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard},
-            new Booking {Id = 7, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard},
-            new Booking {Id = 8, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Pending, PaymentMethod = PaymentMethods.CreditCard},
-            new Booking {Id = 9, PaymentStatus = BookingPaymentStatuses.Refunded, Status = BookingStatuses.Cancelled, PaymentMethod = PaymentMethods.BankTransfer},
-            new Booking {Id = 10, PaymentStatus = BookingPaymentStatuses.Captured, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.Offline},
-            new Booking {Id = 11, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.WaitingForResponse, PaymentMethod = PaymentMethods.Offline},
-            new Booking {Id = 12, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.Offline},
-            new Booking {Id = 13, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Pending, PaymentMethod = PaymentMethods.Offline},
-            new Booking {Id = 14, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Pending, PaymentMethod = PaymentMethods.BankTransfer},
-            new Booking {Id = 15, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.BankTransfer},
-            new Booking {Id = 16, PaymentStatus = BookingPaymentStatuses.Captured, Status = BookingStatuses.Pending, PaymentMethod = PaymentMethods.BankTransfer},
+            new Booking {Id = 1, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Pending, PaymentMethod = PaymentTypes.VirtualAccount},
+            new Booking {Id = 2, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.VirtualAccount},
+            new Booking {Id = 3, PaymentStatus = BookingPaymentStatuses.Captured, Status = BookingStatuses.Pending, PaymentMethod = PaymentTypes.VirtualAccount},
+            new Booking {Id = 4, PaymentStatus = BookingPaymentStatuses.Refunded, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard},
+            new Booking {Id = 5, PaymentStatus = BookingPaymentStatuses.Voided, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard},
+            new Booking {Id = 6, PaymentStatus = BookingPaymentStatuses.Voided, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard},
+            new Booking {Id = 7, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard},
+            new Booking {Id = 8, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Pending, PaymentMethod = PaymentTypes.CreditCard},
+            new Booking {Id = 9, PaymentStatus = BookingPaymentStatuses.Refunded, Status = BookingStatuses.Cancelled, PaymentMethod = PaymentTypes.VirtualAccount},
+            new Booking {Id = 10, PaymentStatus = BookingPaymentStatuses.Captured, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.Offline},
+            new Booking {Id = 11, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.WaitingForResponse, PaymentMethod = PaymentTypes.Offline},
+            new Booking {Id = 12, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.Offline},
+            new Booking {Id = 13, PaymentStatus = BookingPaymentStatuses.NotPaid, Status = BookingStatuses.Pending, PaymentMethod = PaymentTypes.Offline},
+            new Booking {Id = 14, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Pending, PaymentMethod = PaymentTypes.VirtualAccount},
+            new Booking {Id = 15, PaymentStatus = BookingPaymentStatuses.Authorized, Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.VirtualAccount},
+            new Booking {Id = 16, PaymentStatus = BookingPaymentStatuses.Captured, Status = BookingStatuses.Pending, PaymentMethod = PaymentTypes.VirtualAccount},
         };
     }
 }

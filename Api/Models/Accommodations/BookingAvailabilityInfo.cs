@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Geography;
 using HappyTravel.Money.Models;
 using Newtonsoft.Json;
@@ -15,6 +14,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         public BookingAvailabilityInfo(
             string accommodationId,
             string accommodationName,
+            AccommodationInfo accommodationInfo,
             RoomContractSet roomContractSet,
             string zoneName,
             string localityName,
@@ -31,11 +31,12 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             MoneyAmount originalSupplierPrice,
             string availabilityId,
             string htId,
-            List<PaymentMethods> availablePaymentMethods,
+            List<PaymentTypes> availablePaymentTypes,
             bool isDirectContract)
         {
             AccommodationId = accommodationId;
             AccommodationName = accommodationName;
+            AccommodationInfo = accommodationInfo;
             RoomContractSet = roomContractSet;
             ZoneName = zoneName;
             LocalityName = localityName;
@@ -52,13 +53,14 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             OriginalSupplierPrice = originalSupplierPrice;
             AvailabilityId = availabilityId;
             HtId = htId;
-            AvailablePaymentMethods = availablePaymentMethods;
+            AvailablePaymentTypes = availablePaymentTypes;
             IsDirectContract = isDirectContract;
         }
 
 
         public string AccommodationId { get; }
         public string AccommodationName { get; }
+        public AccommodationInfo AccommodationInfo { get; }
         public RoomContractSet RoomContractSet { get; }
         public string ZoneName { get; }
         public string LocalityName { get; }
@@ -75,7 +77,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         public MoneyAmount OriginalSupplierPrice { get; }
         public string AvailabilityId { get; }
         public string HtId { get; }
-        public List<PaymentMethods> AvailablePaymentMethods { get; }
+        public List<PaymentTypes> AvailablePaymentTypes { get; }
         public bool IsDirectContract { get; }
 
 

@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using HappyTravel.Edo.Common.Enums.Notifications;
-using HappyTravel.Edo.Common.Models.Notifications;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.Edo.Data.Agents;
@@ -193,9 +191,6 @@ namespace HappyTravel.Edo.Data.Migrations
 
                     b.Property<AgencyAccommodationBookingSettings>("AccommodationBookingSettings")
                         .HasColumnType("jsonb");
-
-                    b.Property<int?>("DisplayedPaymentOptions")
-                        .HasColumnType("integer");
 
                     b.HasKey("AgencyId");
 
@@ -434,6 +429,9 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<string>("AccommodationId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<AccommodationInfo>("AccommodationInfo")
+                        .HasColumnType("jsonb");
 
                     b.Property<string>("AccommodationName")
                         .IsRequired()
@@ -954,6 +952,33 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.ToTable("ServiceAccounts");
                 });
 
+            modelBuilder.Entity("HappyTravel.Edo.Data.Markup.Discount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .UseIdentityByDefaultColumn();
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("DiscountPercent")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("TargetAgencyId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TargetPolicyId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Discounts");
+                });
+
             modelBuilder.Entity("HappyTravel.Edo.Data.Markup.DisplayMarkupFormula", b =>
                 {
                     b.Property<int>("Id")
@@ -1097,17 +1122,26 @@ namespace HappyTravel.Edo.Data.Migrations
                         .HasColumnType("integer")
                         .UseIdentityByDefaultColumn();
 
+                    b.Property<int?>("AgencyId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<bool>("IsRead")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Message")
-                        .HasColumnType("text");
-
-                    b.Property<Dictionary<ProtocolTypes, ISendingSettings>>("SendingSettings")
+                    b.Property<JsonDocument>("Message")
                         .HasColumnType("jsonb");
+
+                    b.Property<int>("Receiver")
+                        .HasColumnType("integer");
+
+                    b.Property<JsonDocument>("SendingSettings")
+                        .HasColumnType("jsonb");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
@@ -1115,6 +1149,8 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IsRead");
+
+                    b.HasIndex("Receiver");
 
                     b.HasIndex("UserId");
 
@@ -1128,10 +1164,7 @@ namespace HappyTravel.Edo.Data.Migrations
                         .HasColumnType("integer")
                         .UseIdentityByDefaultColumn();
 
-                    b.Property<int>("AgencyId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("AgentId")
+                    b.Property<int?>("AgencyId")
                         .HasColumnType("integer");
 
                     b.Property<int>("EnabledProtocols")
@@ -1143,9 +1176,15 @@ namespace HappyTravel.Edo.Data.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("UserType")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AgencyId", "AgentId", "Type")
+                    b.HasIndex("AgencyId", "UserId", "UserType", "Type")
                         .IsUnique();
 
                     b.ToTable("NotificationOptions");

@@ -29,6 +29,7 @@
     {"id": 1070, "name": "BookingRefreshStatusSuccess", "level": "Information", "source": "BookingService", "isException": false},
     {"id": 1071, "name": "BookingRefreshStatusFailure", "level": "Error", "source": "BookingService", "isException": false},
     {"id": 1072, "name": "BookingConfirmationFailure", "level": "Critical", "source": "BookingChangesProcessor", "isException": false},
+    {"id": 1073, "name": "BookingEvaluationFailure", "level": "Critical", "source": "BookingEvaluationService", "isException": false},
     {"id": 1100, "name": "AdministratorAuthorizationSuccess", "level": "Debug", "source": "AdministratorPermissionsAuthorizationHandler", "isException": false}, 
     {"id": 1101, "name": "AdministratorAuthorizationFailure", "level": "Warning", "source": "AdministratorPermissionsAuthorizationHandler", "isException": false},
     {"id": 1110, "name": "AgentAuthorizationSuccess", "level": "Debug", "source": "InAgencyPermissionAuthorizationHandler", "isException": false}, 

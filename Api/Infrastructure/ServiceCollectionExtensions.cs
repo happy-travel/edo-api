@@ -81,6 +81,8 @@ using HappyTravel.CurrencyConverter.Infrastructure;
 using HappyTravel.Edo.Api.AdministratorServices.Invitations;
 using HappyTravel.Edo.Api.Infrastructure.Analytics;
 using HappyTravel.Edo.Api.Infrastructure.Invitations;
+using HappyTravel.Edo.Api.Models.Reports;
+using HappyTravel.Edo.Api.Models.Reports.DirectConnectivityReports;
 using HappyTravel.Edo.Api.Services;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Mapping;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing;
@@ -96,6 +98,8 @@ using HappyTravel.Edo.Api.Services.Files;
 using HappyTravel.Edo.Api.Services.Invitations;
 using HappyTravel.Edo.Api.Services.Notifications;
 using HappyTravel.Edo.Api.Services.Reports;
+using HappyTravel.Edo.Api.Services.Reports.Converters;
+using HappyTravel.Edo.Api.Services.Reports.RecordManagers;
 using HappyTravel.Edo.Api.Services.SupplierResponses;
 using IdentityModel.Client;
 using Prometheus;
@@ -116,6 +120,7 @@ namespace HappyTravel.Edo.Api.Infrastructure
                     options.ApiName = apiName;
                     options.RequireHttpsMetadata = true;
                     options.SupportedTokens = SupportedTokens.Jwt;
+                    options.TokenRetriever = TokenRetrieval.FromAuthorizationHeaderOrQueryString();
                 });
 
             return services;
@@ -566,6 +571,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
 
             services.AddTransient<IMarkupPolicyService, MarkupPolicyService>();
             services.AddTransient<IMarkupService, MarkupService>();
+            services.AddTransient<IDiscountFunctionService, DiscountFunctionService>();
+            
             services.AddTransient<IDisplayedMarkupFormulaService, DisplayedMarkupFormulaService>();
             services.AddTransient<IMarkupBonusMaterializationService, MarkupBonusMaterializationService>();
             services.AddTransient<IMarkupBonusDisplayService, MarkupBonusDisplayService>();
@@ -575,6 +582,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddScoped<IAgencyMarkupPolicyManager, AgencyMarkupPolicyManager>();
             services.AddTransient<IMarkupPolicyAuditService, MarkupPolicyAuditService>();
             services.AddScoped<IAdminMarkupPolicyManager, AdminMarkupPolicyManager>();
+            
+            services.AddTransient<IAgencyDiscountManagementService, AgencyDiscountManagementService>();
 
             services.AddScoped<ICurrencyRateService, CurrencyRateService>();
             services.AddScoped<ICurrencyConverterService, CurrencyConverterService>();
@@ -709,9 +718,17 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<IAgencyService, AgencyService>();
 
             services.AddTransient<IApiClientService, ApiClientService>();
-            services.AddTransient<IDirectConnectivityReportService, DirectConnectivityReportService>();
-            services.AddTransient<IAgenciesProductivityReportService, AgenciesProductivityReportService>();
+            services.AddTransient<IReportService, ReportService>();
             services.AddTransient<INotificationOptionsService, NotificationOptionsService>();
+            services.AddTransient<ISendingNotificationsService, SendingNotificationsService>();
+
+            services.AddTransient<IConverter<AgencyWiseRecordProjection, AgencyWiseReportRow>, AgencyWiseRecordProjectionConverter>();
+            services.AddTransient<IConverter<SupplierWiseRecordProjection, SupplierWiseReportRow>, SupplierWiseRecordProjectionConverter>();
+            services.AddTransient<IConverter<FullBookingsReportProjection, FullBookingsReportRow>, FullBookingsReportProjectionConverter>();
+            services.AddTransient<IRecordManager<AgencyWiseRecordProjection>, AgencyWiseRecordManager>();
+            services.AddTransient<IRecordManager<SupplierWiseRecordProjection>, SupplierWiseRecordsManager>();
+            services.AddTransient<IRecordManager<FullBookingsReportProjection>, FullBookingsRecordManager>();
+            services.AddTransient<IRecordManager<AgencyProductivity>, AgenciesProductivityRecordManager>();
 
             //TODO: move to Consul when it will be ready
             services.AddCurrencyConversionFactory(new List<BufferPair>

@@ -43,9 +43,9 @@ namespace HappyTravel.Edo.Api.Models.Payments.External.PaymentLinks
         public Currencies Currency { get; }
 
         /// <summary>
-        ///     Optional payment comment.
+        ///     Mandatory payment comment.
         /// </summary>
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        [Required]
         public string Comment { get; }
     }
 }

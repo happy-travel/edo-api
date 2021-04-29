@@ -4,7 +4,6 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 {
@@ -22,14 +21,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
         {
             return booking.PaymentMethod switch
             {
-                PaymentMethods.BankTransfer => await ReturnBankTransfer(),
-                PaymentMethods.CreditCard => await ReturnCreditCardPayment(),
-                PaymentMethods.Offline => Result.Success(),
+                PaymentTypes.VirtualAccount => await ReturnVirtualAccountPayment(),
+                PaymentTypes.CreditCard => await ReturnCreditCardPayment(),
+                PaymentTypes.Offline => Result.Success(),
                 _ => throw new ArgumentOutOfRangeException(nameof(booking.PaymentMethod), $"Invalid payment method {booking.PaymentMethod}")
             };
 
 
-            async Task<Result> ReturnBankTransfer()
+            async Task<Result> ReturnVirtualAccountPayment()
                 => booking.PaymentStatus switch
                 {
                     BookingPaymentStatuses.NotPaid => Result.Success(),

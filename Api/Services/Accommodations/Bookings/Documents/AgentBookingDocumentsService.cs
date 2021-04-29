@@ -40,7 +40,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents
         {
             return _recordManager.Get(bookingId)
                 .CheckPermissions(agent)
-                .Bind(b => _mailingService.SendVoucher(b, email, languageCode));
+                .Bind(b => _mailingService.SendVoucher(b, email, languageCode, new SlimAgentContext(agent.AgentId, agent.AgencyId)));
         }
 
 
@@ -48,7 +48,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents
         {
             return _recordManager.Get(bookingId)
                 .CheckPermissions(agent)
-                .Bind(b => _mailingService.SendInvoice(b, email, false));
+                .Bind(b => _mailingService.SendInvoice(b, email, false, new SlimAgentContext(agent.AgentId, agent.AgencyId)));
         }
 
 

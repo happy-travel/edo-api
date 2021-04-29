@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Users;
-using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Mailing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
@@ -13,7 +12,6 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.Edo.UnitTests.Utility;
-using HappyTravel.EdoContracts.General.Enums;
 using Moq;
 using Xunit;
 
@@ -88,7 +86,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 PaymentStatus = BookingPaymentStatuses.Authorized, 
                 ReferenceCode = "NNN-222",
                 Status = BookingStatuses.Pending,
-                PaymentMethod = PaymentMethods.CreditCard,
+                PaymentMethod = PaymentTypes.CreditCard,
                 CheckInDate = new DateTime(2021, 12, 10)
             },
             new Booking
@@ -97,7 +95,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 PaymentStatus = BookingPaymentStatuses.Authorized,
                 ReferenceCode = "NNN-223", 
                 Status = BookingStatuses.Confirmed, 
-                PaymentMethod = PaymentMethods.CreditCard,
+                PaymentMethod = PaymentTypes.CreditCard,
                 CheckInDate = new DateTime(2021, 12, 11),
                 DeadlineDate = new DateTime(2021, 12, 9)
             },
@@ -107,7 +105,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 PaymentStatus = BookingPaymentStatuses.Authorized,
                 ReferenceCode = "NNN-224",
                 Status = BookingStatuses.Confirmed,
-                PaymentMethod = PaymentMethods.CreditCard,
+                PaymentMethod = PaymentTypes.CreditCard,
                 CheckInDate = new DateTime(2021, 12, 10),
                 DeadlineDate = new DateTime(2021, 11, 9)
             },
@@ -117,7 +115,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 PaymentStatus = BookingPaymentStatuses.Authorized,
                 ReferenceCode = "NNN-224",
                 Status = BookingStatuses.Cancelled,
-                PaymentMethod = PaymentMethods.CreditCard,
+                PaymentMethod = PaymentTypes.CreditCard,
                 CheckInDate = new DateTime(2021, 12, 20)
             },
             new Booking
@@ -126,7 +124,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
                 PaymentStatus = BookingPaymentStatuses.Authorized,
                 ReferenceCode = "NNN-224",
                 Status = BookingStatuses.Rejected,
-                PaymentMethod = PaymentMethods.CreditCard,
+                PaymentMethod = PaymentTypes.CreditCard,
                 CheckInDate = new DateTime(2022, 12, 20)
             }
         };

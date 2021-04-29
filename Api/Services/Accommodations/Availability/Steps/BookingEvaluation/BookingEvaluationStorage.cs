@@ -24,7 +24,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
 
 
         public Task Set(Guid searchId, Guid resultId, Guid roomContractSetId, DataWithMarkup<RoomContractSetAvailability> availability,
-            Suppliers supplier, List<PaymentMethods> availablePaymentMethods, string htId)
+            Suppliers supplier, List<PaymentTypes> availablePaymentTypes, string htId)
         {
             var key = BuildKey(searchId, resultId, roomContractSetId);
             var result = SupplierData.Create(supplier, availability);
@@ -37,26 +37,27 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             var dataWithMarkup = result.Data;
             
             var bookingAvailabilityInfo = new BookingAvailabilityInfo(
-                roomSetAvailability.Accommodation.Id,
-                roomSetAvailability.Accommodation.Name,
-                roomContractSet,
-                location.LocalityZone,
-                location.Locality,
-                location.Country,
-                location.CountryCode,
-                location.Address,
-                location.Coordinates,
-                roomSetAvailability.CheckInDate,
-                roomSetAvailability.CheckOutDate,
-                roomSetAvailability.NumberOfNights,
-                result.Source,
-                dataWithMarkup.AppliedMarkups,
-                dataWithMarkup.ConvertedSupplierPrice,
-                dataWithMarkup.OriginalSupplierPrice,
-                roomSetAvailability.AvailabilityId,
-                htId,
-                availablePaymentMethods,
-                roomSetAvailability.RoomContractSet.IsDirectContract);
+                accommodationId: roomSetAvailability.Accommodation.Id,
+                accommodationName: roomSetAvailability.Accommodation.Name,
+                accommodationInfo: new AccommodationInfo(roomSetAvailability.Accommodation.Photo),
+                roomContractSet: roomContractSet,
+                zoneName: location.LocalityZone,
+                localityName: location.Locality,
+                countryName: location.Country,
+                countryCode: location.CountryCode,
+                address: location.Address,
+                coordinates: location.Coordinates,
+                checkInDate: roomSetAvailability.CheckInDate,
+                checkOutDate: roomSetAvailability.CheckOutDate,
+                numberOfNights: roomSetAvailability.NumberOfNights,
+                supplier: result.Source,
+                appliedMarkups: dataWithMarkup.AppliedMarkups,
+                convertedSupplierPrice: dataWithMarkup.ConvertedSupplierPrice,
+                originalSupplierPrice: dataWithMarkup.OriginalSupplierPrice,
+                availabilityId: roomSetAvailability.AvailabilityId,
+                htId: htId,
+                availablePaymentTypes: availablePaymentTypes,
+                isDirectContract: roomSetAvailability.RoomContractSet.IsDirectContract);
             
             return _doubleFlow.SetAsync(key, bookingAvailabilityInfo, CacheExpirationTime);
         }
@@ -79,6 +80,5 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
         
         private static readonly TimeSpan CacheExpirationTime = TimeSpan.FromMinutes(15);
         private readonly IDoubleFlow _doubleFlow;
-        private readonly BookingOptions _bookingOptions;
     }
 }

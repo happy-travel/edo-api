@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.AdministratorServices;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Services.Management;
 using HappyTravel.Edo.Api.Services.Payments.Accounts;
 using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Payments;
@@ -26,8 +27,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             var edoContextMock = MockEdoContextFactory.Create();
             var mockedEdoContext = edoContextMock.Object;
 
-            _counterpartyAccountService = new CounterpartyAccountService(mockedEdoContext, entityLockerMock.Object, Mock.Of<IAccountBalanceAuditService>(),
-                Mock.Of<ICounterpartyBillingNotificationService>());
+            _counterpartyAccountService = new CounterpartyAccountService(mockedEdoContext, entityLockerMock.Object, 
+                Mock.Of<IManagementAuditService>(), Mock.Of<IAccountBalanceAuditService>(), Mock.Of<ICounterpartyBillingNotificationService>());
 
             var strategy = new ExecutionStrategyMock();
 

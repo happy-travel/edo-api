@@ -191,21 +191,23 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
             {
                 var passengerNumber = booking.Rooms.Sum(r => r.Passengers.Count);
                 var numberOfNights = (booking.CheckOutDate - booking.CheckInDate).Days;
-                return new AccommodationBookingDetails(booking.ReferenceCode,
-                    booking.SupplierReferenceCode,
-                    booking.Status,
-                    numberOfNights,
-                    booking.CheckInDate,
-                    booking.CheckOutDate,
-                    booking.Location,
-                    accommodationDetails.Contacts,
-                    booking.AccommodationId,
-                    booking.AccommodationName,
-                    booking.DeadlineDate,
-                    booking.Rooms,
-                    passengerNumber,
-                    booking.CancellationPolicies,
-                    booking.Created);
+                return new AccommodationBookingDetails(
+                    referenceCode: booking.ReferenceCode,
+                    agentReference: booking.SupplierReferenceCode,
+                    status: booking.Status,
+                    numberOfNights: numberOfNights,
+                    checkInDate: booking.CheckInDate,
+                    checkOutDate: booking.CheckOutDate,
+                    location: booking.Location,
+                    contactInfo: accommodationDetails.Contacts,
+                    accommodationId: booking.AccommodationId,
+                    accommodationName: booking.AccommodationName,
+                    accommodationInfo: booking.AccommodationInfo,
+                    deadlineDate: booking.DeadlineDate,
+                    roomDetails: booking.Rooms,
+                    numberOfPassengers: passengerNumber,
+                    cancellationPolicies: booking.CancellationPolicies,
+                    created: booking.Created);
             }
             
             

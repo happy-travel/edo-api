@@ -17,6 +17,7 @@ using HappyTravel.Money.Enums;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Moq;
 using Xunit;
+using HappyTravel.Edo.Api.Services.Management;
 
 namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAccountServiceTests
 {
@@ -31,8 +32,8 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyAcco
             _edoContextMock = MockEdoContextFactory.Create();
             _mockedEdoContext = _edoContextMock.Object;
 
-            _counterpartyAccountService = new CounterpartyAccountService(_mockedEdoContext, entityLockerMock.Object, Mock.Of<IAccountBalanceAuditService>(),
-                Mock.Of<ICounterpartyBillingNotificationService>());
+            _counterpartyAccountService = new CounterpartyAccountService(_mockedEdoContext, entityLockerMock.Object, 
+                Mock.Of<IManagementAuditService>(), Mock.Of<IAccountBalanceAuditService>(), Mock.Of<ICounterpartyBillingNotificationService>());
 
             var strategy = new ExecutionStrategyMock();
 

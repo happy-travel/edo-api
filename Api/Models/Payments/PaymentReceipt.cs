@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Documents;
 using HappyTravel.EdoContracts.Accommodations.Enums;
-using HappyTravel.EdoContracts.General.Enums;
-using HappyTravel.Formatters;
 using HappyTravel.Money.Enums;
 using Newtonsoft.Json;
 
@@ -12,7 +11,7 @@ namespace HappyTravel.Edo.Api.Models.Payments
     public readonly struct PaymentReceipt
     {
         public PaymentReceipt(decimal amount, Currencies currency, 
-            PaymentMethods method, string referenceCode, DocumentRegistrationInfo invoiceInfo, string accommodationName, DateTime checkInDate,
+            PaymentTypes method, string referenceCode, DocumentRegistrationInfo invoiceInfo, string accommodationName, DateTime checkInDate,
             DateTime checkOutDate, DateTime? deadlineDate, List<ReceiptItemInfo> receiptItems, BuyerInfo buyerDetails, string clientName = default)
         {
             Amount = amount;
@@ -32,7 +31,7 @@ namespace HappyTravel.Edo.Api.Models.Payments
 
         public decimal Amount { get; }
         public Currencies Currency { get; }
-        public PaymentMethods Method { get; }
+        public PaymentTypes Method { get; }
         public string ReferenceCode { get; }
         public DocumentRegistrationInfo InvoiceInfo { get; }
         public string CustomerName { get; }

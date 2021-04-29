@@ -6,7 +6,6 @@ using HappyTravel.Edo.Api.Models.Payments;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 using Newtonsoft.Json.Linq;
 
 namespace HappyTravel.Edo.Api.Services.Payments
@@ -57,7 +56,7 @@ namespace HappyTravel.Edo.Api.Services.Payments
                     Currency = booking.Currency,
                     AgentId = booking.AgentId,
                     EventType = eventType,
-                    PaymentMethod = isAccountLogEntry ? PaymentMethods.BankTransfer : PaymentMethods.CreditCard,
+                    PaymentMethod = isAccountLogEntry ? PaymentTypes.VirtualAccount : PaymentTypes.CreditCard,
                     AccommodationName = booking.AccommodationName,
                     LeadingPassenger = booking.MainPassengerName,
                     BookingId = booking.Id,

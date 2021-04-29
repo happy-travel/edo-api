@@ -9,6 +9,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEval
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.Accommodations;
 using HappyTravel.EdoContracts.General.Enums;
 
@@ -39,7 +40,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
             AgentContext agentContext, string languageCode, string clientIp)
         {
             return GetCachedAvailability(bookingRequest)
-                .Ensure(IsPaymentMethodAllowed, "Payment method is not allowed")
+                .Ensure(IsPaymentTypeAllowed, "Payment type is not allowed")
                 .Map(RegisterBooking)
                 .Check(GenerateInvoice)
                 .CheckIf(IsDeadlinePassed, ChargeMoney)
@@ -57,13 +58,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
                     bookingRequest.RoomContractSetId);
             
 
-            bool IsPaymentMethodAllowed(BookingAvailabilityInfo availabilityInfo) 
-                => availabilityInfo.AvailablePaymentMethods.Contains(PaymentMethods.BankTransfer);
+            bool IsPaymentTypeAllowed(BookingAvailabilityInfo availabilityInfo) 
+                => availabilityInfo.AvailablePaymentTypes.Contains(PaymentTypes.VirtualAccount);
 
 
             async Task<(Data.Bookings.Booking, BookingAvailabilityInfo)> RegisterBooking(BookingAvailabilityInfo bookingAvailability)
             {
-                var booking = await _registrationService.Register(bookingRequest, bookingAvailability, PaymentMethods.BankTransfer, agentContext, languageCode);
+                var booking = await _registrationService.Register(bookingRequest, bookingAvailability, PaymentTypes.VirtualAccount, agentContext, languageCode);
                 return (booking, bookingAvailability);
             }
 

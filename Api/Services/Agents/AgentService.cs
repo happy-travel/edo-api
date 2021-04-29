@@ -11,7 +11,6 @@ using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
-using HappyTravel.Edo.Data.Markup;
 using IdentityModel;
 using Microsoft.EntityFrameworkCore;
 

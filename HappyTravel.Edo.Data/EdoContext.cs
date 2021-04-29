@@ -96,6 +96,8 @@ namespace HappyTravel.Edo.Data
         public virtual DbSet<BookingStatusHistoryEntry> BookingStatusHistory { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<NotificationOptions> NotificationOptions { get; set; }
+        
+        public DbSet<Discount> Discounts { get; set; }
 
 
         [DbFunction("jsonb_to_string")]
@@ -570,6 +572,9 @@ namespace HappyTravel.Edo.Data
                 booking.Property(b => b.AccommodationName)
                     .IsRequired();
 
+                booking.Property(b => b.AccommodationInfo)
+                    .HasColumnType("jsonb");
+
                 booking.Property(b => b.Location)
                     .HasColumnType("jsonb");
 
@@ -903,7 +908,9 @@ namespace HappyTravel.Edo.Data
         {
             builder.Entity<Notification>(b =>
             {
+                b.Property(n => n.Message).HasColumnType("jsonb");
                 b.Property(n => n.SendingSettings).HasColumnType("jsonb");
+                b.HasIndex(n => n.Receiver);
                 b.HasIndex(n => n.UserId);
                 b.HasIndex(n => n.IsRead);
             });
@@ -914,7 +921,18 @@ namespace HappyTravel.Edo.Data
         {
             builder.Entity<NotificationOptions>(b =>
             {
-                b.HasIndex(o => new {o.AgencyId, o.AgentId, o.Type}).IsUnique();
+                b.HasIndex(o => new {o.AgencyId, o.UserId, o.UserType, o.Type}).IsUnique();
+            });
+        }
+        
+        
+        private static void BuildDiscounts(ModelBuilder builder)
+        {
+            builder.Entity<Discount>(b =>
+            {
+                b.HasIndex(d => d.TargetAgencyId);
+                b.HasIndex(d => d.TargetPolicyId);
+                b.HasIndex(d => d.IsActive);
             });
         }
 

@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using HappyTravel.Edo.Common.Enums.Notifications;
-using HappyTravel.Edo.Common.Models.Notifications;
+using HappyTravel.Edo.Notifications.Enums;
+using HappyTravel.Edo.Notifications.Models;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.AccommodationMappings;
 using HappyTravel.Edo.Data.Agents;

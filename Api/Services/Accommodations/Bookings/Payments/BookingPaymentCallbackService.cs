@@ -7,7 +7,6 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Payments;
-using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -112,7 +111,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
             if (isFailure)
                 return Result.Failure<int>(error);
 
-            if (booking.PaymentMethod != PaymentMethods.BankTransfer)
+            if (booking.PaymentMethod != PaymentTypes.VirtualAccount)
                 return Result.Failure<int>("Invalid payment method");
 
             var accountId = await _context.AgencyAccounts

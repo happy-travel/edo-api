@@ -11,6 +11,12 @@ namespace HappyTravel.Edo.Api.AdministratorServices
 {
     public interface ICounterpartyAccountService
     {
+        Task<List<CounterpartyAccountInfo>> Get(int counterpartyId);
+
+        Task<Result> Activate(int counterpartyId, int counterpartyAccountId, string reason);
+
+        Task<Result> Deactivate(int counterpartyId, int counterpartyAccountId, string reason);
+
         Task<Result<CounterpartyBalanceInfo>> GetBalance(int counterpartyId, Currencies currency);
 
         Task<Result> AddMoney(int counterpartyAccountId, PaymentData paymentData, ApiCaller apiCaller);
@@ -22,7 +28,5 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         Task<Result> IncreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller);
 
         Task<Result> DecreaseManually(int counterpartyAccountId, PaymentData data, ApiCaller apiCaller);
-        
-        Task<List<CounterpartyAccountInfo>> GetAccounts(int counterpartyId);
     }
 }

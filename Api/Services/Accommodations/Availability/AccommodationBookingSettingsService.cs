@@ -52,28 +52,34 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         private AccommodationBookingSettings MergeSettings(Maybe<AgentAccommodationBookingSettings> agentSettings,
             Maybe<AgencyAccommodationBookingSettings> agencySettings, CounterpartyAccommodationBookingSettings counterpartySettings)
         {
-            List<Suppliers> enabledConnectors = default;
-            AprMode? aprMode = default;
-            PassedDeadlineOffersMode? passedDeadlineOffersMode = default;
-            bool isMarkupDisabled = default;
-            bool isSupplierVisible = default;
-            bool isDirectContractFlagVisible = default;
-            SearchFilters additionalSearchFilters = default;
-            var cancellationPolicyProcessSettings = counterpartySettings.CancellationPolicyProcessSettings;
-            
-            if (agentSettings.HasValue)
-                SetValuesFromAgentSettings(agentSettings.Value);
-            
-            if (agencySettings.HasValue)
-                SetValuesFromAgencySettings(agencySettings.Value);
-            
-            if (agencySettings.HasValue && agencySettings.Value.CustomDeadlineShift.HasValue)
-                OverrideCancellationPolicyProcessSettings();
+            var agentSettingsValue = agentSettings.HasValue 
+                ? agentSettings.Value
+                : null;
+            var agencySettingsValue = agencySettings.HasValue 
+                ? agencySettings.Value
+                : null;
 
-            enabledConnectors ??= _supplierOptions.EnabledSuppliers;
-            aprMode ??= DefaultAprMode;
-            passedDeadlineOffersMode ??= DefaultPassedDeadlineOffersMode;
-            
+            List<Suppliers> enabledConnectors = agentSettingsValue?.EnabledSuppliers ?? agencySettingsValue?.EnabledSuppliers ?? _supplierOptions.EnabledSuppliers;
+            AprMode? aprMode = agentSettingsValue?.AprMode ?? agencySettingsValue?.AprMode ?? DefaultAprMode;
+            PassedDeadlineOffersMode? passedDeadlineOffersMode = agentSettingsValue?.PassedDeadlineOffersMode ?? agencySettingsValue?.PassedDeadlineOffersMode ??
+                DefaultPassedDeadlineOffersMode;
+
+            bool isMarkupDisabled = agentSettingsValue?.IsMarkupDisabled == true || agencySettingsValue?.IsMarkupDisabled == true;
+            bool isSupplierVisible = agentSettingsValue?.IsSupplierVisible == true || agencySettingsValue?.IsSupplierVisible == true;
+            bool isDirectContractFlagVisible = agentSettingsValue?.IsDirectContractFlagVisible == true || agencySettingsValue?.IsDirectContractFlagVisible == true;
+
+            SearchFilters additionalSearchFilters = agentSettingsValue?.AdditionalSearchFilters ?? default;
+
+            var cancellationPolicyProcessSettings = counterpartySettings.CancellationPolicyProcessSettings;
+
+            if (agencySettings.HasValue && agencySettings.Value.CustomDeadlineShift.HasValue)
+            {
+                cancellationPolicyProcessSettings = new CancellationPolicyProcessSettings
+                {
+                    PolicyStartDateShift = TimeSpan.FromDays(agencySettings.Value.CustomDeadlineShift.Value)
+                };
+            }
+
             return new AccommodationBookingSettings(enabledConnectors,
                 aprMode.Value,
                 passedDeadlineOffersMode.Value,
@@ -82,38 +88,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
                 cancellationPolicyProcessSettings,
                 isDirectContractFlagVisible: isDirectContractFlagVisible,
                 additionalSearchFilters);
-
-
-            void SetValuesFromAgentSettings(AgentAccommodationBookingSettings agentSettingsValue)
-            {
-                enabledConnectors = agentSettingsValue.EnabledSuppliers;
-                aprMode = agentSettingsValue.AprMode;
-                passedDeadlineOffersMode = agentSettingsValue.PassedDeadlineOffersMode;
-                isMarkupDisabled = agentSettingsValue.IsMarkupDisabled;
-                isSupplierVisible = agentSettingsValue.IsSupplierVisible;
-                additionalSearchFilters = agentSettingsValue.AdditionalSearchFilters;
-                isDirectContractFlagVisible = agentSettingsValue.IsDirectContractFlagVisible;
-            }
-
-
-            void SetValuesFromAgencySettings(AgencyAccommodationBookingSettings agencySettingsValue)
-            {
-                enabledConnectors ??= agencySettingsValue.EnabledSuppliers;
-                aprMode ??= agencySettingsValue.AprMode;
-                passedDeadlineOffersMode ??= agencySettingsValue.PassedDeadlineOffersMode;
-                isMarkupDisabled = isMarkupDisabled || agencySettingsValue.IsMarkupDisabled;
-                isSupplierVisible = isSupplierVisible || agencySettingsValue.IsSupplierVisible;
-                isDirectContractFlagVisible = isDirectContractFlagVisible || agencySettingsValue.IsDirectContractFlagVisible;
-            }
-
-
-            void OverrideCancellationPolicyProcessSettings()
-            {
-                cancellationPolicyProcessSettings = new CancellationPolicyProcessSettings
-                {
-                    PolicyStartDateShift = TimeSpan.FromDays(agencySettings.Value.CustomDeadlineShift.Value)
-                };
-            }
         }
 
         

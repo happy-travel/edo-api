@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.AdministratorServices;
 using HappyTravel.Edo.Api.Models.Agents;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.UnitTests.Utility;
-using HappyTravel.EdoContracts.General.Enums;
-using HappyTravel.Money.Enums;
 using Xunit;
 
 namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyManagementServiceTests
@@ -73,7 +72,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.AdministratorServices.CounterpartyMana
         {
             var counterpartyToUpdate = new CounterpartyEditRequest(
                 name: "RenamedName",
-                preferredPaymentMethod: PaymentMethods.Offline,
+                preferredPaymentMethod: PaymentTypes.Offline,
                 vatNumber: "changed vatNumber"
             );
 

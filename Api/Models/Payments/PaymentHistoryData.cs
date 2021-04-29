@@ -1,6 +1,5 @@
 ﻿using System;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Enums;
 
 namespace HappyTravel.Edo.Api.Models.Payments
@@ -8,7 +7,7 @@ namespace HappyTravel.Edo.Api.Models.Payments
     public readonly struct PaymentHistoryData
     {
         public PaymentHistoryData(in DateTime created, decimal amount, object eventData, Currencies currency, int agentId, PaymentHistoryType eventType,
-            PaymentMethods paymentMethod, string accommodationName, string leadingPassenger, int bookingId, string referenceCode)
+            PaymentTypes paymentMethod, string accommodationName, string leadingPassenger, int bookingId, string referenceCode)
         {
             Created = created;
             Amount = amount;
@@ -57,7 +56,7 @@ namespace HappyTravel.Edo.Api.Models.Payments
         /// <summary>
         ///     Payment method
         /// </summary>
-        public PaymentMethods PaymentMethod { get; init; }
+        public PaymentTypes PaymentMethod { get; init; }
 
         /// <summary>
         /// Accommodation title

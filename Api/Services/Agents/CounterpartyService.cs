@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.AdministratorServices;
+using HappyTravel.Edo.Api.Extensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Common.Enums;
@@ -26,7 +27,8 @@ namespace HappyTravel.Edo.Api.Services.Agents
 
         public async Task<Result<CounterpartyInfo>> Add(CounterpartyCreateRequest request)
         {
-            return await AgencyValidator.Validate(request.RootAgencyInfo)
+            var registrationAgencyInfo = request.RootAgencyInfo.ToRegistrationAgencyInfo(request.CounterpartyInfo.Name);
+            return await AgencyValidator.Validate(registrationAgencyInfo)
                 .Map(CreateCounterparty)
                 .Tap(CreateRootAgency)
                 .Bind(c => GetCounterpartyInfo(c.Id));
@@ -40,6 +42,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
                     Name = request.CounterpartyInfo.Name,
                     PreferredPaymentMethod = request.CounterpartyInfo.PreferredPaymentMethod,
                     State = CounterpartyStates.PendingVerification,
+                    LegalAddress = request.CounterpartyInfo.LegalAddress,
                     Created = now,
                     Updated = now
                 };
@@ -52,7 +55,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
 
 
             Task CreateRootAgency(Counterparty newCounterparty)
-                => _agencyManagementService.Create(request.RootAgencyInfo, counterpartyId: newCounterparty.Id, parentAgencyId: null);
+                => _agencyManagementService.Create(registrationAgencyInfo, counterpartyId: newCounterparty.Id, parentAgencyId: null);
         }
 
 

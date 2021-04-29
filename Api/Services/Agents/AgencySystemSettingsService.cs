@@ -26,25 +26,6 @@ namespace HappyTravel.Edo.Api.Services.Agents
         }
 
 
-        public async Task<Result<DisplayedPaymentOptionsSettings>> GetDisplayedPaymentOptions(AgentContext agentContext)
-        {
-            return await Result.Success()
-                .Ensure(() => DoesAgencyExist(agentContext.AgencyId), "Agency with such id does not exist")
-                .Map(GetOptions);
-
-
-            async Task<DisplayedPaymentOptionsSettings> GetOptions()
-            {
-                var systemSettings = await _context.AgencySystemSettings.SingleOrDefaultAsync(s => s.AgencyId == agentContext.AgencyId);
-                return systemSettings?.DisplayedPaymentOptions ?? DefaultDisplayedPaymentOptionsSettings;
-            }
-        }
-
-
-        private Task<bool> DoesAgencyExist(int agencyId) => _context.Agencies.AnyAsync(a => a.Id == agencyId && a.IsActive);
-
-        private const DisplayedPaymentOptionsSettings DefaultDisplayedPaymentOptionsSettings = DisplayedPaymentOptionsSettings.CreditCardAndBankTransfer;
-
         private readonly EdoContext _context;
     }
 }

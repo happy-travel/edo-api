@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using HappyTravel.Edo.Common.Enums;
-using HappyTravel.EdoContracts.General.Enums;
 using HappyTravel.Money.Models;
 using Newtonsoft.Json;
 
@@ -11,7 +10,7 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         [JsonConstructor]
         public AccommodationBookingInfo(int bookingId, AccommodationBookingDetails bookingDetails, int counterpartyId,
             BookingPaymentStatuses paymentStatus, MoneyAmount totalPrice, Suppliers? supplier,
-            BookingAgentInformation agentInformation, PaymentMethods paymentMethod, List<string> tags,
+            BookingAgentInformation agentInformation, PaymentTypes paymentMethod, List<string> tags,
             bool? isDirectContract)
         {
             BookingId = bookingId;
@@ -45,7 +44,7 @@ namespace HappyTravel.Edo.Api.Models.Bookings
         public MoneyAmount TotalPrice { get; }
         public Suppliers? Supplier { get; }
         public BookingAgentInformation AgentInformation { get; }
-        public PaymentMethods PaymentMethod { get; }
+        public PaymentTypes PaymentMethod { get; }
         public List<string> Tags { get; }
         public bool? IsDirectContract { get; }
 

@@ -7,7 +7,6 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
-using HappyTravel.EdoContracts.General.Enums;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 {
@@ -49,7 +48,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
 
             Task Complete(Booking booking)
             {
-                booking.PaymentMethod = PaymentMethods.Offline;
+                booking.PaymentMethod = PaymentTypes.Offline;
                 return ChangeBookingPaymentStatusToCaptured(booking);
             }
 

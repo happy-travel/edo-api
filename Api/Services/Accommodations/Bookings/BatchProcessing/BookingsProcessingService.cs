@@ -16,7 +16,6 @@ using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
@@ -318,9 +317,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
             BookingPaymentStatuses.NotPaid, BookingPaymentStatuses.Refunded, BookingPaymentStatuses.Voided
         };
         
-        private static readonly HashSet<PaymentMethods> PaymentMethodsForCancellation = new()
+        private static readonly HashSet<PaymentTypes> PaymentMethodsForCancellation = new()
         {
-            PaymentMethods.CreditCard, PaymentMethods.Offline
+            PaymentTypes.CreditCard, PaymentTypes.Offline
         };
 
         private static readonly Expression<Func<Booking, bool>> IsBookingValidForCapturePredicate = booking
@@ -345,14 +344,14 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing
             BookingStatuses.Pending, BookingStatuses.Confirmed, BookingStatuses.WaitingForResponse
         };
         
-        private static readonly HashSet<PaymentMethods> PaymentMethodsForCapture = new()
+        private static readonly HashSet<PaymentTypes> PaymentMethodsForCapture = new()
         {
-            PaymentMethods.CreditCard
+            PaymentTypes.CreditCard
         };
         
-        private static readonly HashSet<PaymentMethods> PaymentMethodsForCharge = new()
+        private static readonly HashSet<PaymentTypes> PaymentMethodsForCharge = new()
         {
-            PaymentMethods.BankTransfer
+            PaymentTypes.VirtualAccount
         };
 
         private static readonly HashSet<BookingPaymentStatuses> PaymentStatusesForNotification = new()

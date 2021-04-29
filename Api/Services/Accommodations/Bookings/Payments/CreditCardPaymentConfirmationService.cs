@@ -5,9 +5,9 @@ using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Mailing;
 using HappyTravel.Edo.Api.Services.Management;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
@@ -48,36 +48,36 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
                 if (data.IsConfirmed)
                     return Result.Failure<Booking>("Payment already confirmed");
 
-                if (data.booking.PaymentMethod != PaymentMethods.CreditCard)
+                if (data.booking.PaymentMethod != PaymentTypes.CreditCard)
                     return Result.Failure<Booking>($"Wrong payment method {data.booking.PaymentMethod}");
 
                 return data.booking;
             }
 
 
-            async Task<Result> SendReceipt(Booking booking)
+            async Task<Result<Data.Management.Administrator>> SendReceipt(Booking booking)
             {
                 var (_, isReceiptFailure, receiptInfo, receiptError) = await _documentsService.GenerateReceipt(booking);
                 if (isReceiptFailure)
-                    return Result.Failure<Booking>(receiptError);
+                    return Result.Failure<Data.Management.Administrator>(receiptError);
 
                 var email = await _edoContext.Agents
                     .Where(a => a.Id == booking.AgentId)
                     .Select(a => a.Email)
                     .SingleOrDefaultAsync();
 
-                await _documentsMailingService.SendReceiptToCustomer(receiptInfo, email);
-                return Result.Success();
+                var (_, isFailure, administrator, error) = await _administratorContext.GetCurrent();
+                if (isFailure)
+                    return Result.Failure<Data.Management.Administrator>(error);
+
+                await _documentsMailingService.SendReceiptToCustomer(receiptInfo, email, new Models.Users.ApiCaller(administrator.Id, ApiCallerTypes.Admin));
+                
+                return administrator;
             }
 
 
-            async Task<Result> SaveConfirmation()
+            async Task<Result> SaveConfirmation(Data.Management.Administrator administrator)
             {
-                var (_, isFailure, administrator, error) = await _administratorContext.GetCurrent();
-
-                if (isFailure)
-                    return Result.Failure(error);
-
                 await _edoContext.CreditCardPaymentConfirmations.AddAsync(new CreditCardPaymentConfirmation
                 {
                     BookingId = bookingId,

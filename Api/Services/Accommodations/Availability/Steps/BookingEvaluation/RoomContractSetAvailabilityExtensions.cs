@@ -7,8 +7,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
 {
     public static class RoomContractSetAvailabilityExtensions
     {
-        public static RoomContractSetAvailability? ToRoomContractSetAvailability(this in EdoContracts.Accommodations.RoomContractSetAvailability? availability, 
-            Suppliers? supplier, bool isDirectContract, List<PaymentMethods> paymentMethods, decimal creditCardPaymentCommission)
+        public static RoomContractSetAvailability? ToRoomContractSetAvailability(this in EdoContracts.Accommodations.RoomContractSetAvailability? availability, Suppliers? supplier, bool isDirectContract, List<PaymentTypes> paymentMethods)
         {
             if (availability is null)
                 return null;

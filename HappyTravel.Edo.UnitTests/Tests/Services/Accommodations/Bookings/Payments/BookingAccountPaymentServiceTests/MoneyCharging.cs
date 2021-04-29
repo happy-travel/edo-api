@@ -6,12 +6,12 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Documents;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Mailing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
 using HappyTravel.Edo.Api.Services.Payments.Accounts;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Documents;
 using HappyTravel.Edo.UnitTests.Utility;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -26,7 +26,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Payme
             var accountPaymentService = CreateAccountPaymentService();
             var invalidPaymentMethodBooking = new Booking
             {
-                PaymentMethod = PaymentMethods.CreditCard
+                PaymentMethod = PaymentTypes.CreditCard
             };
 
             var (_, isFailure, _) = await accountPaymentService.Charge(invalidPaymentMethodBooking, It.IsAny<ApiCaller>());
@@ -73,7 +73,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Payme
                 .Verify(d => d.GenerateReceipt(It.IsAny<Booking>()), Times.Once);
 
             documentsMailingServiceMock
-                .Verify(d => d.SendReceiptToCustomer(It.IsAny<(DocumentRegistrationInfo, PaymentReceipt)>(), "test_agent@test.com"));
+                .Verify(d => d.SendReceiptToCustomer(It.IsAny<(DocumentRegistrationInfo, PaymentReceipt)>(), "test_agent@test.com", It.IsAny<ApiCaller>()));
         }
 
 
@@ -109,7 +109,7 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Payme
             {
                 Id = 115,
                 ReferenceCode = "TEST_REF_CODE",
-                PaymentMethod = PaymentMethods.BankTransfer,
+                PaymentMethod = PaymentTypes.VirtualAccount,
                 AgentId = 111
             };
     }

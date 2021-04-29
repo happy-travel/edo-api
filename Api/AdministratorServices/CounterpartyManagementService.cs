@@ -90,8 +90,9 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         => (
                 from a in _context.Agencies
                 join c in _context.Countries on a.CountryCode equals c.Code
+                join cp in _context.Counterparties on a.CounterpartyId equals cp.Id
                 where a.CounterpartyId == counterpartyId
-                select a.ToAgencyInfo(c.Names, languageCode))
+                select a.ToAgencyInfo(cp.ContractKind, c.Names, languageCode))
             .ToListAsync();
 
 

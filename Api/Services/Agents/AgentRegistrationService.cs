@@ -10,6 +10,7 @@ using HappyTravel.Edo.Api.Models.Users;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data;
 using HappyTravel.Edo.Data.Agents;
+using HappyTravel.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -79,9 +80,23 @@ namespace HappyTravel.Edo.Api.Services.Agents
                 if (!string.IsNullOrWhiteSpace(agentData.Position))
                     agent += $" ({agentData.Position})";
 
+                var agency = await _counterpartyService.GetRootAgency(counterpartyInfo.Id);
+
                 var messageData = new RegistrationDataForAdmin
                 {
-                    Counterparty = counterpartyInfo,
+                    Counterparty = new RegistrationDataForAdmin.CounterpartyRegistrationMailData
+                    {
+                        Name = counterpartyInfo.Name,
+                        Address = counterpartyInfo.LegalAddress,
+                        CountryCode = agency.CountryCode,
+                        City = agency.City,
+                        Phone = agency.Phone,
+                        PostalCode = agency.PostalCode,
+                        Fax = agency.Fax,
+                        PreferredCurrency = EnumFormatters.FromDescription(agency.PreferredCurrency),
+                        PreferredPaymentMethod = EnumFormatters.FromDescription(counterpartyInfo.PreferredPaymentMethod),
+                        Website = agency.Website
+                    },
                     AgentEmail = email,
                     AgentName = agent
                 };

@@ -74,6 +74,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
                     v.RuleFor(data => data.Currency).IsInEnum();
                     v.RuleFor(data => data.Amount).GreaterThan(decimal.Zero);
                     v.RuleFor(data => data.Email).EmailAddress();
+                    v.RuleFor(data => data.Comment).NotEmpty();
 
                     v.RuleFor(data => data.Currency)
                         .Must(linkSettings.Currencies.Contains);

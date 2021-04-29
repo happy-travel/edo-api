@@ -13,7 +13,6 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
-using HappyTravel.EdoContracts.General.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.Flows
@@ -47,7 +46,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
         public async Task<Result<string>> Register(AccommodationBookingRequest bookingRequest, AgentContext agentContext, string languageCode)
         {
             return await GetCachedAvailability(bookingRequest)
-                .Ensure(IsPaymentMethodAllowed, "Payment method is not allowed")
+                .Ensure(IsPaymentTypeAllowed, "Payment type is not allowed")
                 .Map(Register);
 
 
@@ -55,13 +54,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
                 => await _evaluationStorage.Get(bookingRequest.SearchId, bookingRequest.ResultId, bookingRequest.RoomContractSetId);
 
                 
-            bool IsPaymentMethodAllowed(BookingAvailabilityInfo availabilityInfo) 
-                => availabilityInfo.AvailablePaymentMethods.Contains(PaymentMethods.CreditCard);
+            bool IsPaymentTypeAllowed(BookingAvailabilityInfo availabilityInfo) 
+                => availabilityInfo.AvailablePaymentTypes.Contains(PaymentTypes.CreditCard);
 
 
             async Task<string> Register(BookingAvailabilityInfo bookingAvailability)
             {
-                var booking = await _registrationService.Register(bookingRequest, bookingAvailability, PaymentMethods.CreditCard, agentContext, languageCode);
+                var booking = await _registrationService.Register(bookingRequest, bookingAvailability, PaymentTypes.CreditCard, agentContext, languageCode);
                 await _requestStorage.Set(booking.ReferenceCode, (bookingRequest, bookingAvailability.AvailabilityId));
                 return booking.ReferenceCode;
             }

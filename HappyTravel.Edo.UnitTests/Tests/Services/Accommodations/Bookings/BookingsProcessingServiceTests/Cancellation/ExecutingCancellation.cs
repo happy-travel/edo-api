@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Models.Users;
-using HappyTravel.Edo.Api.Services.Accommodations.Bookings;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.BatchProcessing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Mailing;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
@@ -12,7 +11,6 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.Edo.Data.Management;
 using HappyTravel.Edo.UnitTests.Utility;
-using HappyTravel.EdoContracts.General.Enums;
 using Moq;
 using Xunit;
 
@@ -80,15 +78,15 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
         {
             new Booking
             {
-                Id = 1, PaymentStatus = BookingPaymentStatuses.NotPaid, ReferenceCode = "NNN-222", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard
+                Id = 1, PaymentStatus = BookingPaymentStatuses.NotPaid, ReferenceCode = "NNN-222", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard
             },
             new Booking
             {
-                Id = 2, PaymentStatus = BookingPaymentStatuses.Refunded, ReferenceCode = "NNN-223", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard
+                Id = 2, PaymentStatus = BookingPaymentStatuses.Refunded, ReferenceCode = "NNN-223", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard
             },
             new Booking
             {
-                Id = 3, PaymentStatus = BookingPaymentStatuses.Authorized, ReferenceCode = "NNN-224", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentMethods.CreditCard
+                Id = 3, PaymentStatus = BookingPaymentStatuses.Authorized, ReferenceCode = "NNN-224", Status = BookingStatuses.Confirmed, PaymentMethod = PaymentTypes.CreditCard
             }
         };
     }
