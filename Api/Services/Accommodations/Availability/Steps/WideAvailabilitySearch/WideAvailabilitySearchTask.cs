@@ -83,7 +83,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                     .Map(ApplyMarkups)
                     .Map(Convert)
                     .Tap(SaveResult)
-                    //.Tap(NotifyClient)
+                    .Tap(NotifyClient)
                     .Finally(SaveState);
             }
             catch (Exception ex)
@@ -169,6 +169,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 
             Task SaveResult(List<AccommodationAvailabilityResult> results) 
                 => _storage.SaveResults(searchId, supplier, results);
+            
+            
+            Task NotifyClient()
+                => _hubContext.Clients.Group(agent.AgentId.ToString()).SearchStateChanged(new SearchStateChangedMessage(searchId));
 
 
             Task SaveState(Result<List<AccommodationAvailabilityResult>, ProblemDetails> result)
