@@ -1517,11 +1517,6 @@
                 The price type.
             </summary>
         </member>
-        <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.Currency">
-            <summary>
-                The price currency.
-            </summary>
-        </member>
         <member name="P:HappyTravel.Edo.Api.Models.Accommodations.Rate.Description">
             <summary>
                 The price description.

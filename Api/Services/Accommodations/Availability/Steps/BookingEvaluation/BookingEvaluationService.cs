@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
+using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection;
@@ -14,6 +15,7 @@ using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Agents;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using RoomContractSet = HappyTravel.EdoContracts.Accommodations.Internals.RoomContractSet;
 using RoomContractSetAvailability = HappyTravel.Edo.Api.Models.Accommodations.RoomContractSetAvailability;
 
@@ -28,7 +30,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             IDateTimeProvider dateTimeProvider,
             IBookingEvaluationStorage bookingEvaluationStorage,
             ICounterpartyService counterpartyService,
-            ILogger<BookingEvaluationService> logger)
+            ILogger<BookingEvaluationService> logger,
+            IOptions<BookingOptions> bookingOptions)
         {
             _supplierConnectorManager = supplierConnectorManager;
             _priceProcessor = priceProcessor;
@@ -38,6 +41,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             _bookingEvaluationStorage = bookingEvaluationStorage;
             _counterpartyService = counterpartyService;
             _logger = logger;
+            _bookingOptions = bookingOptions.Value;
         }
         
         
@@ -160,7 +164,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                 var isDirectContract = settings.IsDirectContractFlagVisible && availabilityData.Value.RoomContractSet.IsDirectContract;
 
                 return availabilityDetails.Data.ToRoomContractSetAvailability(supplier, isDirectContract,
-                    GetAvailablePaymentTypes(availabilityData.Value, contractKind));
+                    GetAvailablePaymentTypes(availabilityData.Value, contractKind), _bookingOptions.CreditCardPaymentCommission);
             }
 
 
@@ -191,5 +195,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
         private readonly IBookingEvaluationStorage _bookingEvaluationStorage;
         private readonly ICounterpartyService _counterpartyService;
         private readonly ILogger<BookingEvaluationService> _logger;
+        private readonly BookingOptions _bookingOptions;
     }
 }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
+using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Availabilities;
@@ -22,6 +23,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using AvailabilityRequest = HappyTravel.EdoContracts.Accommodations.AvailabilityRequest;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailabilitySearch
@@ -33,8 +35,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             IAccommodationDuplicatesService duplicatesService,
             ISupplierConnectorManager supplierConnectorManager,
             IDateTimeProvider dateTimeProvider,
+            IHubContext<SearchHub, ISearchHub> hubContext,
             ILogger<WideAvailabilitySearchTask> logger,
-            IHubContext<SearchHub, ISearchHub> hubContext)
+            IOptions<BookingOptions> bookingOptions)
         {
             _storage = storage;
             _priceProcessor = priceProcessor;
@@ -43,6 +46,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             _dateTimeProvider = dateTimeProvider;
             _logger = logger;
             _hubContext = hubContext;
+            _bookingOptions = bookingOptions.Value;
         }
 
 
@@ -54,8 +58,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 serviceProvider.GetRequiredService<IAccommodationDuplicatesService>(),
                 serviceProvider.GetRequiredService<ISupplierConnectorManager>(),
                 serviceProvider.GetRequiredService<IDateTimeProvider>(),
+                serviceProvider.GetRequiredService<IHubContext<SearchHub, ISearchHub>>(),
                 serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>(),
-                serviceProvider.GetRequiredService<IHubContext<SearchHub, ISearchHub>>()
+                serviceProvider.GetRequiredService<IOptions<BookingOptions>>()
             );
         }
 
@@ -138,7 +143,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                             : string.Empty;
 
                         var roomContractSets = accommodationAvailability.RoomContractSets
-                            .Select(rs => rs.ToRoomContractSet(supplier, rs.IsDirectContract))
+                            .Select(rs => rs.ToRoomContractSet(supplier, rs.IsDirectContract, _bookingOptions.CreditCardPaymentCommission))
                             .Where(roomSet => RoomContractSetSettingsChecker.IsDisplayAllowed(roomSet, connectorRequest.CheckInDate, searchSettings,
                                 _dateTimeProvider))
                             .ToList();
@@ -164,9 +169,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 
             Task SaveResult(List<AccommodationAvailabilityResult> results) 
                 => _storage.SaveResults(searchId, supplier, results);
-
-
-            Task NotifyClient() 
+            
+            
+            Task NotifyClient()
                 => _hubContext.Clients.Group(agent.AgentId.ToString()).SearchStateChanged(new SearchStateChangedMessage(searchId));
 
 
@@ -268,5 +273,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         private readonly ILogger<WideAvailabilitySearchTask> _logger;
         private readonly IWideAvailabilityStorage _storage;
         private readonly IHubContext<SearchHub, ISearchHub> _hubContext;
+        private readonly BookingOptions _bookingOptions;
     }
 }

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
+using HappyTravel.Edo.Common.Enums;
 using HappyTravel.EdoContracts.General;
 using HappyTravel.EdoContracts.General.Enums;
-using HappyTravel.Money.Enums;
 using HappyTravel.Money.Models;
 using Newtonsoft.Json;
 
@@ -10,7 +10,7 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
     public readonly struct Rate
     {
         [JsonConstructor]
-        public Rate(in MoneyAmount finalPrice, in MoneyAmount gross, List<Discount> discounts,
+        public Rate(Dictionary<PaymentTypes, MoneyAmount> finalPrice, in MoneyAmount gross, List<Discount> discounts,
             PriceTypes type, string description)
         {
             Description = description;
@@ -18,13 +18,8 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
             Discounts = discounts;
             FinalPrice = finalPrice;
             Type = type;
-            Currency = finalPrice.Currency;
         }
         
-        /// <summary>
-        ///     The price currency.
-        /// </summary>
-        public Currencies Currency { get; }
 
         /// <summary>
         ///     The price description.
@@ -44,8 +39,8 @@ namespace HappyTravel.Edo.Api.Models.Accommodations
         /// <summary>
         ///     The final and total net price of a service. This is <b>the actual</b> value of a price.
         /// </summary>
-        public MoneyAmount FinalPrice { get; }
-
+        public Dictionary<PaymentTypes, MoneyAmount> FinalPrice { get;  }
+        
         /// <summary>
         ///     The price type.
         /// </summary>

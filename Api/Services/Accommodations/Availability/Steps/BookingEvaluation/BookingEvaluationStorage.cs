@@ -4,18 +4,22 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using FloxDc.CacheFlow;
 using FloxDc.CacheFlow.Extensions;
+using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Common.Enums;
+using HappyTravel.EdoContracts.General.Enums;
+using Microsoft.Extensions.Options;
 using RoomContractSetAvailability = HappyTravel.EdoContracts.Accommodations.RoomContractSetAvailability;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.BookingEvaluation
 {
     public class BookingEvaluationStorage : IBookingEvaluationStorage
     {
-        public BookingEvaluationStorage(IDoubleFlow doubleFlow)
+        public BookingEvaluationStorage(IDoubleFlow doubleFlow, IOptions<BookingOptions> bookingOptions)
         {
             _doubleFlow = doubleFlow;
+            _bookingOptions = bookingOptions.Value;
         }
 
 
@@ -28,7 +32,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             
             var location = roomSetAvailability.Accommodation.Location;
             var roomContractSet = roomSetAvailability.RoomContractSet.ToRoomContractSet(result.Source,
-                roomSetAvailability.RoomContractSet.IsDirectContract);
+                roomSetAvailability.RoomContractSet.IsDirectContract, _bookingOptions.CreditCardPaymentCommission);
             
             var dataWithMarkup = result.Data;
             
@@ -76,5 +80,6 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
         
         private static readonly TimeSpan CacheExpirationTime = TimeSpan.FromMinutes(15);
         private readonly IDoubleFlow _doubleFlow;
+        private readonly BookingOptions _bookingOptions;
     }
 }

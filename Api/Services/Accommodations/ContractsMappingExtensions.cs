@@ -4,17 +4,20 @@ using System.Linq;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
+using HappyTravel.EdoContracts.General.Enums;
+using HappyTravel.Money.Models;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations
 {
     public static class ContractsMappingExtensions
     {
-        public static RoomContractSet ToRoomContractSet(this in EdoContracts.Accommodations.Internals.RoomContractSet roomContractSet, Suppliers? supplier, bool isDirectContract)
+        public static RoomContractSet ToRoomContractSet(this in EdoContracts.Accommodations.Internals.RoomContractSet roomContractSet, 
+            Suppliers? supplier, bool isDirectContract, decimal creditCardPaymentCommission)
         {
-            var roomContractList = roomContractSet.RoomContracts.ToRoomContractList();
+            var roomContractList = roomContractSet.RoomContracts.ToRoomContractList(creditCardPaymentCommission);
             
             return new RoomContractSet(roomContractSet.Id,
-                roomContractSet.Rate.ToRate(),
+                roomContractSet.Rate.ToRate(creditCardPaymentCommission),
                 roomContractList.ToRoomContractSetDeadline(),
                 roomContractList,
                 isAdvancePurchaseRate: roomContractSet.IsAdvancePurchaseRate,
@@ -38,19 +41,30 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         }
         
 
-        private static RoomContract ToRoomContract(this EdoContracts.Accommodations.Internals.RoomContract roomContract)
+        private static RoomContract ToRoomContract(this EdoContracts.Accommodations.Internals.RoomContract roomContract, decimal creditCardPaymentCommission)
         {
             return new RoomContract(roomContract.BoardBasis, roomContract.MealPlan,
                 roomContract.ContractTypeCode, roomContract.IsAvailableImmediately, roomContract.IsDynamic,
-                roomContract.ContractDescription, roomContract.Remarks, roomContract.DailyRoomRates.ToDailyRateList(), roomContract.Rate.ToRate(),
+                roomContract.ContractDescription, roomContract.Remarks, roomContract.DailyRoomRates.ToDailyRateList(), roomContract.Rate.ToRate(creditCardPaymentCommission),
                 roomContract.AdultsNumber, roomContract.ChildrenAges, roomContract.Type, roomContract.IsExtraBedNeeded,
                 roomContract.Deadline.ToDeadline(), isAdvancePurchaseRate: roomContract.IsAdvancePurchaseRate);
         }
         
         
-        private static Rate ToRate(this EdoContracts.General.Rate rate)
+        private static Rate ToRate(this EdoContracts.General.Rate rate, decimal creditCardPaymentCommission)
         {
-            return new (rate.FinalPrice, rate.Gross, rate.Discounts, rate.Type, rate.Description);
+            var finalPrice = new Dictionary<PaymentTypes, MoneyAmount>
+            {
+                {PaymentTypes.Offline, rate.FinalPrice},
+                {PaymentTypes.VirtualAccount, rate.FinalPrice},
+                {PaymentTypes.CreditCard, new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentCommission, rate.FinalPrice.Currency)},
+            };
+            
+            return new(finalPrice,
+                rate.Gross,
+                rate.Discounts,
+                rate.Type,
+                rate.Description);
         }
 
 
@@ -74,10 +88,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         
         
         private static List<RoomContract> ToRoomContractList(
-            this IEnumerable<EdoContracts.Accommodations.Internals.RoomContract> roomContractSets)
+            this IEnumerable<EdoContracts.Accommodations.Internals.RoomContract> roomContractSets, decimal creditCardPaymentCommission)
         {
             return roomContractSets
-                .Select(ToRoomContract)
+                .Select(r => r.ToRoomContract(creditCardPaymentCommission))
                 .ToList();
         }
 
@@ -91,7 +105,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
             if (!contractsWithDeadline.Any())
                 return default;
             
-            var totalAmount = Convert.ToDouble(roomContracts.Sum(r => r.Rate.FinalPrice.Amount));
+            var totalAmount = Convert.ToDouble(roomContracts.Sum(r => r.Rate.FinalPrice.Values.First().Amount));
             var deadlineDate = contractsWithDeadline
                 .Select(contract => contract.Deadline.Date.Value)
                 .OrderByDescending(d => d)
@@ -107,7 +121,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
                         => contract.Deadline.Policies
                             .Where(p => p.FromDate <= date)
                             .OrderByDescending(p => p.FromDate)
-                            .Select(p => p.Percentage * Convert.ToDouble(contract.Rate.FinalPrice.Amount))
+                            .Select(p => p.Percentage * Convert.ToDouble(contract.Rate.FinalPrice.Values.First().Amount))
                             .FirstOrDefault()
                         );
 
