@@ -778,6 +778,9 @@ namespace HappyTravel.Edo.Api.Infrastructure
                     {
                         options.AgentHost = agentHost;
                         options.AgentPort = agentPort;
+                        // Workaround to avoid memory leak from:
+                        // https://github.com/jaegertracing/jaeger/issues/2638
+                        options.MaxPayloadSizeInBytes = 65000;
                     })
                     .SetSampler(new AlwaysOnSampler());
             });
