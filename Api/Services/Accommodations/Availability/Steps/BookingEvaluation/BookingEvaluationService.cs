@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
+using HappyTravel.Edo.Api.Infrastructure.Options;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Markups;
 using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSelection;
@@ -29,8 +30,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             IDateTimeProvider dateTimeProvider,
             IBookingEvaluationStorage bookingEvaluationStorage,
             ICounterpartyService counterpartyService,
-            ILogger<BookingEvaluationService> logger)
-            ICounterpartyService counterpartyService,
+            ILogger<BookingEvaluationService> logger,
             IOptions<BookingOptions> bookingOptions)
         {
             _supplierConnectorManager = supplierConnectorManager;
@@ -142,12 +142,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                 // TODO: Check that this id will not change on all connectors NIJO-823
                 var finalRoomContractSetId = responseWithDeadline.Data.Value.RoomContractSet.Id;
 
-                var paymentMethods = GetAvailablePaymentMethods(responseWithDeadline.Data.Value, contractKind);
+                var paymentTypes = GetAvailablePaymentTypes(responseWithDeadline.Data.Value, contractKind);
 
                 var dataWithMarkup = DataWithMarkup.Create(responseWithDeadline.Data.Value,
                     responseWithDeadline.AppliedMarkups, responseWithDeadline.ConvertedSupplierPrice, responseWithDeadline.OriginalSupplierPrice);
                 
-                return _bookingEvaluationStorage.Set(searchId, resultId, finalRoomContractSetId, dataWithMarkup, result.Supplier, paymentMethods, result.htId);
+                return _bookingEvaluationStorage.Set(searchId, resultId, finalRoomContractSetId, dataWithMarkup, result.Supplier, paymentTypes, result.htId);
             }
 
 
@@ -164,7 +164,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                 var isDirectContract = settings.IsDirectContractFlagVisible && availabilityData.Value.RoomContractSet.IsDirectContract;
 
                 return availabilityDetails.Data.ToRoomContractSetAvailability(supplier, isDirectContract,
-                    GetAvailablePaymentTypes(availabilityData.Value, contractKind));
+                    GetAvailablePaymentTypes(availabilityData.Value, contractKind), _bookingOptions.CreditCardPaymentCommission);
             }
 
 

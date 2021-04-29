@@ -53,11 +53,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations
         
         private static Rate ToRate(this EdoContracts.General.Rate rate, decimal creditCardPaymentCommission)
         {
-            var finalPrice = new Dictionary<PaymentMethods, MoneyAmount>
+            var finalPrice = new Dictionary<PaymentTypes, MoneyAmount>
             {
-                {PaymentMethods.Offline, rate.FinalPrice},
-                {PaymentMethods.BankTransfer, rate.FinalPrice},
-                {PaymentMethods.CreditCard, new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentCommission, rate.FinalPrice.Currency)},
+                {PaymentTypes.Offline, rate.FinalPrice},
+                {PaymentTypes.VirtualAccount, rate.FinalPrice},
+                {PaymentTypes.CreditCard, new MoneyAmount(rate.FinalPrice.Amount * creditCardPaymentCommission, rate.FinalPrice.Currency)},
             };
             
             return new(finalPrice,

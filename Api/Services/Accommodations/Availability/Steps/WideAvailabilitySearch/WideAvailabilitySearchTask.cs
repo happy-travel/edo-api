@@ -35,8 +35,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             IAccommodationDuplicatesService duplicatesService,
             ISupplierConnectorManager supplierConnectorManager,
             IDateTimeProvider dateTimeProvider,
-            ILogger<WideAvailabilitySearchTask> logger,
-            IHubContext<SearchHub, ISearchHub> hubContext)
+            IHubContext<SearchHub, ISearchHub> hubContext,
             ILogger<WideAvailabilitySearchTask> logger,
             IOptions<BookingOptions> bookingOptions)
         {
@@ -59,8 +58,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                 serviceProvider.GetRequiredService<IAccommodationDuplicatesService>(),
                 serviceProvider.GetRequiredService<ISupplierConnectorManager>(),
                 serviceProvider.GetRequiredService<IDateTimeProvider>(),
-                serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>(),
-                serviceProvider.GetRequiredService<IHubContext<SearchHub, ISearchHub>>()
+                serviceProvider.GetRequiredService<IHubContext<SearchHub, ISearchHub>>(),
                 serviceProvider.GetRequiredService<ILogger<WideAvailabilitySearchTask>>(),
                 serviceProvider.GetRequiredService<IOptions<BookingOptions>>()
             );
@@ -85,7 +83,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                     .Map(ApplyMarkups)
                     .Map(Convert)
                     .Tap(SaveResult)
-                    .Tap(NotifyClient)
+                    //.Tap(NotifyClient)
                     .Finally(SaveState);
             }
             catch (Exception ex)

@@ -125,7 +125,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
 
 
         private static Booking Create(DateTime created, AgentContext agentContext, string itineraryNumber,
-            string referenceCode, BookingAvailabilityInfo availabilityInfo, PaymentTypes paymentMethod,
+            string referenceCode, BookingAvailabilityInfo availabilityInfo, PaymentTypes paymentType,
             in AccommodationBookingRequest bookingRequest, string languageCode, Suppliers supplier,
             DateTime? deadlineDate, DateTime checkInDate, DateTime checkOutDate, string htId, List<string> tags, bool isDirectContract)
         {
@@ -135,7 +135,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
                 ItineraryNumber = itineraryNumber,
                 ReferenceCode = referenceCode,
                 Status = BookingStatuses.Created,
-                PaymentMethod = paymentMethod,
+                PaymentMethod = paymentType,
                 LanguageCode = languageCode,
                 Supplier = supplier,
                 PaymentStatus = BookingPaymentStatuses.NotPaid,
@@ -166,8 +166,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution
             void AddServiceDetails()
             {
                 var rate = availabilityInfo.RoomContractSet.Rate;
-                booking.TotalPrice = rate.FinalPrice[paymentMethod].Amount;
-                booking.Currency = rate.FinalPrice[paymentMethod].Currency;
+                booking.TotalPrice = rate.FinalPrice[paymentType].Amount;
+                booking.Currency = rate.FinalPrice[paymentType].Currency;
                 booking.Location = new AccommodationLocation(availabilityInfo.CountryName,
                     availabilityInfo.LocalityName,
                     availabilityInfo.ZoneName,
