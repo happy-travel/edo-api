@@ -22,7 +22,9 @@ namespace HappyTravel.Edo.Api.AdministratorServices
         public async Task<List<DiscountInfo>> Get(int agencyId)
         {
             var query = from discount in _context.Discounts
-                join markupPolicy in _context.MarkupPolicies on discount.TargetPolicyId equals markupPolicy.Id
+                join markupPolicy in _context.MarkupPolicies on discount.TargetPolicyId equals markupPolicy.Id 
+                where discount.TargetAgencyId == agencyId
+                
                 select new DiscountInfo
                 {
                     Id = discount.Id,
