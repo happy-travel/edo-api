@@ -536,6 +536,14 @@
             </summary>
             <param name="codeHash">Invitation code hash.</param>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.NotificationController.GetNotifications(System.Int32,System.Int32)">
+            <summary>
+                Gets the notification history of the current administrator
+            </summary>
+            <param name="skip">Skip</param>
+            <param name="top">Top</param>
+            <returns>List of notifications</returns>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.PaymentsController.CompleteOffline(System.Int32)">
             <summary>
                 Completes payment manually
