@@ -44,14 +44,13 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
 
         
         [Fact]
-        public async Task Cancellation_should_call_notification_cancelling_from_supplier_return_of_the_money()
+        public async Task Cancellation_should_call_notification_return_of_the_money()
         {
             var service = CreateBookingRecordsUpdaterService();
 
             await service.ChangeStatus(Bookings.First(), BookingStatuses.Cancelled, DateTime.UtcNow, ApiCaller, ChangeReason);
             
             _notificationServiceMock.Verify(x => x.NotifyBookingCancelled(It.IsAny<AccommodationBookingInfo>(), It.IsAny<SlimAgentContext>()));
-            _supplierOrderServiceMock.Verify(x => x.Cancel(It.IsAny<string>())); 
             _bookingMoneyReturnServiceMock.Verify(x => x.ReturnMoney(It.IsAny<Booking>(), It.IsAny<DateTime>(), It.IsAny<ApiCaller>()));
         }
 
@@ -60,13 +59,12 @@ namespace HappyTravel.Edo.UnitTests.Tests.Services.Accommodations.Bookings.Booki
         [InlineData(BookingStatuses.Rejected)]
         [InlineData(BookingStatuses.Invalid)]
         [InlineData(BookingStatuses.Discarded)]
-        public async Task Discarding_should_cancel_from_supplier_and_return_the_money(BookingStatuses status)
+        public async Task Discarding_should_return_the_money(BookingStatuses status)
         {
             var service = CreateBookingRecordsUpdaterService();
 
             await service.ChangeStatus(Bookings.First(), status, DateTime.UtcNow, ApiCaller, ChangeReason);
             
-            _supplierOrderServiceMock.Verify(x => x.Cancel(It.IsAny<string>())); 
             _bookingMoneyReturnServiceMock.Verify(x => x.ReturnMoney(It.IsAny<Booking>(), It.IsAny<DateTime>(), It.IsAny<ApiCaller>()));
         }
 

@@ -12,7 +12,6 @@ namespace HappyTravel.Edo.Data.Suppliers
         public Currencies ConvertedSupplierCurrency { get; set; }
         public decimal OriginalSupplierPrice { get; set; }
         public Currencies OriginalSupplierCurrency { get; set; }
-        public SupplierOrderState State { get; set; }
         public ServiceTypes Type { get; set; }
         public string ReferenceCode { get; set; }
         public DateTime Created { get; set; }

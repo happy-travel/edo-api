@@ -296,7 +296,6 @@ namespace HappyTravel.Edo.Data
                 order.HasIndex(o => o.Type);
                 order.Property(o => o.ConvertedSupplierPrice).IsRequired();
                 order.Property(o => o.OriginalSupplierPrice).IsRequired();
-                order.Property(o => o.State).IsRequired();
                 order.Property(o => o.ReferenceCode).IsRequired();
                 order.Property(o => o.Modified).IsRequired();
                 order.Property(o => o.Created).IsRequired();

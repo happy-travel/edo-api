@@ -159,14 +159,9 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         private Task<Result> ProcessCancellation(Booking booking, DateTime cancellationDate, ApiCaller user)
         {
             return SendNotifications()
-                .Tap(CancelSupplierOrder)
                 .Bind(() => ReturnMoney(booking, cancellationDate, user));
 
             
-            Task CancelSupplierOrder() 
-                => _supplierOrderService.Cancel(booking.ReferenceCode);
-
-
             async Task<Result> SendNotifications()
             {
                 var agent = await _context.Agents.SingleOrDefaultAsync(a => a.Id == booking.AgentId);
@@ -186,18 +181,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         }
 
 
-        private Task<Result> ProcessDiscarding(Booking booking, ApiCaller user)
-        {
-            return CancelSupplierOrder()
-                .Bind(() => ReturnMoney(booking, _dateTimeProvider.UtcNow(), user));
-            
-            
-            async Task<Result> CancelSupplierOrder()
-            {
-                await _supplierOrderService.Cancel(booking.ReferenceCode);
-                return Result.Success();
-            }
-        }
+        private Task<Result> ProcessDiscarding(Booking booking, ApiCaller user) 
+            => ReturnMoney(booking, _dateTimeProvider.UtcNow(), user);
 
 
         private async Task<Result> ProcessManualCorrectionNeeding(Booking booking, ApiCaller user)
