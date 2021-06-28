@@ -84,8 +84,16 @@ namespace HappyTravel.Edo.Api.Infrastructure.SupplierConnectors
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var error = _serializer.Deserialize<ProblemDetails>(jsonTextReader) ??
-                        ProblemDetailsBuilder.Build(response.ReasonPhrase, response.StatusCode);
+                    ProblemDetails error;
+
+                    try
+                    {
+                        error = _serializer.Deserialize<ProblemDetails>(jsonTextReader);
+                    }
+                    catch (JsonReaderException)
+                    {
+                        error = ProblemDetailsBuilder.Build(response.ReasonPhrase, response.StatusCode);
+                    }
 
                     return Result.Failure<TResponse, ProblemDetails>(error);
                 }
