@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
+using HappyTravel.Edo.Api.Infrastructure.Metrics;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Bookings;
@@ -40,7 +41,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
                 .Map(RegisterBooking)
                 .Check(GenerateInvoice)
                 .Bind(SendSupplierRequest)
-                .Bind(GetAccommodationBookingInfo);
+                .Bind(GetAccommodationBookingInfo)
+                .Tap(IncreaseCounter);
 
 
             bool IsDeadlineNotPassed(BookingAvailabilityInfo bookingAvailability)
@@ -88,6 +90,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
 
             Task<Result<AccommodationBookingInfo>> GetAccommodationBookingInfo(EdoContracts.Accommodations.Booking details)
                 => _bookingInfoService.GetAccommodationBookingInfo(details.ReferenceCode, languageCode);
+            
+            
+            static void IncreaseCounter()
+                => Counters.BookingCreation.Inc();
             
             
             // TODO NIJO-1135: Revert logging in further refactoring steps

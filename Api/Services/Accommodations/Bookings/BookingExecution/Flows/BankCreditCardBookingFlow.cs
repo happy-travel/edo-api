@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
+using HappyTravel.Edo.Api.Infrastructure.Metrics;
 using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Api.Models.Agents;
 using HappyTravel.Edo.Api.Models.Bookings;
@@ -83,7 +84,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
                 .Check(GenerateInvoice)
                 .Bind(SendSupplierRequest)
                 .Bind(NotifyPaymentReceived)
-                .Bind(GetAccommodationBookingInfo);
+                .Bind(GetAccommodationBookingInfo)
+                .Tap(IncreaseCounter);
 
             
             Task<Result<Booking>> GetBooking()
@@ -134,6 +136,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
 
             Task<Result<AccommodationBookingInfo>> GetAccommodationBookingInfo(EdoContracts.Accommodations.Booking details)
                 => _bookingInfoService.GetAccommodationBookingInfo(details.ReferenceCode, languageCode);
+            
+            
+            static void IncreaseCounter()
+                => Counters.BookingCreation.Inc();
         }
         
         
