@@ -42,26 +42,25 @@ namespace HappyTravel.Edo.Api.Filters.Authorization.CounterpartyStatesFilters
             {
                 case CounterpartyStates.FullAccess:
                     context.Succeed(requirement);
-                    _logger.LogCounterpartyStateAuthorizationSuccess($"Successfully checked counterparty state for agent {agent.Email}");
+                    _logger.LogCounterpartyStateAuthorizationSuccess(agent.Email);
                     return;
                 
                 case CounterpartyStates.ReadOnly:
                     if (requirement.CounterpartyState == CounterpartyStates.ReadOnly)
                     {
                         context.Succeed(requirement);
-                        _logger.LogCounterpartyStateAuthorizationSuccess($"Successfully checked counterparty state for agent {agent.Email}");
+                        _logger.LogCounterpartyStateAuthorizationSuccess(agent.Email);
                     }
                     else
                     {
-                        _logger.LogCounterpartyStateAuthorizationFailure($"Counterparty of agent '{agent.Email}' has wrong state." +
-                            $" Expected '{CounterpartyStates.ReadOnly}' or '{CounterpartyStates.FullAccess}' but was '{counterpartyState}'");
+                        _logger.LogCounterpartyStateAuthorizationFailure(agent.Email, counterpartyState);
                         context.Fail();
                     }
 
                     return;
 
                 default:
-                    _logger.LogCounterpartyStateAuthorizationFailure($"Counterparty of agent '{agent.Email}' has wrong state: '{counterpartyState}'");
+                    _logger.LogCounterpartyStateAuthorizationFailure(agent.Email, counterpartyState);
                     context.Fail();
                     return;
             }

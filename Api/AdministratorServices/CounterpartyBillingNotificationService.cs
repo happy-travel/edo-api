@@ -38,7 +38,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 .OnFailure(LogNotificationFailure);
 
 
-            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountAddedNotificationFailure(error);
+            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountAddedNotificationFailure(counterpartyId, error);
         }
 
 
@@ -49,7 +49,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 .OnFailure(LogNotificationFailure);
 
 
-            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountSubtractedNotificationFailure(error);
+            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountSubtractedNotificationFailure(counterpartyId, error);
         }
 
 
@@ -60,7 +60,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 .OnFailure(LogNotificationFailure);
 
 
-            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountIncreasedManuallyNotificationFailure(error);
+            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountIncreasedManuallyNotificationFailure(counterpartyId, error);
         }
 
 
@@ -71,7 +71,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices
                 .OnFailure(LogNotificationFailure);
 
 
-            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountDecreasedManuallyNotificationFailure(error);
+            void LogNotificationFailure(string error) => _logger.LogCounterpartyAccountDecreasedManuallyNotificationFailure(counterpartyId, error);
         }
 
 

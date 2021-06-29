@@ -106,12 +106,12 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
             
             // TODO NIJO-1135: Revert logging in further refactoring steps
             // void WriteLogFailure(ProblemDetails problemDetails)
-            //     => _logger.LogBookingByAccountFailure($"Failed to book using account. Reference code: '{referenceCode}'. Error: {problemDetails.Detail}");
+            //     => _logger.LogBookingByAccountFailure(referenceCode, problemDetails.Detail);
             //
             //
             // Result<T, ProblemDetails> WriteLog<T>(Result<T, ProblemDetails> result)
             //     => LoggerUtils.WriteLogByResult(result,
-            //         () => _logger.LogBookingFinalizationSuccess($"Successfully booked using account. Reference code: '{booking.ReferenceCode}'"),
+            //         () => _logger.LogBookingFinalizationSuccess(booking.ReferenceCode),
             //         () => _logger.LogBookingFinalizationFailure(
             //             $"Failed to book using account. Reference code: '{booking.ReferenceCode}'. Error: {result.Error.Detail}"));
         }

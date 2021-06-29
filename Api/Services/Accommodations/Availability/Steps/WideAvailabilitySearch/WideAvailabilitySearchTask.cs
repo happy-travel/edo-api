@@ -76,7 +76,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 
             try
             {
-                _logger.LogProviderAvailabilitySearchStarted($"Availability search with id '{searchId}' on supplier '{supplier}' started");
+                _logger.LogProviderAvailabilitySearchStarted(searchId, supplier);
 
                 await GetAvailability(connectorRequest, languageCode)
                     .Bind(ConvertCurrencies)
@@ -195,13 +195,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 
                 if (state.TaskState == AvailabilitySearchTaskState.Completed)
                 {
-                    _logger.LogProviderAvailabilitySearchSuccess(
-                        $"Availability search with id '{searchId}' on supplier '{supplier}' finished successfully with '{state.ResultCount}' results");
+                    _logger.LogProviderAvailabilitySearchSuccess(searchId, supplier, state.ResultCount);
                 }
                 else
                 {
-                    _logger.LogProviderAvailabilitySearchFailure(
-                        $"Availability search with id '{searchId}' on supplier '{supplier}' finished with state '{state.TaskState}', error '{state.Error}'");
+                    _logger.LogProviderAvailabilitySearchFailure(searchId, supplier, state.TaskState, state.Error);
                 }
 
                 return _storage.SaveState(searchId, state, supplier);

@@ -42,9 +42,9 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
             Result WriteLog(Result result)
             {
                 if (result.IsFailure)
-                    _logger.LogExternalPaymentLinkSendFailed($"Error sending email to {paymentLinkCreationData.Email}: {result.Error}");
+                    _logger.LogExternalPaymentLinkSendFailed(paymentLinkCreationData.Email, result.Error);
                 else
-                    _logger.LogExternalPaymentLinkSendSuccess($"Successfully sent e-mail to {paymentLinkCreationData.Email}");
+                    _logger.LogExternalPaymentLinkSendSuccess(paymentLinkCreationData.Email);
 
                 return result;
             }
@@ -81,9 +81,9 @@ namespace HappyTravel.Edo.Api.Services.Payments.External.PaymentLinks
             Result<PaymentLinkData> WriteLog(Result<PaymentLinkData> result)
             {
                 if (result.IsFailure)
-                    _logger.LogExternalPaymentLinkSendFailed($"Error generating payment link for {paymentLinkCreationData.Email}: {result.Error}");
+                    _logger.LogExternalPaymentLinkGenerationFailed(paymentLinkCreationData.Email, result.Error);
                 else
-                    _logger.LogExternalPaymentLinkSendSuccess($"Successfully generated payment link for {paymentLinkCreationData.Email}");
+                    _logger.LogExternalPaymentLinkGenerationSuccess(paymentLinkCreationData.Email);
 
                 return result;
             }

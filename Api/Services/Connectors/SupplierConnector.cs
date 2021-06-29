@@ -109,10 +109,10 @@ namespace HappyTravel.Edo.Api.Services.Connectors
             var sw = Stopwatch.StartNew();
             var result = await funcToExecute();
             sw.Stop();
-            _logger.LogSupplierConnectorRequestDuration($"Request to {_baseUrl} finished at {sw.ElapsedMilliseconds} ms.");
+            _logger.LogSupplierConnectorRequestDuration(_baseUrl, sw.ElapsedMilliseconds);
             
             if (result.IsFailure)
-                _logger.LogSupplierConnectorRequestError($"Error executing connector request to {_baseUrl}: '{result.Error.Detail}', status code: '{result.Error.Status}'");
+                _logger.LogSupplierConnectorRequestError(_baseUrl, result.Error.Detail, result.Error.Status);
 
             return result;
         }

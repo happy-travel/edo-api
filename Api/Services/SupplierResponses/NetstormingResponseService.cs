@@ -34,9 +34,7 @@ namespace HappyTravel.Edo.Api.Services.SupplierResponses
             var (_, isGetBookingDetailsFailure, bookingDetails , bookingDetailsError) = await GetBookingDetailsFromConnector(xmlRequestData);
             if (isGetBookingDetailsFailure)
             {
-                _logger.LogUnableGetBookingDetailsFromNetstormingXml("Failed to get booking details from the Netstorming xml:" + 
-                    Environment.NewLine + 
-                    Encoding.UTF8.GetString(xmlRequestData));
+                _logger.LogUnableGetBookingDetailsFromNetstormingXml(Encoding.UTF8.GetString(xmlRequestData));
                 return Result.Failure(bookingDetailsError);
             }
 

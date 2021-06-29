@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.AdministratorServices;
@@ -87,8 +86,7 @@ namespace HappyTravel.Edo.Api.Services.Invitations
 
 
             void LogInvitationCreated()
-                => _logger.LogInvitationCreated(
-                    $"The invitation with type {invitationType} created for the user '{prefilledData.UserRegistrationInfo.Email}'");
+                => _logger.LogInvitationCreated(invitationType, prefilledData.UserRegistrationInfo.Email);
         }
 
 

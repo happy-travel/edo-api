@@ -24,7 +24,7 @@ namespace HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters
             var (_, isAgentFailure, agent, agentError) = await _agentContextInternal.GetAgentInfo();
             if (isAgentFailure)
             {
-                _logger.LogAgentAuthorizationFailure($"Could not find agent: '{agentError}'");
+                _logger.LogAgentAuthorizationFailure(agentError);
                 context.Fail();
                 return;
             }
@@ -32,12 +32,12 @@ namespace HappyTravel.Edo.Api.Filters.Authorization.InAgencyPermissionFilters
             var (_, isPermissionFailure, permissionError) = await _permissionChecker.CheckInAgencyPermission(agent, requirement.Permissions);
             if (isPermissionFailure)
             {
-                _logger.LogAgentAuthorizationFailure($"Permission denied: '{permissionError}'");
+                _logger.LogAgentAuthorizationFailure(permissionError);
                 context.Fail();
                 return;
             }
 
-            _logger.LogAgentAuthorizationSuccess($"Successfully authorized agent '{agent.Email}' for '{requirement.Permissions}'");
+            _logger.LogAgentAuthorizationSuccess(agent.Email, requirement.Permissions.ToString());
             context.Succeed(requirement);
         }
 

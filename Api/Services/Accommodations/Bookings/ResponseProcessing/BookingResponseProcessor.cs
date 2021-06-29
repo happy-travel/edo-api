@@ -41,10 +41,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
                 return;
             }
             
-            _logger.LogBookingResponseProcessStarted(
-                $"Start the booking response processing with the reference code '{bookingResponse.ReferenceCode}'. Old status: {booking.Status}");
+            _logger.LogBookingResponseProcessStarted(bookingResponse.ReferenceCode, booking.Status);
 
-            
             await _bookingAuditLogService.Add(bookingResponse, booking);
 
             if (bookingResponse.Status == BookingStatusCodes.NotFound)
@@ -58,8 +56,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
             
             if (bookingResponse.Status.ToInternalStatus() == booking.Status)
             {
-                _logger.LogBookingResponseProcessSuccess(
-                    $"The booking response with the reference code '{bookingResponse.ReferenceCode}' has been successfully processed. No status changes applied");
+                _logger.LogBookingResponseProcessSuccess(bookingResponse.ReferenceCode, "No status changes applied");
                 return;
             }
 
@@ -81,9 +78,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
                 return;
             }
 
-            _logger.LogBookingResponseProcessSuccess(
-                $"The booking response with the reference code '{bookingResponse.ReferenceCode}' has been successfully processed. " +
-                $"New status: {bookingResponse.Status}");
+            _logger.LogBookingResponseProcessSuccess(bookingResponse.ReferenceCode, $"New status: {bookingResponse.Status}");
         }
 
 
@@ -91,8 +86,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
         {
             if (_dateTimeProvider.UtcNow() < booking.Created + BookingCheckTimeout)
             {
-                _logger.LogBookingResponseProcessSuccess(
-                    $"The booking response with the reference code '{bookingResponse.ReferenceCode}' has not been processed due to '{BookingStatusCodes.NotFound}' status.");
+                _logger.LogBookingResponseProcessSuccess(bookingResponse.ReferenceCode, $"Has not been processed due to '{BookingStatusCodes.NotFound}' status.");
             }
             else
             {
@@ -101,8 +95,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.ResponseProcessin
                     Source = BookingChangeSources.System,  
                     Event = eventType
                 });
-                _logger.LogBookingResponseProcessSuccess(
-                    $"The booking response with the reference code '{bookingResponse.ReferenceCode}' set as needed manual processing.");
+                _logger.LogBookingResponseProcessSuccess(bookingResponse.ReferenceCode, "Set as needed manual processing.");
             }
         }
 

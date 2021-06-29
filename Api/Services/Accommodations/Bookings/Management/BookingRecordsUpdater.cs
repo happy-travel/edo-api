@@ -147,7 +147,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
 
 
             void WriteFailureLog(string error) 
-                => _logger.LogBookingConfirmationFailure($"Booking '{booking.ReferenceCode} confirmation failed: '{error}");
+                => _logger.LogBookingConfirmationFailure(booking.ReferenceCode, error);
         }
         
         

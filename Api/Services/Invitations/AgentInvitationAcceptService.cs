@@ -176,8 +176,7 @@ namespace HappyTravel.Edo.Api.Services.Invitations
 
 
             void LogSuccess(AcceptPipeValues values)
-                => _logger.LogAgentRegistrationSuccess($"Agent {email} successfully registered " +
-                    $"and bound to agency ID:'{values.Invitation.InviterAgencyId.Value}'");
+                => _logger.LogAgentRegistrationSuccess(email);
 
 
             async Task SendRegistrationMailToMaster(AcceptPipeValues values)

@@ -298,7 +298,7 @@ namespace HappyTravel.Edo.Api.Services.Payments.Payfort
             }
             catch (Exception ex)
             {
-                _logger.LogPayfortError($"Error deserializing payfort response: '{content}'");
+                _logger.LogPayfortError(content);
                 return Result.Failure<JObject>($"{ex.Message} for '{content}'");
             }
         }

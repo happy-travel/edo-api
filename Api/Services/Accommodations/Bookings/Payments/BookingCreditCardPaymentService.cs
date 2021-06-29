@@ -36,12 +36,11 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
         {
             if (booking.PaymentType != PaymentTypes.CreditCard)
             {
-                _logger.LogCaptureMoneyForBookingFailure($"Failed to capture money for a booking with reference code: '{booking.ReferenceCode}'. " +
-                    $"Error: Invalid payment method: {booking.PaymentType}");
+                _logger.LogCaptureMoneyForBookingFailure(booking.ReferenceCode, booking.PaymentType);
                 return Result.Failure<string>($"Invalid payment method: {booking.PaymentType}");
             }
 
-            _logger.LogCaptureMoneyForBookingSuccess($"Successfully captured money for a booking with reference code: '{booking.ReferenceCode}'");
+            _logger.LogCaptureMoneyForBookingSuccess(booking.ReferenceCode);
             return await _creditCardPaymentProcessingService.CaptureMoney(booking.ReferenceCode, apiCaller, _paymentCallbackService);
         }
         

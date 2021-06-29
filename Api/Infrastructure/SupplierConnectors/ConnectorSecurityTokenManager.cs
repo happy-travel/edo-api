@@ -49,10 +49,7 @@ namespace HappyTravel.Edo.Api.Infrastructure.SupplierConnectors
 
                 if (tokenResponse.IsError)
                 {
-                    var errorMessage = $"Something went wrong while requesting the access token. Error: {tokenResponse.Error}. " +
-                        $"Using existing token: '{_tokenInfo.Token}' with expiry date '{_tokenInfo.ExpiryDate}'";
-
-                    _logger.LogGetTokenForConnectorError(errorMessage);
+                    _logger.LogGetTokenForConnectorError(tokenResponse.Error, _tokenInfo.Token, _tokenInfo.ExpiryDate);
                 }
                 else
                 {

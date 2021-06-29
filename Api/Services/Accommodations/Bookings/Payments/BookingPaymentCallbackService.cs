@@ -53,8 +53,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
             var (_, isFailure, booking, error) = await _bookingRecordManager.Get(payment.ReferenceCode);
             if (isFailure)
             {
-                _logger.LogProcessPaymentChangesForBookingFailure("Failed to process payment changes, " +
-                    $"could not find the corresponding booking. Payment status: {payment.Status}. Payment: '{payment.ReferenceCode}'");
+                _logger.LogProcessPaymentChangesForBookingFailure(payment.Status, payment.ReferenceCode);
 
                 return Result.Failure($"Could not find booking for payment '{error}'");
             }
@@ -76,8 +75,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
                     booking.PaymentStatus = BookingPaymentStatuses.Refunded;
                     break;
                 default: 
-                    _logger.LogProcessPaymentChangesForBookingSkip("Skipped booking status update while processing payment changes. " +
-                        $"Payment status: {payment.Status}. Payment: '{payment.ReferenceCode}'. Booking reference code: '{booking.ReferenceCode}'");
+                    _logger.LogProcessPaymentChangesForBookingSkip(payment.Status, payment.ReferenceCode, booking.ReferenceCode);
 
                     return Result.Success();
             }
@@ -88,8 +86,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
             
             _context.Entry(booking).State = EntityState.Detached;
 
-            _logger.LogProcessPaymentChangesForBookingSuccess($"Successfully processes payment changes. Old payment status: {oldPaymentStatus}. " +
-                $"New payment status: {payment.Status}. Payment: '{payment.ReferenceCode}'. Booking reference code: '{booking.ReferenceCode}'");
+            _logger.LogProcessPaymentChangesForBookingSuccess(oldPaymentStatus, payment.Status, payment.ReferenceCode, booking.ReferenceCode);
 
             return Result.Success();
         }

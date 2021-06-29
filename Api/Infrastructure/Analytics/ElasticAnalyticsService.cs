@@ -44,13 +44,13 @@ namespace HappyTravel.Edo.Api.Infrastructure.Analytics
                 {
                     if (task.IsFaulted)
                     {
-                        _logger.LogElasticAnalyticsEventSendError($"Error executing task: {task.Exception?.Message}");
+                        _logger.LogElasticAnalyticsEventSendError(task.Exception);
                         return;
                     }
 
                     var response = task.Result;
                     if (!response.Success)
-                        _logger.LogElasticAnalyticsEventSendError($"Request error: {response.OriginalException.Message}");
+                        _logger.LogElasticAnalyticsEventSendError(response.OriginalException);
                 });
         }
 

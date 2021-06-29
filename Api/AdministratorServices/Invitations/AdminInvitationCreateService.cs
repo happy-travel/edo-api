@@ -83,8 +83,7 @@ namespace HappyTravel.Edo.Api.AdministratorServices.Invitations
 
 
             void LogInvitationCreated()
-                => _logger.LogInvitationCreated(
-                    $"The invitation with type {UserInvitationTypes.Administrator} created for the user '{prefilledData.Email}'");
+                => _logger.LogInvitationCreated(UserInvitationTypes.Administrator, prefilledData.Email);
         }
 
 

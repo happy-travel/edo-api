@@ -51,7 +51,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
             var searchId = Guid.NewGuid();
             
             Baggage.SetSearchId(searchId);
-            _logger.LogMultiProviderAvailabilitySearchStarted($"Starting availability search with id '{searchId}'");
+            _logger.LogMultiProviderAvailabilitySearchStarted(searchId);
 
             var (_, isFailure, searchArea, error) = await _searchAreaService.GetSearchArea(request.HtIds, languageCode);
             if (isFailure)

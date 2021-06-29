@@ -69,14 +69,13 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
             void LogSuccess(AgencyAccount account)
             {
-                _logger.LogAgencyAccountCreationSuccess(
-                    $"Successfully created account for agency: '{agency.Id}', account id: {account.Id}");
+                _logger.LogAgencyAccountCreationSuccess(agency.Id, account.Id);
             }
 
 
             void LogFailure(string error)
             {
-                _logger.LogAgencyAccountCreationFailed($"Failed to create account for agency {agency.Id}, error {error}");
+                _logger.LogAgencyAccountCreationFailed(agency.Id, error);
             }
         }
 
@@ -110,14 +109,13 @@ namespace HappyTravel.Edo.Api.Services.Payments.Accounts
 
             void LogSuccess(CounterpartyAccount account)
             {
-                _logger.LogCounterpartyAccountCreationSuccess(
-                    $"Successfully created account for counterparty: '{counterparty.Id}', account id: {account.Id}");
+                _logger.LogCounterpartyAccountCreationSuccess(counterparty.Id, account.Id);
             }
 
 
             void LogFailure(string error)
             {
-                _logger.LogCounterpartyAccountCreationFailure($"Failed to create account for counterparty {counterparty.Id}, error {error}");
+                _logger.LogCounterpartyAccountCreationFailure(counterparty.Id, error);
             }
         }
 

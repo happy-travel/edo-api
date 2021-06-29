@@ -26,7 +26,7 @@ namespace HappyTravel.Edo.Api.Filters.Authorization.ServiceAccountFilters
             }
             else
             {
-                _logger.LogServiceAccountAuthorizationSuccess($"Service account '{account.ClientId}' authorized successfully");
+                _logger.LogServiceAccountAuthorizationSuccess(account.ClientId);
                 context.Succeed(requirement);
             }
         }

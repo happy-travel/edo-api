@@ -32,7 +32,7 @@ namespace HappyTravel.Edo.Api.Infrastructure
             if (lockTaken)
                 return Result.Success();
 
-            _logger.LogEntityLockFailed($"Failed to lock entity {entityType.Name} with id: {entityId}");
+            _logger.LogEntityLockFailed(entityType.Name, entityId);
 
             return Result.Failure($"Failed to acquire lock for {entityType.Name}");
 

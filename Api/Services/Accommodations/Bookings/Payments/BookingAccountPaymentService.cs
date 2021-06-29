@@ -53,43 +53,43 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments
             Result CheckPaymentType()
                 => booking.PaymentType == PaymentTypes.VirtualAccount
                     ? Result.Success()
-                    : Result.Failure($"Failed to charge money for a booking with reference code: '{booking.ReferenceCode}'. " +
-                        $"Error: Invalid payment method: {booking.PaymentType}");
+                    : Result.Failure($"Invalid payment method: {booking.PaymentType}");
 
 
-            async Task<Result<string>> Charge()
+            async Task<Result> Charge()
             {
                 var (_, isFailure, _, error) = await _accountPaymentService.Charge(booking.ReferenceCode, apiCaller, _paymentCallbackService);
                 if (isFailure)
-                    return Result.Failure<string>($"Unable to charge payment for a booking with reference code: '{booking.ReferenceCode}'. " +
-                        $"Error while charging: {error}");
+                    return Result.Failure<string>($"Error while charging: {error}");
 
-                return Result.Success($"Successfully charged money for a booking with reference code: '{booking.ReferenceCode}'");
+                return Result.Success();
             }
 
 
-            async Task<Result<string>> SendReceipt(string chargeMessage)
+            async Task<Result> SendReceipt()
             {
                 var agent = await _context.Agents.SingleOrDefaultAsync(a => a.Id == booking.AgentId);
                 var (_, isFailure, receiptInfo, error) = await _documentsService.GenerateReceipt(booking);
 
                 if (isFailure)
-                    return Result.Failure<string>($"Unable to charge payment for a booking with reference code: '{booking.ReferenceCode}'. " +
-                        $"Error while sending receipt: {error}");
+                    return Result.Failure<string>($"Error while sending receipt: {error}");
 
                 await _documentsMailingService.SendReceiptToCustomer(receiptInfo, agent.Email, apiCaller);
-                return chargeMessage;
+                
+                return Result.Success();
             }
 
 
-            Result<string> WriteLog(Result<string> result)
+            Result<string> WriteLog(Result result)
             {
                 if (result.IsSuccess)
-                    _logger.LogChargeMoneyForBookingSuccess(result.Value);
-                else
-                    _logger.LogChargeMoneyForBookingFailure(result.Error);
-
-                return result;
+                {
+                    _logger.LogChargeMoneyForBookingSuccess(booking.ReferenceCode);
+                    return Result.Success($"Successfully charged money for a booking with reference code: '{booking.ReferenceCode}'");
+                }
+                
+                _logger.LogChargeMoneyForBookingFailure(booking.ReferenceCode, result.Error);
+                return Result.Failure<string>(result.Error);
             }
         }
 

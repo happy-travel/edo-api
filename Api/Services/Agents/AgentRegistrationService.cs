@@ -114,7 +114,7 @@ namespace HappyTravel.Edo.Api.Services.Agents
             Result<CounterpartyInfo> LogSuccess((CounterpartyInfo, Agent) registrationData)
             {
                 var (counterparty, agent) = registrationData;
-                _logger.LogAgentRegistrationSuccess($"Agent {agent.Email} with counterparty '{counterparty.Name}' successfully registered");
+                _logger.LogAgentRegistrationSuccess(agent.Email);
                 return Result.Success(counterparty);
             }
 

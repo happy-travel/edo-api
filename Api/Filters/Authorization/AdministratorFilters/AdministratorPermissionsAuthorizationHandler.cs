@@ -22,18 +22,18 @@ namespace HappyTravel.Edo.Api.Filters.Authorization.AdministratorFilters
         {
             if (_externalAdminContext.HasPermission(requirement.AdministratorPermissions))
             {
-                _logger.LogAdministratorAuthorizationSuccess($"Successfully authorized external administrator");
+                _logger.LogExternalAdministratorAuthorizationSuccess();
                 context.Succeed(requirement);
             }
             else if (await _administratorContext.HasPermission(requirement.AdministratorPermissions))
             {
                 var adminEmail = (await _administratorContext.GetCurrent()).Value.Email;
-                _logger.LogAdministratorAuthorizationSuccess($"Successfully authorized administrator '{adminEmail}'");
+                _logger.LogInternalAdministratorAuthorizationSuccess(adminEmail);
                 context.Succeed(requirement);
             }
             else
             {
-                _logger.LogAdministratorAuthorizationFailure("Failed to authorize administrator");
+                _logger.LogAdministratorAuthorizationFailure();
                 context.Fail();
             }
         }

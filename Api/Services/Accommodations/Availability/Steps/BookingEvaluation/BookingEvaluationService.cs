@@ -57,8 +57,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             var connectorEvaluationResult = await EvaluateOnConnector(result);
             if (connectorEvaluationResult.IsFailure)
             {
-                _logger.LogBookingEvaluationFailure($"EvaluateOnConnector returned status code: {connectorEvaluationResult.Error.Status}, " +
-                    $"error: {connectorEvaluationResult.Error.Detail}");
+                _logger.LogBookingEvaluationFailure(connectorEvaluationResult.Error.Status, connectorEvaluationResult.Error.Detail);
                 return (RoomContractSetAvailability?)null;
             }
 
@@ -71,7 +70,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             var accommodationResult = await _accommodationService.Get(result.htId, languageCode);
             if (accommodationResult.IsFailure)
             {
-                _logger.LogBookingEvaluationFailure($"Error getting accommodation for HtId '{result.htId}': error: {accommodationResult.Error}");
+                _logger.LogGetAccommodationByHtIdFailed(result.htId, accommodationResult.Error.Detail);
                 return (RoomContractSetAvailability?)null;
             }
 

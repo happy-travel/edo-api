@@ -32,9 +32,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
         {
             if (booking.Status == BookingStatuses.Cancelled)
             {
-                _logger.LogBookingAlreadyCancelled(
-                    $"Skipping cancellation for a booking with reference code: '{booking.ReferenceCode}'. Already cancelled.");
-                
+                _logger.LogBookingAlreadyCancelled(booking.ReferenceCode);
                 return Result.Success();
             }
 
@@ -83,9 +81,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
 
             Result WriteLog(Result result)
                 => LoggerUtils.WriteLogByResult(result,
-                    () => _logger.LogBookingCancelSuccess($"Successfully cancelled a booking with reference code: '{booking.ReferenceCode}'"),
-                    () => _logger.LogBookingCancelFailure(
-                        $"Failed to cancel a booking with reference code: '{booking.ReferenceCode}'. Error: {result.Error}"));
+                    () => _logger.LogBookingCancelSuccess(booking.ReferenceCode),
+                    () => _logger.LogBookingCancelFailure(booking.ReferenceCode, result.Error));
         }
 
 
@@ -100,16 +97,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management
 
             if (isGetDetailsFailure)
             {
-                _logger.LogBookingRefreshStatusFailure($"Failed to refresh status for a booking with reference code: '{referenceCode}' " +
-                    $"while getting info from a supplier. Error: {getDetailsError}");
-                
+                _logger.LogBookingRefreshStatusFailure(referenceCode, getDetailsError.Detail);
                 return Result.Failure(getDetailsError.Detail);
             }
 
             await _responseProcessor.ProcessResponse(newDetails, apiCaller, eventType);
 
-            _logger.LogBookingRefreshStatusSuccess($"Successfully refreshed status for a booking with reference code: '{referenceCode}'. " +
-                $"Old status: {oldStatus}. New status: {newDetails.Status}");
+            _logger.LogBookingRefreshStatusSuccess(referenceCode, oldStatus, newDetails.Status);
 
             return Result.Success();
         }

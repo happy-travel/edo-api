@@ -70,9 +70,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
             // TODO NIJO-1135: Revert logging in further refactoring steps
             // Result<string, ProblemDetails> WriteLog(Result<string, ProblemDetails> result)
             //     => LoggerUtils.WriteLogByResult(result,
-            //         () => _logger.LogBookingRegistrationSuccess($"Successfully registered a booking with reference code: '{result.Value}'"),
-            //         () => _logger.LogBookingRegistrationFailure($"Failed to register a booking. AvailabilityId: '{availabilityId}'. " +
-            //             $"Itinerary number: {bookingRequest.ItineraryNumber}. Passenger name: {bookingRequest.MainPassengerName}. Error: {result.Error.Detail}"));
+            //         () => _logger.LogBookingRegistrationSuccess(result.Value),
+            //         () => _logger.LogBookingRegistrationFailure(availabilityId, bookingRequest.ItineraryNumber, bookingRequest.MainPassengerName, result.Error.Detail));
         }
         
         
@@ -96,7 +95,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
             {
                 if (bookingFromPipe.PaymentStatus != BookingPaymentStatuses.Authorized)
                 {
-                    _logger.LogBookingFinalizationPaymentFailure($"The booking with reference code: '{referenceCode}' hasn't been paid");
+                    _logger.LogBookingFinalizationPaymentFailure(referenceCode);
                     return Result.Failure<Booking>("The booking hasn't been paid");
                 }
 
