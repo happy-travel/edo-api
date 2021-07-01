@@ -80,6 +80,11 @@
             </summary>
             <returns>Current administrator information.</returns>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AdministratorsController.SetRoles(System.Int32,System.Collections.Generic.List{System.Int32})">
+            <summary>
+                Assigns new set of roles to an administrator
+            </summary>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AdministratorControllers.AgenciesController.GetSystemSettings(System.Int32)">
             <summary>
                 Gets agency's availability search settings

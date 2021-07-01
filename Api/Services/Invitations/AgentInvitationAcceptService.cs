@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.AdministratorServices;
@@ -80,7 +80,8 @@ namespace HappyTravel.Edo.Api.Services.Invitations
                     .Ensure(IsInvitationTypeCorrect, "Incorrect invitation type")
                     .Ensure(IsAgencyIdFilled, "Could not find inviter's agency id")
                     .Ensure(IsEmailFilled, "Agent email required")
-                    .Ensure(IsAgentEmailUnique, "Agent with this email already exists");
+                    .Ensure(IsAgentEmailUnique, "Agent with this email already exists")
+                    .Ensure(AllProvidedRolesExist, "Provided role doesn't exist");
 
 
             bool IsIdentityPresent(AcceptPipeValues _)
@@ -101,6 +102,21 @@ namespace HappyTravel.Edo.Api.Services.Invitations
 
             async Task<bool> IsAgentEmailUnique(AcceptPipeValues values)
                 => !await _context.Agents.AnyAsync(a => a.Email == email);
+
+
+            bool AllProvidedRolesExist(AcceptPipeValues values)
+            {
+                var providedRoleIds = filledData.UserRegistrationInfo.RoleIds;
+                
+                // TODO remove when front will send role ids
+                if (providedRoleIds.Length == 0)
+                    return true;
+                
+                var allRoleIds = _context.AgentRoles
+                    .Select(x => x.Id)
+                    .ToList();
+                return providedRoleIds.All(roleId => allRoleIds.Contains(roleId));
+            }
 
 
             Task SaveAccepted(AcceptPipeValues _)

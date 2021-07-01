@@ -752,6 +752,8 @@ namespace HappyTravel.Edo.Api.Infrastructure
             services.AddTransient<IApiClientService, ApiClientService>();
             services.AddTransient<IReportService, ReportService>();
 
+            services.AddTransient<IAdministratorRolesAssignmentService, AdministratorRolesAssignmentService>();
+
             services.AddTransient<IConverter<AgencyWiseRecordProjection, AgencyWiseReportRow>, AgencyWiseRecordProjectionConverter>();
             services.AddTransient<IConverter<SupplierWiseRecordProjection, SupplierWiseReportRow>, SupplierWiseRecordProjectionConverter>();
             services.AddTransient<IConverter<FullBookingsReportProjection, FullBookingsReportRow>, FullBookingsReportProjectionConverter>();

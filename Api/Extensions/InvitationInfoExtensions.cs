@@ -11,7 +11,7 @@ namespace HappyTravel.Edo.Api.Extensions
     {
         public static UserInvitationData ToUserInvitationData(this UserDescriptionInfo info, string email = null)
         {
-            var newInfo = new UserDescriptionInfo(info.Title, info.FirstName, info.LastName, info.Position, email ?? info.Email);
+            var newInfo = new UserDescriptionInfo(info.Title, info.FirstName, info.LastName, info.Position, email ?? info.Email, info.RoleIds);
             return new UserInvitationData(newInfo, default);
         }
 
