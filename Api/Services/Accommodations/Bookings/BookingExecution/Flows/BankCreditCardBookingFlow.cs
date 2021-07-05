@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using HappyTravel.Edo.Api.Infrastructure;
@@ -13,6 +14,8 @@ using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Management;
 using HappyTravel.Edo.Api.Services.Accommodations.Bookings.Payments;
 using HappyTravel.Edo.Common.Enums;
 using HappyTravel.Edo.Data.Bookings;
+using HappyTravel.EdoContracts.Accommodations.Enums;
+using HappyTravel.EdoContracts.Accommodations.Internals;
 using Microsoft.Extensions.Logging;
 
 namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.Flows
@@ -80,7 +83,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
                 .Check(CheckBookingIsPaid)
                 .CheckIf(IsDeadlinePassed, CaptureMoney)
                 .Check(GenerateInvoice)
-                .Bind(SendSupplierRequest)
+                .Bind(SendSupplierRequestIfNeeded)
                 .Bind(NotifyPaymentReceived)
                 .Bind(GetAccommodationBookingInfo);
 
@@ -109,8 +112,20 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Bookings.BookingExecution.
                 => await _creditCardPaymentService.Capture(booking, agentContext.ToApiCaller());
             
 
-            async Task<Result<EdoContracts.Accommodations.Booking>> SendSupplierRequest(Data.Bookings.Booking booking)
+            async Task<Result<EdoContracts.Accommodations.Booking>> SendSupplierRequestIfNeeded(Data.Bookings.Booking booking)
             {
+                // This might be a booking that previously was of Offline payment type. If so, then the supplier request was already sent.
+                if (booking.Status == BookingStatuses.Confirmed)
+                    return new EdoContracts.Accommodations.Booking(
+                        booking.ReferenceCode,
+                        BookingStatusCodes.Confirmed,
+                        booking.AccommodationId,
+                        booking.SupplierReferenceCode,
+                        booking.CheckInDate,
+                        booking.CheckOutDate,
+                        new List<SlimRoomOccupation>(0),
+                        booking.UpdateMode);
+
                 var (_, isFailure, requestInfo, error) = await _requestStorage.Get(booking.ReferenceCode);
                 if(isFailure)
                     return Result.Failure<EdoContracts.Accommodations.Booking>(error);
