@@ -71,6 +71,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
                     .Bind(ConvertCurrencies)
                     .Map(ProcessPolicies)
                     .Map(ApplyMarkups)
+                    .Map(AlignPrices)
                     .Map(Convert)
                     .Tap(SaveResult)
                     .Tap(NotifyClient)
@@ -105,6 +106,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 
             Task<EdoContracts.Accommodations.Availability> ApplyMarkups(EdoContracts.Accommodations.Availability response) 
                 => _priceProcessor.ApplyMarkups(response, agent);
+            
+            
+            async Task<EdoContracts.Accommodations.Availability> AlignPrices(EdoContracts.Accommodations.Availability response) 
+                => await _priceProcessor.AlignPrices(response);
 
 
             EdoContracts.Accommodations.Availability ProcessPolicies(EdoContracts.Accommodations.Availability response) 

@@ -58,6 +58,22 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         }
         
         
+        public async ValueTask<EdoContracts.Accommodations.Availability> AlignPrices(EdoContracts.Accommodations.Availability response)
+        {
+            var convertedResults = new List<SlimAccommodationAvailability>(response.Results.Count);
+            foreach (var slimAccommodationAvailability in response.Results)
+            {
+                // Currency can differ in different results
+                var roomContractSets = await RoomContractSetPriceProcessor.AlignPrices(slimAccommodationAvailability.RoomContractSets);
+                convertedResults.Add(new SlimAccommodationAvailability(slimAccommodationAvailability.AccommodationId,
+                    roomContractSets, slimAccommodationAvailability.AvailabilityId));
+            }
+
+            return new EdoContracts.Accommodations.Availability(response.AvailabilityId, response.NumberOfNights,
+                response.CheckInDate, response.CheckOutDate, convertedResults, response.NumberOfProcessedAccommodations);
+        }
+        
+        
         private static Currencies? GetCurrency(SlimAccommodationAvailability accommodationAvailability)
         {
             if (!accommodationAvailability.RoomContractSets.Any())

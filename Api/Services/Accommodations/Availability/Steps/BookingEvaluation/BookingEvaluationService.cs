@@ -79,6 +79,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
             return await ConvertCurrencies(connectorEvaluationResult.Value)
                 .Map(ProcessPolicies)
                 .Map(ApplyMarkups)
+                .Map(AlignPrices)
                 .Tap(SaveToCache)
                 .Map(ToDetails)
                 .Check(CheckAgainstSettings);
@@ -142,6 +143,19 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.Booking
                 return DataWithMarkup.Create(responseWithMarkups, appliedMarkups, convertedSupplierPrice, originalSupplierPrice);
             }
 
+
+            async Task<DataWithMarkup<EdoContracts.Accommodations.RoomContractSetAvailability?>> AlignPrices(DataWithMarkup<EdoContracts.Accommodations.RoomContractSetAvailability?> availabilityWithMarkup)
+            {
+                if (availabilityWithMarkup.Data is null)
+                    return availabilityWithMarkup;
+
+                var processedData = await _priceProcessor.AlignPrices(availabilityWithMarkup.Data);
+                return new DataWithMarkup<EdoContracts.Accommodations.RoomContractSetAvailability?>(processedData,
+                    availabilityWithMarkup.AppliedMarkups,
+                    availabilityWithMarkup.ConvertedSupplierPrice,
+                    originalSupplierPrice);
+            } 
+                
             
             Task SaveToCache(DataWithMarkup<EdoContracts.Accommodations.RoomContractSetAvailability?> responseWithDeadline)
             {

@@ -28,8 +28,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
 
 
         public static RoomSelectionSearchTask Create(IServiceProvider serviceProvider) 
-            => new(
-            serviceProvider.GetRequiredService<IRoomSelectionPriceProcessor>(),
+            => new(serviceProvider.GetRequiredService<IRoomSelectionPriceProcessor>(),
             serviceProvider.GetRequiredService<ISupplierConnectorManager>(),
             serviceProvider.GetRequiredService<IRoomSelectionStorage>()
         );
@@ -44,6 +43,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
                 .Bind(ConvertCurrencies)
                 .Map(ProcessPolicies)
                 .Map(ApplyMarkups)
+                .Map(AlignPrices)
                 .Map(AddSupplierData)
                 .Tap(SaveToCache);
 
@@ -76,6 +76,10 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.RoomSel
 
             Task<AccommodationAvailability> ApplyMarkups(AccommodationAvailability response) 
                 => _priceProcessor.ApplyMarkups(response, agent);
+            
+            
+            async Task<AccommodationAvailability> AlignPrices(AccommodationAvailability response) 
+                => await _priceProcessor.AlignPrices(response);
 
 
             SupplierData<AccommodationAvailability> AddSupplierData(AccommodationAvailability availabilityDetails)

@@ -11,7 +11,6 @@ using HappyTravel.Edo.Api.Services.Markups.Templates;
 using HappyTravel.Edo.Api.Services.PriceProcessing;
 using HappyTravel.Edo.Common.Enums.Markup;
 using HappyTravel.Edo.Data.Markup;
-using HappyTravel.Money.Helpers;
 using HappyTravel.Money.Models;
 
 namespace HappyTravel.Edo.Api.Services.Markups
@@ -51,10 +50,7 @@ namespace HappyTravel.Edo.Api.Services.Markups
                 logAction?.Invoke(new MarkupApplicationResult<TDetails>(detailsBefore, policy, currentData));
             }
             
-            var ceiledResponse = await priceProcessFunc(currentData, price =>
-                new ValueTask<MoneyAmount>(MoneyRounder.Ceil(price)));
-
-            return ceiledResponse;
+            return currentData;
         }
 
 
