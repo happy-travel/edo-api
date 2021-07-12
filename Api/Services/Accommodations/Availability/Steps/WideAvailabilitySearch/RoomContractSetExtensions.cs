@@ -4,14 +4,16 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
 {
     public static class RoomContractSetExtensions
     {
-        public static RoomContractSet WithFalseDirectContractsFlag(this RoomContractSet rs) 
+        public static RoomContractSet ApplySearchSettings(this RoomContractSet rs, bool isSupplierVisible, bool isDirectContractsVisible) 
             => new(rs.Id,
             rs.Rate,
             rs.Deadline,
             rs.Rooms,
             rs.IsAdvancePurchaseRate,
-            rs.Supplier,
+            isSupplierVisible
+                ? rs.Supplier
+                : null,
             rs.Tags,
-            isDirectContract: false);
+            isDirectContract: isDirectContractsVisible && rs.IsDirectContract);
     }
 }
