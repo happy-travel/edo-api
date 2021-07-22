@@ -17,7 +17,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             var client = new MongoClient(settings.Value.ConnectionString);
             var database = client.GetDatabase(settings.Value.DatabaseName);
 
-            _results = database.GetCollection<CachedAccommodationAvailabilityResult>(settings.Value.CollectionName);
+            _collection = database.GetCollection<CachedAccommodationAvailabilityResult>(settings.Value.CollectionName);
             
             var searchIndexDefinition = Builders<CachedAccommodationAvailabilityResult>.IndexKeys.Combine(
                 Builders<CachedAccommodationAvailabilityResult>.IndexKeys.Ascending(f => f.SearchId),
@@ -26,7 +26,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
             var ttlIndexDefinition = Builders<CachedAccommodationAvailabilityResult>.IndexKeys.Ascending(f => f.Created);
             var ttlIndexOptions = new CreateIndexOptions {ExpireAfter = TimeSpan.FromMinutes(45)};
             
-            _results.Indexes.CreateMany(new []
+            _collection.Indexes.CreateMany(new []
             {
                 new CreateIndexModel<CachedAccommodationAvailabilityResult>(searchIndexDefinition),
                 new CreateIndexModel<CachedAccommodationAvailabilityResult>(ttlIndexDefinition, ttlIndexOptions)
@@ -35,13 +35,13 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         
         
         public Task Save(List<CachedAccommodationAvailabilityResult> results) 
-            => _results.InsertManyAsync(results);
+            => _collection.InsertManyAsync(results);
 
 
         public Task<List<CachedAccommodationAvailabilityResult>> Get(Expression<Func<CachedAccommodationAvailabilityResult, bool>> criteria) 
-            => _results.Find(criteria).ToListAsync();
+            => _collection.Find(criteria).ToListAsync();
 
 
-        private readonly IMongoCollection<CachedAccommodationAvailabilityResult> _results;
+        private readonly IMongoCollection<CachedAccommodationAvailabilityResult> _collection;
     }
 }
