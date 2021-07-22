@@ -34,8 +34,8 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
         }
         
         
-        public Task Save(List<CachedAccommodationAvailabilityResult> results) 
-            => _collection.InsertManyAsync(results);
+        public Task Save(List<CachedAccommodationAvailabilityResult> records) 
+            => _collection.InsertManyAsync(records);
 
 
         public Task<List<CachedAccommodationAvailabilityResult>> Get(Expression<Func<CachedAccommodationAvailabilityResult, bool>> criteria) 
