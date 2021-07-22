@@ -9,8 +9,10 @@ using HappyTravel.Edo.Api.Conventions;
 using HappyTravel.Edo.Api.Filters;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Environments;
+using HappyTravel.Edo.Api.Models.Storage;
 using HappyTravel.Edo.Api.NotificationCenter.Hubs;
 using HappyTravel.Edo.Api.NotificationCenter.Infrastructure;
+using HappyTravel.Edo.Api.Services.Accommodations.Availability;
 using HappyTravel.Edo.Api.Services.Hubs.Search;
 using HappyTravel.Edo.Data;
 using HappyTravel.ErrorHandling.Extensions;
@@ -28,6 +30,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
@@ -155,6 +158,15 @@ namespace HappyTravel.Edo.Api
             
             services.AddOData();
             services.AddNotificationCenter();
+
+            services.Configure<AvailabilityStorageSettings>(o =>
+            {
+                o.ConnectionString = Configuration.GetValue<string>(Configuration.GetValue<string>("MongoDB:ConnectionString"));
+                o.CollectionName = nameof(AvailabilityStorage);
+                o.DatabaseName = Configuration.GetValue<string>("MongoDB:Database");
+            });
+
+            services.AddSingleton<IAvailabilityStorage, AvailabilityStorage>();
             
             services.AddMvcCore(options =>
                 {
