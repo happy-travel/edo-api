@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
-using FloxDc.CacheFlow;
 using HappyTravel.Edo.Api.Infrastructure;
 using HappyTravel.Edo.Api.Infrastructure.Logging;
 using HappyTravel.Edo.Api.Models.Accommodations;
@@ -69,55 +68,37 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAva
         }
 
         
-        public async Task<IEnumerable<WideAvailabilityResult>> GetResult(Guid searchId, AgentContext agent, string languageCode)
+        public async Task<IEnumerable<WideAvailabilityResult>> GetResult(Guid searchId, int top, int skip, AgentContext agent, string languageCode)
         {
             Baggage.SetSearchId(searchId);
             var searchSettings = await _accommodationBookingSettingsService.Get(agent);
-            var supplierSearchResults = await _availabilityStorage.GetResults(searchId, searchSettings.EnabledConnectors);
+            var supplierSearchResults = await _availabilityStorage.GetResults(searchId, top, skip, searchSettings.EnabledConnectors);
             var htIds = supplierSearchResults
-                .SelectMany(r => r.AccommodationAvailabilities.Select(a=>a.HtId))
+                .Select(r => r.AccommodationAvailabilities.HtId)
                 .ToList();
 
             await _accommodationsStorage.EnsureAccommodationsCached(htIds, languageCode);
-            
-            return CombineAvailabilities(supplierSearchResults);
 
-            IEnumerable<WideAvailabilityResult> CombineAvailabilities(IEnumerable<(Suppliers ProviderKey, List<AccommodationAvailabilityResult> AccommodationAvailabilities)> availabilities)
+            return supplierSearchResults.Select(r =>
             {
-                if (availabilities == null || !availabilities.Any())
-                    return Enumerable.Empty<WideAvailabilityResult>();
+                var accommodation = _accommodationsStorage.GetAccommodation(r.AccommodationAvailabilities.HtId, languageCode);
 
-                return availabilities
-                    .SelectMany(supplierResults =>
-                    {
-                        var (supplierKey, supplierAvailabilities) = supplierResults;
-                        return supplierAvailabilities
-                            .Select(pa => (Supplier: supplierKey, Availability: pa));
-                    })
-                    .OrderBy(r => r.Availability.Timestamp)
-                    .RemoveRepeatedAccommodations()
-                    .Select(r =>
-                    {
-                        var (supplier, availability) = r;
-                        var roomContractSets = availability.RoomContractSets
-                            .Select(rs => rs.ApplySearchSettings(isSupplierVisible: searchSettings.IsSupplierVisible, isDirectContractsVisible: searchSettings.IsDirectContractFlagVisible))
-                            .ToList();
+                var roomContractSets = r.AccommodationAvailabilities.RoomContractSets
+                    .Select(rs => rs.ApplySearchSettings(isSupplierVisible: searchSettings.IsSupplierVisible,
+                        isDirectContractsVisible: searchSettings.IsDirectContractFlagVisible))
+                    .ToList();
 
-                        var accommodation = _accommodationsStorage.GetAccommodation(availability.HtId, languageCode);
-                        
-                        return new WideAvailabilityResult(accommodation,
-                            roomContractSets,
-                            availability.MinPrice,
-                            availability.MaxPrice,
-                            availability.CheckInDate,
-                            availability.CheckOutDate,
-                            searchSettings.IsSupplierVisible
-                                ? supplier
-                                : (Suppliers?) null,
-                            availability.HtId);
-                    })
-                    .Where(a => a.RoomContractSets.Any());
-            }
+                return new WideAvailabilityResult(accommodation,
+                    roomContractSets,
+                    r.AccommodationAvailabilities.MinPrice,
+                    r.AccommodationAvailabilities.MaxPrice,
+                    r.AccommodationAvailabilities.CheckInDate,
+                    r.AccommodationAvailabilities.CheckOutDate,
+                    searchSettings.IsSupplierVisible
+                        ? r.SupplierKey
+                        : null,
+                    r.AccommodationAvailabilities.HtId);
+            });
         }
 
 
