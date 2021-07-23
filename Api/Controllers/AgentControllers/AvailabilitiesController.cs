@@ -16,6 +16,7 @@ using HappyTravel.Edo.Api.Services.Accommodations.Availability.Steps.WideAvailab
 using HappyTravel.Edo.Api.Services.Agents;
 using HappyTravel.Edo.Common.Enums;
 using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Mvc;
 using AvailabilityRequest = HappyTravel.Edo.Api.Models.Availabilities.AvailabilityRequest;
 using Deadline = HappyTravel.Edo.Data.Bookings.Deadline;
@@ -80,6 +81,7 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         /// Gets result of previous started availability search.
         /// </summary>
         /// <param name="searchId">Search id</param>
+        /// <param name="queryOptions">OData query</param>
         /// <returns>Availability results</returns>
         [HttpGet("searches/{searchId}")]
         [ProducesResponseType(typeof(IEnumerable<WideAvailabilityResult>), (int) HttpStatusCode.OK)]
@@ -87,10 +89,15 @@ namespace HappyTravel.Edo.Api.Controllers.AgentControllers
         [MinCounterpartyState(CounterpartyStates.ReadOnly)]
         [InAgencyPermissions(InAgencyPermissions.AccommodationAvailabilitySearch)]
         [EnableQuery(MaxAnyAllExpressionDepth = 2, EnsureStableOrdering = false)]
-        public async Task<IEnumerable<WideAvailabilityResult>> GetAvailabilitySearchResult([FromRoute] Guid searchId)
+        public async Task<IActionResult> GetAvailabilitySearchResult([FromRoute] Guid searchId, ODataQueryOptions<WideAvailabilityResult> queryOptions)
         {
-            // TODO: Add validation and fool check for skip and top parameters
-            return await _wideAvailabilitySearchService.GetResult(searchId, await _agentContextService.GetAgent(), LanguageCode);
+            var top = queryOptions.Top?.Value;
+            var skip = queryOptions.Skip?.Value;
+
+            if (top is null || skip is null)
+                return BadRequest("Pagination parameter `top` or `skip` not found");
+            
+            return Ok(await _wideAvailabilitySearchService.GetResult(searchId, top.Value, skip.Value, await _agentContextService.GetAgent(), LanguageCode));
         }
 
 

@@ -9,6 +9,7 @@ namespace HappyTravel.Edo.Api.Services.Accommodations.Availability
     public interface IAvailabilityStorage
     {
         Task<List<CachedAccommodationAvailabilityResult>> Get(Expression<Func<CachedAccommodationAvailabilityResult, bool>> criteria);
+        Task<List<CachedAccommodationAvailabilityResult>> Get(Expression<Func<CachedAccommodationAvailabilityResult, bool>> criteria, int top, int skip);
         Task Save(List<CachedAccommodationAvailabilityResult> results);
     }
 }

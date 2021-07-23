@@ -1037,11 +1037,12 @@
             <param name="searchId">Search id</param>
             <returns>Search state</returns>
         </member>
-        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AvailabilitiesController.GetAvailabilitySearchResult(System.Guid)">
+        <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AvailabilitiesController.GetAvailabilitySearchResult(System.Guid,Microsoft.AspNet.OData.Query.ODataQueryOptions{HappyTravel.Edo.Api.Models.Accommodations.WideAvailabilityResult})">
             <summary>
             Gets result of previous started availability search.
             </summary>
             <param name="searchId">Search id</param>
+            <param name="queryOptions">OData query</param>
             <returns>Availability results</returns>
         </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.AgentControllers.AvailabilitiesController.GetSearchStateForAccommodationAvailability(System.Guid,System.String)">

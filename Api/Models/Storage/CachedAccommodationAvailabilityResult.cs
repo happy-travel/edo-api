@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using HappyTravel.SuppliersCatalog;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace HappyTravel.Edo.Api.Models.Storage
 {
+    [BsonIgnoreExtraElements]
     public record CachedAccommodationAvailabilityResult
     {
         public Guid SearchId { get; init; }

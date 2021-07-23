@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using HappyTravel.Edo.Api.Models.Accommodations;
 using HappyTravel.Edo.Data.Bookings;
 using HappyTravel.EdoContracts.Accommodations.Enums;
 
@@ -20,7 +19,7 @@ namespace HappyTravel.Edo.Api.Models.Storage
         public bool IsExtraBedNeeded { get; init; }
         public Deadline Deadline { get; init; }
         public bool IsAdvancePurchaseRate { get; init; }
-        public List<DailyRate> DailyRoomRates { get; init; }
+        public List<CachedDailyRate> DailyRoomRates { get; init; }
         public RoomTypes Type { get; init; }
     }
 }
