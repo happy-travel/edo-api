@@ -1536,6 +1536,13 @@
             <param name="bookingConfirmation">Booking confirmation data</param>
             <returns></returns>
         </member>
+        <member name="M:HappyTravel.Edo.Api.Controllers.PropertyOwnerControllers.BookingConfirmationController.Update2(System.String)">
+            <summary>
+                Updates booking status and hotel confirmation code
+            </summary>
+            <param name="referenceCode">Booking reference code</param>
+            <returns></returns>
+        </member>
         <member name="M:HappyTravel.Edo.Api.Controllers.VersionsController.Get">
             <summary>
             Returns a current build version of the system.

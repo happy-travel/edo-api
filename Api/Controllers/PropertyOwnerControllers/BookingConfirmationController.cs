@@ -76,8 +76,8 @@ namespace HappyTravel.Edo.Api.Controllers.PropertyOwnerControllers
 
             return NoContentOrBadRequest(await _bookingConfirmationService.Update(referenceCode, bookingConfirmation));
         }
-
-
+        
+        
         private readonly IBookingConfirmationService _bookingConfirmationService;
         private readonly IBookingInfoService _bookingInfoService;
         private readonly IPropertyOwnerConfirmationUrlGenerator _urlGenerationService;
